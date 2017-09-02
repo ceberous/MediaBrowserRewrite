@@ -1,0 +1,1 @@
+var socketIOServerAddress = "http://192.168.0.71"; var socketIOPORT = "6969";
