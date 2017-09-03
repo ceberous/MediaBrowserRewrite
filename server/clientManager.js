@@ -16,8 +16,8 @@ catch ( error ){ wcl( "LAST_SAVED_STATE_FILE NOT FOUND !!!" ); WRITE_LAST_SAVED_
 function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-			console.log( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
-			console.log( wOBJ );
+			//console.log( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
+			//console.log( wOBJ );
 			LAST_SS[ wProp ][ xProp ] = wOBJ;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -60,15 +60,15 @@ const STATE_ACTION_MAP = {
 	"TwitchLive": {},
 	"SkypeCall": { start: SKYPE_MAN.startCall , stop: SKYPE_MAN.endCall },
 	"LocalMovie": {},
-	"LocalTVShow": { start: LOCAL_VIDEO_MAN.playTVShow , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
+	"LocalTVShow": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
 	"Odyssey": {},
 	"AudioBook": {},
 };
 
-function startCurrentAction( wArg1 , wArg2 , wArg3 ) { console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArg1 , wArg2 , wArg3 ); }
+function startCurrentAction( wArg1 , wArg2 , wArg3 , wArg4 ) { console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArg1 , wArg2 , wArg3 , wArg4 ); }
 function stopCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( wArg ); /*LAST_SS.CURRENT_ACTION = null;*/ } }
-function pauseCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); GLOBAL_PAUSED = true; }
-function resumeCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; }
+function pauseCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); GLOBAL_PAUSED = true; } }
+function resumeCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; } }
 function restorePreviousAction( wArg ) {
 	wcl("inside restore previous action");
 	wcl( LAST_SS.PREVIOUS_ACTION );
@@ -164,5 +164,5 @@ wEmitter.on( "button12Press" , function() {
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalTVShow";
-	startCurrentAction( "SouthPark" , 2 , 13 );
+	startCurrentAction( "TVShows" , "SouthPark" , 2 , 13 );
 });

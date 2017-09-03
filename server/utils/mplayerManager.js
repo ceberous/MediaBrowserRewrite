@@ -38,9 +38,9 @@ function wPlayFilePath( wFP ) {
 
 }
 
-function wQuit() { wPROC.send( "quit" ); }
-function wPause() { wPROC.send( "pause" ); }
-function wStop() { wPROC.send( "stop" ); }
+function wQuit() { wPROC.send( "quit" ); return wPROC_TIME; }
+function wPause() { wPROC.send( "pause" ); return wPROC_TIME; }
+function wStop() { wPROC.send( "stop" ); return wPROC_TIME; }
 function wSeekSeconds( wSeconds ) { wPROC.send( "seekSeconds/" + wSeconds.toString() ); }
 function wSeekPercent( wPercent ) { wPROC.send( "seekPercent/" + wPercent.toString() ); }
 function wHideSubtitles() { wPROC.send( "hideSubtitles" ); }

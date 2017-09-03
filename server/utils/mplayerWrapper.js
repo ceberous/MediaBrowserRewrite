@@ -26,7 +26,7 @@ player.on( "stop" ,  function( wTime ) {
 
 async function triggerQuit() {
     // player.player.cmd('quit');
-    process.send( { feedback: "UNREF_ME" } );
+    process.send( { feedback: "UNREF_ME" , time: wTime } );
     await sleep( 2000 );
     process.exit(0);
 }
@@ -43,6 +43,7 @@ process.on( "message" , function( wData ) {
 			else { player.play(); }
 			break;
 		case "stop":
+			//process.send( { time: wTime } );
 			player.stop();
 			break;
 		case "seekSeconds":

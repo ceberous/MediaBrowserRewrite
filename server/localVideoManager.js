@@ -11,15 +11,45 @@ const dirTree = require("./utils/dirtreeutil.js");
 const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
 
 function wcl( wSTR ) { console.log( colors.black.bgGreen( "[LOCAL_VIDEO_MAN] --> " + wSTR ) ); }
+function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 var NeedToUpdateHDStruct = true;
 var HD_MOUNT_POINT = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH/";
 var HARD_DRIVE_STRUCT = {};
 var HARD_DRIVE_REFERENCE_STRUCT = {};
+var LAST_PLAYED = {};
+var NEED_TO_RESET_LP = false;
 const HARD_DRIVE_STRUCT_FP = path.join( __dirname , "save_files" , "hdFolderStructure.json" );
-function WRITE_HARD_DRIVE_STRUCT_FILE() { jsonfile.writeFileSync( HARD_DRIVE_STRUCT_FP , HARD_DRIVE_STRUCT ); }
-try { HARD_DRIVE_STRUCT = jsonfile.readFileSync( HARD_DRIVE_STRUCT_FP ); }
-catch ( error ){ wcl( "hdFolderStructure.json NOT FOUND !!!" ); NeedToUpdateHDStruct = true; WRITE_HARD_DRIVE_STRUCT_FILE(); }
+function WRITE_HARD_DRIVE_STRUCT_FILE() { 
+	return new Promise( function( resolve , reject ) {
+		try {
+			jsonfile.writeFile( HARD_DRIVE_STRUCT_FP , HARD_DRIVE_STRUCT , function( err ) {
+				if ( err ) { console.log( err ); reject(err); }
+				resolve();
+			}); 
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+async function INITIALIZE_HARD_DRIVE_STRUCT_FILE() {
+	wcl( "hdFolderStructure.json NOT FOUND !!!" ); 
+	NeedToUpdateHDStruct = true;
+	LAST_PLAYED = { 
+		"AudioBooks": { by_pos: 0 , time: 0 , rs_map: [] },
+		"DVDs": { by_pos: 0 , time: 0 , rs_map: [] },
+		"Movies": { by_pos: 0 , time: 0 , rs_map: [] },
+		"Music": { by_pos: 0 , time: 0 , rs_map: [] },
+		"Podcasts": { by_pos: 0 , time: 0 , rs_map: [] },
+		"TVShows": { by_pos: 0 , time: 0 , rs_map: [] }	
+	};
+	NEED_TO_RESET_LP = true;
+	await WRITE_HARD_DRIVE_STRUCT_FILE(); 
+	BEGIN_INITIALIZATION();
+}
+try { HARD_DRIVE_STRUCT = jsonfile.readFileSync( HARD_DRIVE_STRUCT_FP ); BEGIN_INITIALIZATION(); }
+catch ( error ){ 
+	INITIALIZE_HARD_DRIVE_STRUCT_FILE();
+}
 
 function FIND_USB_STORAGE_PATH_FROM_UUID( wUUID ) {
 	function getPath() {
@@ -52,14 +82,7 @@ function FIND_USB_STORAGE_PATH_FROM_UUID( wUUID ) {
 
 					var wUSER = exec( "whoami" , { silent:true , async: false } );
 					if ( wUSER.stderr ) { console.log("error finding USB Hard Drive"); process.exit(1); }
-					wUSER = wUSER.stdout.trim();
-
-					// var wUID = exec( "id -u" , { silent:true , async: false } );
-					// if ( wUID.stderr ) { console.log("error finding USER's ID"); process.exit(1); }
-					// wUID = wUID.stdout.trim();
-					// var wGID = exec( "id -g" , { silent:true , async: false } );
-					// if ( wGID.stderr ) { console.log("error finding USER's Group ID"); process.exit(1); }
-					// wGID = wGID.stdout.trim();				
+					wUSER = wUSER.stdout.trim();			
 
 					var wPath = path.join( "/" , "media" , wUSER , wUUID )
 
@@ -105,6 +128,7 @@ function BUILD_HARD_DRIVE_REFERENCE_STRUCT() {
 	}
 	HARD_DRIVE_REFERENCE_STRUCT = media_struct;
 	HARD_DRIVE_STRUCT[ "REFERENCE" ] = HARD_DRIVE_REFERENCE_STRUCT;
+	if ( NEED_TO_RESET_LP ) { HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] = LAST_PLAYED; }
 }
 
 function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() {
@@ -133,8 +157,8 @@ function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() {
 }
 
 function PLAY_FROM_REFERENCE_STRUCT( wSection , wName , wSeason , wEpisode ) {
-	wSeason = wSeason - 1;
-	wEpisode = wEpisode - 1;
+	wSeason = ( wSeason - 1 );
+	wEpisode = ( wEpisode - 1 );
 	var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + wSection + "/" + wName;
 	//console.log( wPath );
 	if ( wSeason ) {
@@ -148,7 +172,7 @@ function PLAY_FROM_REFERENCE_STRUCT( wSection , wName , wSeason , wEpisode ) {
 }
 
 // Initialization
-( async ()=> {
+async function BEGIN_INITIALIZATION() {
 	
 	//HD_MOUNT_POINT = await FIND_USB_STORAGE_PATH_FROM_UUID( "2864E38A64E358D8" );
 	wcl( HD_MOUNT_POINT );
@@ -156,35 +180,25 @@ function PLAY_FROM_REFERENCE_STRUCT( wSection , wName , wSeason , wEpisode ) {
 	if ( NeedToUpdateHDStruct ) { 
 		await UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE(); 
 		await wUpdate_Last_SS( "LocalVideo" , "REFERENCE" , HARD_DRIVE_REFERENCE_STRUCT );
+		await wUpdate_Last_SS( "LocalVideo" , "LAST_PLAYED" , HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] );
 	}
-	
-})();
 
-
-
-
-
-function wPlayTVShow( wShowName , wPositionInHDStruct , wEpisodeNum ) {
-	PLAY_FROM_REFERENCE_STRUCT( "TVShows" , wShowName , wPositionInHDStruct , wEpisodeNum );
 }
 
+function wStop() {
+	var wLastTime = MPLAYER_MAN.stop();
+	console.log( "LAST TIME = " + wLastTime );
+}
 
-
+function wPause() {
+	var wLastTime = MPLAYER_MAN.pause();
+	console.log( "LAST TIME = " + wLastTime );
+}
 
 module.exports.getAvailableMedia = ()=> { return HARD_DRIVE_REFERENCE_STRUCT; }
 
-module.exports.playTVShow = wPlayTVShow;
-
 module.exports.getCurrentTime 	= MPLAYER_MAN.getCurrentTime
-module.exports.pause 			= MPLAYER_MAN.pause;
-module.exports.resume 			= MPLAYER_MAN.pause;
-module.exports.stop 			= MPLAYER_MAN.stop;
-
-
-
-// var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + "TVShows/SouthPark/" + 
-// HARD_DRIVE_STRUCT[ "TVShows" ][ 0 ][ "children" ][ 1 ].name + "/" +
-// HARD_DRIVE_STRUCT[ "TVShows" ][ 0 ][ "children" ][ 1 ][ "children" ][ 7 ].name;
-// MPLAYER_MAN.playFilePath( wPath );
-
-
+module.exports.play 			= PLAY_FROM_REFERENCE_STRUCT;
+module.exports.pause 			= wPause;
+module.exports.resume 			= wPause;
+module.exports.stop 			= wStop;
