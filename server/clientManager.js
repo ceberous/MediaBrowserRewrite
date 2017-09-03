@@ -31,6 +31,8 @@ module.exports.update_Last_SS = xUpdate_Last_SS;
 module.exports.get_Last_SS = function() { return LAST_SS; };
 module.exports.restorePreviousAction = restorePreviousAction;
 
+var GLOBAL_PAUSED = false;
+
 var BTN_MAN 			= require( "./buttonManager.js" );
 var USB_IR_MAN 			= require( "./usbIRManager.js" );
 //var FIREFOX_MAN 		= require( "./firefoxManager.js" );
@@ -58,15 +60,15 @@ const STATE_ACTION_MAP = {
 	"TwitchLive": {},
 	"SkypeCall": { start: SKYPE_MAN.startCall , stop: SKYPE_MAN.endCall },
 	"LocalMovie": {},
-	"LocalTVShow": {},
+	"LocalTVShow": { start: LOCAL_VIDEO_MAN.playTVShow , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
 	"Odyssey": {},
 	"AudioBook": {},
-}
+};
 
-function startCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArg ); }
+function startCurrentAction( wArg1 , wArg2 , wArg3 ) { console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArg1 , wArg2 , wArg3 ); }
 function stopCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( wArg ); /*LAST_SS.CURRENT_ACTION = null;*/ } }
-function pauseCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); }
-function resumeCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); }
+function pauseCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); GLOBAL_PAUSED = true; }
+function resumeCurrentAction( wArg ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; }
 function restorePreviousAction( wArg ) {
 	wcl("inside restore previous action");
 	wcl( LAST_SS.PREVIOUS_ACTION );
@@ -108,6 +110,10 @@ wEmitter.on( "button3Press" , function() {
 wEmitter.on( "button4Press" , function() {
 	wcl( "PRESSED BUTTON 4" );
 	// SKYPE CAMERON
+	stopCurrentAction();
+	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
+	LAST_SS.CURRENT_ACTION = "SkypeCall";
+	startCurrentAction( "live:ccerb96" );	
 });
 
 wEmitter.on( "button5Press" , function() {
@@ -121,12 +127,15 @@ wEmitter.on( "button5Press" , function() {
 
 wEmitter.on( "button6Press" , function() {
 	wcl( "PRESSED BUTTON 6" );
+	// STOP Everything
 	stopCurrentAction();
 });
 
 wEmitter.on( "button7Press" , function() {
 	wcl( "PRESSED BUTTON 7" );
 	// PAUSE EVERYTHING
+	if ( !GLOBAL_PAUSED ) { pauseCurrentAction(); }
+	else { resumeCurrentAction(); }
 });
 
 wEmitter.on( "button8Press" , function() {
@@ -152,4 +161,8 @@ wEmitter.on( "button11Press" , function() {
 wEmitter.on( "button12Press" , function() {
 	wcl( "PRESSED BUTTON 12" );
 	// LOCAL TV SHOW
+	stopCurrentAction();
+	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
+	LAST_SS.CURRENT_ACTION = "LocalTVShow";
+	startCurrentAction( "SouthPark" , 2 , 13 );
 });

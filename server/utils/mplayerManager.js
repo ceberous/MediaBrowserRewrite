@@ -2,13 +2,11 @@ const path = require("path");
 const spawn = require("child_process").spawn;
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
-const wESC = String.fromCharCode(92);
-const fixSpaceREGEX = new RegExp( " " , "g" );
 function fixPathSpace(wFP) {
-	wFP = wFP.replace( fixSpaceREGEX ,  + " " );
-	wFP = wFP.replace( ")" , wESC + ")" );
-	wFP = wFP.replace( "(" , wESC + "(" );
-	wFP = wFP.replace( "'" , wESC + "'" );
+	wFP = wFP.replace( " " , String.fromCharCode(92) + " " );
+	wFP = wFP.replace( ")" , String.fromCharCode(92) + ")" );
+	wFP = wFP.replace( "(" , String.fromCharCode(92) + "(" );
+	wFP = wFP.replace( "'" , String.fromCharCode(92) + "'" );
 	return wFP;
 }
 
@@ -22,7 +20,7 @@ function cleanupChildPROC() { clearInterval( wPROC_INT ); wPROC.unref(); }
 function wPlayFilePath( wFP ) {
 	
 	process.env.mplayerFP = fixPathSpace( wFP );
-	console.log( process.env.mplayerFP );
+	//console.log( process.env.mplayerFP );
 
 	var wOptions = {
 		stdio: [ "pipe" , 1 , 2 , "ipc" ], // === 2 way communication
