@@ -1,0 +1,1 @@
+var cp = require("child_process"); cp.exec( "streamlink --hls-segment-threads=4 --hls-live-edge=3 --ringbuffer-size=196M twitch.tv/tim885885 best -p 'mpv --input-unix-socket=/home/morpheous/WORKSPACE/NODE/MediaBrowserRewrite/server/utils/TMP_sqtofz/mpv.sock '" ); setTimeout( function() { process.exit(0); } , 10000 );

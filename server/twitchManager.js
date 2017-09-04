@@ -4,8 +4,9 @@ function wOpenLiveTwitch( wUserName , wQuality ) {
 	wQuality = wQuality || "best";
 	STREAM_LINK_MAN.openLink( wUserName , wQuality );
 }
-function wStopLiveTwitch() {
-	STREAM_LINK_MAN.quit();
+async function wStopLiveTwitch() {
+	console.log("inside stop twitch");
+	await STREAM_LINK_MAN.quit();
 }
 
 // setInterval( function () {

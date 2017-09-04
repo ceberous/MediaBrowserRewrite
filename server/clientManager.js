@@ -8,6 +8,17 @@ var wEmitter	= require('../main.js').wEmitter;
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+// EXPORTS
+// ==========================================================================================================
+// ==========================================================================================================
+module.exports.update_Last_SS = xUpdate_Last_SS;
+module.exports.update_Last_SS_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP;
+module.exports.xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
+module.exports.get_Last_SS = function() { return LAST_SS; };
+module.exports.restorePreviousAction = restorePreviousAction;
+module.exports.pressButtonMaster = wPressButtonMaster;
+// ==========================================================================================================
+// ==========================================================================================================
 
 // DATABASE BULLSHIT
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -65,18 +76,13 @@ function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key ,
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-//wEmitter.on( "updateLastSS" , ( wProp , xProp , wOBJ )=> { xUpdate_Last_SS( wProp , xProp , wOBJ ); });
-module.exports.update_Last_SS = xUpdate_Last_SS;
-module.exports.update_Last_SS_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP;
-module.exports.xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
-module.exports.get_Last_SS = function() { return LAST_SS; };
-module.exports.restorePreviousAction = restorePreviousAction;
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-var GLOBAL_PAUSED = false;
-
+// ADDON ?? INITIALIZATION
+// =====================================================================
+// =====================================================================
 var BTN_MAN 			= require( "./buttonManager.js" );
 var USB_IR_MAN 			= require( "./usbIRManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
@@ -84,19 +90,13 @@ var MOPIDY_MAN 			= require( "./mopidyManager.js" );
 var LOCAL_VIDEO_MAN		= require( "./localVideoManager.js" );
 var TWITCH_MAN			= require( "./twitchManager.js" );
 var YOUTUBE_MAN			= require( "./youtubeManager.js" );
-
-function startMopidyYTLiveBackground( wGenre ) {
-	//LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
-	//MOPIDY_MAN.startNewTask( LAST_SS.Mopidy.activeTask , wGenre , "RandomGen1" );
-	YOUTUBE_MAN.startYTLiveBackground();
-
-}
-function stopMopidyYTLiveBackground() {
-	MOPIDY_MAN.shutdown();
-	YOUTUBE_MAN.stopYTLiveBackground();
-}
+// =====================================================================
+// =====================================================================
 
 
+// STATE-DEFINITIONS
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 const STATE_ACTION_MAP = {
 	"MopidyYTLiveBackground": { start: startMopidyYTLiveBackground , stop: stopMopidyYTLiveBackground , pause: MOPIDY_MAN.pause , resume: MOPIDY_MAN.resume  },
 	"YTStandard": { start: YOUTUBE_MAN.startYTStandard , stop: YOUTUBE_MAN.stopYTStandard },
@@ -108,8 +108,16 @@ const STATE_ACTION_MAP = {
 	"AudioBook": {},
 };
 
+var GLOBAL_PAUSED = false;
 var CACHED_START_PREVIOUS_ARGS = null;
 var CACHED_START_CURRENT_ARGS = null;
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+// STATE-CONTROLLERS
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function startCurrentAction( wArgArray ) { CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS; CACHED_START_CURRENT_ARGS = wArgArray; console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArgArray[0] , wArgArray[1] , wArgArray[2] , wArgArray[3] ); }
 function stopCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( wArg ); /*LAST_SS.CURRENT_ACTION = null;*/ } }
 function pauseCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); GLOBAL_PAUSED = true; } }
@@ -127,92 +135,157 @@ function restorePreviousAction( wArg ) {
 }
 
 async function properShutdown() { stopCurrentAction(); }
-
-wEmitter.on( "closeEverything" , function() { properShutdown(); });
 //wEmitter.on( "restorePreviousAction" , function() { console.log("we should be restoring previous action = " + LAST_SS.PREVIOUS_ACTION); restorePreviousAction(); });
+wEmitter.on( "closeEverything" , function() { properShutdown(); });
+
+function startMopidyYTLiveBackground( wGenre ) {
+	//LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
+	//MOPIDY_MAN.startNewTask( LAST_SS.Mopidy.activeTask , wGenre , "RandomGen1" );
+	YOUTUBE_MAN.startYTLiveBackground();
+
+}
+function stopMopidyYTLiveBackground() {
+	MOPIDY_MAN.shutdown();
+	YOUTUBE_MAN.stopYTLiveBackground();
+}
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
-wEmitter.on( "button1Press" , async function() {
+// USER-CONTROL
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function BUTTON_PRESS_1( wArgArray ) {
+	wArgArray = wArgArray || [ "classic" ];
 	wcl( "PRESSED BUTTON 1" );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
-	startCurrentAction( [ "classic" ] );
-});
+	startCurrentAction( wArgArray );
+}
 
-wEmitter.on( "button2Press" , function() {
+function BUTTON_PRESS_2( wArgArray ) {
 	wcl( "PRESSED BUTTON 2" );
+	wArgArray = wArgArray || [ "edm" ];
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
-	startCurrentAction( [ "edm" ] );
-});
+	startCurrentAction( wArgArray );
+}
 
-wEmitter.on( "button3Press" , function() {
+function BUTTON_PRESS_3( wArgArray ) {
+	// YOUTUBE STANDARD / TWITCH LIVE 
+	wArgArray = wArgArray || [ "twitch.tv/tim885885" ];
 	wcl( "PRESSED BUTTON 3" );
-	// YOUTUBE STANDARD
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "TwitchLive";
-	startCurrentAction( [ "twitch.tv/exbc" ] );	
-});
+	startCurrentAction( wArgArray );
+}
 
-wEmitter.on( "button4Press" , function() {
-	wcl( "PRESSED BUTTON 4" );
+function BUTTON_PRESS_4( wArgArray ) {
 	// SKYPE CAMERON
+	wArgArray = wArgArray || [ "live:ccerb96" ];
+	wcl( "PRESSED BUTTON 4" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "SkypeCall";
-	startCurrentAction( [ "live:ccerb96" ] );	
-});
+	startCurrentAction( wArgArray );	
+}
 
-wEmitter.on( "button5Press" , function() {
-	wcl( "PRESSED BUTTON 5" );
+function BUTTON_PRESS_5( wArgArray ) {
 	// SKYPE COLLIN
+	wArgArray = wArgArray || [ "haley.cerbus" ];
+	wcl( "PRESSED BUTTON 5" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "SkypeCall";
-	startCurrentAction( [ "haley.cerbus" ] );
-});
+	startCurrentAction( wArgArray );
+}
 
-wEmitter.on( "button6Press" , function() {
-	wcl( "PRESSED BUTTON 6" );
+function BUTTON_PRESS_6( wArgArray ) {
 	// STOP Everything
+	wcl( "PRESSED BUTTON 6" );
 	stopCurrentAction();
-});
+}
 
-wEmitter.on( "button7Press" , function() {
-	wcl( "PRESSED BUTTON 7" );
+function BUTTON_PRESS_7( wArgArray ) {
 	// PAUSE EVERYTHING
+	wcl( "PRESSED BUTTON 7" );
 	if ( !GLOBAL_PAUSED ) { pauseCurrentAction(); }
 	else { resumeCurrentAction(); }
-});
+}
 
-wEmitter.on( "button8Press" , function() {
-	wcl( "PRESSED BUTTON 8" );
+function BUTTON_PRESS_8( wArgArray ) {
 	// PREVIOUS MEDIA
-});
+	wcl( "PRESSED BUTTON 8" );
+}
 
-wEmitter.on( "button9Press" , function() {
-	wcl( "PRESSED BUTTON 9" );
+function BUTTON_PRESS_9( wArgArray ) {
 	// NEXT MEDIA
-});
+	wcl( "PRESSED BUTTON 9" );
+}
 
-wEmitter.on( "button10Press" , function() {
-	wcl( "PRESSED BUTTON 10" );
+function BUTTON_PRESS_10( wArgArray ) {
 	// LOCAL MOVIE
-});
+	wcl( "PRESSED BUTTON 10" );
+}
 
-wEmitter.on( "button11Press" , function() {
-	wcl( "PRESSED BUTTON 11" );
+function BUTTON_PRESS_11( wArgArray ) {
 	// LOCAL ODYSSEY
-});
+	wcl( "PRESSED BUTTON 11" );
+}
 
-wEmitter.on( "button12Press" , function() {
-	wcl( "PRESSED BUTTON 12" );
+function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
+	wArgArray = wArgArray || [ "TVShows" , "TheRedGreenShow" , 2 , 1 ];
+	wcl( "PRESSED BUTTON 12" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalTVShow";
 	//startCurrentAction( "TVShows" , "SouthPark" , 2 , 13 );
-	startCurrentAction( [ "TVShows" , "TheRedGreenShow" , 2 , 1 ] );
-});
+	startCurrentAction( wArgArray );
+}
+
+function wPressButtonMaster( wButtonNum , wArgArray ) { 
+	switch( wButtonNum ) {
+		case 1:
+			BUTTON_PRESS_1( wArgArray );
+			break;
+		case 2:
+			BUTTON_PRESS_2( wArgArray );
+			break;
+		case 3:
+			BUTTON_PRESS_3( wArgArray );
+			break;
+		case 4:
+			BUTTON_PRESS_4( wArgArray );
+			break;
+		case 5:
+			BUTTON_PRESS_5( wArgArray );
+			break;
+		case 6:
+			BUTTON_PRESS_6( wArgArray );
+			break;
+		case 7:
+			BUTTON_PRESS_7( wArgArray );
+			break;
+		case 8:
+			BUTTON_PRESS_8( wArgArray );
+			break;
+		case 9:
+			BUTTON_PRESS_9( wArgArray );
+			break;
+		case 10:
+			BUTTON_PRESS_10( wArgArray );
+			break;
+		case 11:
+			BUTTON_PRESS_11( wArgArray );
+			break;
+		case 12:
+			BUTTON_PRESS_12( wArgArray );
+			break;
+		default:
+			break;																																				
+	}
+}
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

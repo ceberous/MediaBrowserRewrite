@@ -61,27 +61,33 @@ var wSTATUS = null;
 var wELAPSED_TIME = null;
 var wMPV_WID = null;
 async function startSocketListeners() {
+	
+	console.log("inside startSocketListeners() aka mpv.sock .connect()");
 	//await sleep( 10000 );
+
+	async function load_ON_DATA_HANDLER() {
+		wMPVSocketClient.on( "data" , function( wData ) {
+			var wSTR = wData;
+			try { wData = JSON.parse( wData ); }
+			catch( error ) { wData = false; }
+			//console.log( wData );
+			if ( wData ) {
+				if ( wData.event ) { wLAST_EVENT = wData.event }
+				wSTATUS = wData.error;
+				wELAPSED_TIME = wData.data;
+				if ( !wPAUSED && parseInt( wELAPSED_TIME ) > 1 ) { wPAUSED = true; }
+			}
+			wcl( wLAST_EVENT + " === " + wSTATUS + " === " + wELAPSED_TIME ); 
+		});
+		await sleep( 10000 );
+		startMPVStatusListener();
+		wFullScreen();
+	}
+
 	wMPVSocketClient = net.createConnection( MPV_SOCKET_FP );
-	wMPVSocketClient.on( "connect" , function() { wcl( "CONNECTED TO UNIX-SOCKET !!!!" ); } );
+	wMPVSocketClient.on( "connect" , function() { wcl( "CONNECTED TO UNIX-SOCKET !!!!" ); load_ON_DATA_HANDLER(); } );
 	wMPVSocketClient.on( "end" , function() { clearInterval( wMPVSocketListenInterval ); wcl( "DISCONNECTED FROM UNIX-SOCKET !!!!" ); } );
-	wMPVSocketClient.on( "data" , function( wData ) {
-		var wSTR = wData;
-		try { wData = JSON.parse( wData ); }
-		catch( error ) { wData = false; }
-		//console.log( wData );
-		if ( wData ) {
-			if ( wData.event ) { wLAST_EVENT = wData.event }
-			wSTATUS = wData.error;
-			wELAPSED_TIME = wData.data;
-			if ( !wPAUSED && parseInt( wELAPSED_TIME ) > 1 ) { wPAUSED = true; }
-		}
-		wcl( wLAST_EVENT + " === " + wSTATUS + " === " + wELAPSED_TIME ); 
-	});
-	await sleep( 2000 );
-	startMPVStatusListener();
-	//await sleep( 5000 ); 
-	wFullScreen();
+	
 }
 
 async function startMPVStatusListener() { wMPVSocketListenInterval = setInterval( function() { wGetStatus(); } , 3000 );  }
@@ -93,12 +99,11 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 	SET_STREAMLINK_LAUNCHER_FP();
 	SET_MPV_SOCKET_FP();
 
-	await sleep( 500 );
-	exec( "pkill -9 vlc" , { silent: true , async: false } );
-	exec( "pkill -9 mpv" , { silent: true , async: false } );
-	await sleep( 300 );
-	exec( "pkill -9 streamlink" , { silent: true , async: false } );
-	await sleep( 300 );
+	await sleep( 1000 );
+	//exec( "pkill -9 mpv" , { silent: true , async: false } );
+	//await sleep( 300 );
+	//exec( "pkill -9 streamlink" , { silent: true , async: false } );
+	//await sleep( 300 );
 
 	var SL_CMD = `streamlink --hls-segment-threads=4 --hls-live-edge=3 --ringbuffer-size=196M ${wURL} ${wQuality}`;
 	wPlayerOptions = wPlayerOptions || "";
@@ -114,7 +119,7 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 	    detached: true
 	}).unref(); // child._channel.unref()
 	
-	await sleep( 10000 );
+	await sleep( 90000 );
 	startSocketListeners();
 
 }
@@ -123,12 +128,18 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 function wQuit() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			console.log("inside wQuit from StreamLinkManager.js");
 			wPROC_QUIT();
 			await sleep( 1000 );
-			exec( "pkill -9 mpv" , { silent: true , async: false } );
+			//wMPVSocketClient.destroy(); // DO NOT EVER EVER CALL UNLESS YOU MPV TO NOT CLOSE SOCKET CORRECTLY
+			fs.unlinkSync( MPV_SOCKET_FP );
 			await sleep( 300 );
-			exec( "pkill -9 streamlink" , { silent: true , async: false } );
+			console.log( "mpv.sock unlinked" );
 			await REMOVE_TMP_DIR();
+			console.log( "TMP_DIR_PATH removed" );
+			//exec( "pkill -9 mpv" , { silent: true , async: false } );
+			await sleep( 300 );
+			//exec( "pkill -9 streamlink" , { silent: true , async: false } );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -142,29 +153,3 @@ module.exports.openLink = LAUNCH_STREAM_LINK_MPV;
 module.exports.quit = wQuit;
 module.exports.fullscreen = wFullScreen;
 module.exports.getCurrentTime = wGetStatus;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-											// "USER_LAND" tests
-// --------------------------------------------------------------------------------------------------------------------------------------
-
-
-//LAUNCH_STREAM_LINK_MPV( "twitch.tv/exbc" , "best" );
-//LAUNCH_STREAM_LINK_MPV( "www.youtube.com/watch?v=TEns54J9w6Y" , "best" );
-
-// process.on('SIGINT', async function () {
-// 	await REMOVE_TMP_DIR();
-// 	process.exit(1);
-// })

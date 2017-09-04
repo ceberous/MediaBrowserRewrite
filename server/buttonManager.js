@@ -1,4 +1,5 @@
-var wEmitter = require('../main.js').wEmitter;
+//var wEmitter = require('../main.js').wEmitter;
+var wPressButtonMaster = require("./clientManager.js").pressButtonMaster;
 var colors = require("colors");
 var fs = require("fs");
 var path = require("path");
@@ -102,7 +103,9 @@ var handleButtonInput = function(wInput) {
 	lastPressed = timeNow;
 
 	var wE = "button" + wInput + "Press";
-	wEmitter.emit( wE );
+	//wEmitter.emit( wE );
+	wInput = parseInt( wInput );
+	wPressButtonMaster( wInput );
 	
 };
 
