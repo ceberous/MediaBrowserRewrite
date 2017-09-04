@@ -33,8 +33,7 @@ function wHandleOutput( wMessage ) {
 	//console.log( wMessage );
 	switch( wMessage ) {
 
-		case "Never placed":
-			childWrapper.regularCleanup();
+		case "NeverPlaced":
 			setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
 
@@ -43,9 +42,10 @@ function wHandleOutput( wMessage ) {
 			setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
 
-		case "Sorry, call failed!":
+		case "CallFailed":
+			wcl( "Call Failed !!!" );
 			wRestoreCleanup();
-			setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
+			//setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
 
 		case "Call in Progress":

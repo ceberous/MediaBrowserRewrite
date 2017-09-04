@@ -11,14 +11,41 @@ const path = require("path");
 const colors = require("colors");
 const rimraf = require("rimraf");
 
-const TMP_DIR_PATH = path.join( __dirname , "TMP2" );
-const CREATE_TMP_DIR = function() { if ( !fs.existsSync( TMP_DIR_PATH ) ){ fs.mkdirSync( TMP_DIR_PATH ); } }
-const REMOVE_TMP_DIR = function() { return new Promise( function( resolve , reject ) { try { rimraf( TMP_DIR_PATH , function () { resolve("done"); }); } catch( error ) { reject( error ); } }); }
-const StreamlinkLauncher_FP = path.join( TMP_DIR_PATH , "streamlinkLauncher.js" );
-const MPV_SOCKET_FP = path.join( TMP_DIR_PATH , "mpv.sock" );
+//const TMP_DIR_PATH = path.join( __dirname , "TMP2" );
+var   TMP_DIR_PATH = null;
+const SET_RANDOM_TMP_DIR = function() { TMP_DIR_PATH = "TMP_" + Math.random().toString(36).slice(2, 8); TMP_DIR_PATH = path.join( __dirname , TMP_DIR_PATH ) };
+const REMOVE_TMP_DIR = function() { 
+	return new Promise( function( resolve , reject ) { 
+		try { 
+			rimraf( TMP_DIR_PATH , function () { 
+				resolve("done"); 
+			}); 
+		} 
+		catch( error ) { reject( error ); } 
+	}); 
+};
+const CREATE_TMP_DIR = async function() { if ( fs.existsSync( TMP_DIR_PATH ) ){ await REMOVE_TMP_DIR(); fs.mkdirSync( TMP_DIR_PATH ); } else { fs.mkdirSync( TMP_DIR_PATH ); } };
+//var  StreamlinkLauncher_FP = path.join( TMP_DIR_PATH , "streamlinkLauncher.js" );
+var   StreamlinkLauncher_FP = null;
+const SET_STREAMLINK_LAUNCHER_FP = function() { StreamlinkLauncher_FP = path.join( TMP_DIR_PATH , "streamlinkLauncher.js" ); };
+//const MPV_SOCKET_FP = path.join( TMP_DIR_PATH , "mpv.sock" );
+var   MPV_SOCKET_FP = null;
+const SET_MPV_SOCKET_FP = function() { MPV_SOCKET_FP = path.join( TMP_DIR_PATH , "mpv.sock" ); };
 
-const wcl = function( wSTR ) { console.log( colors.black.bgCyan( "[VLC_MAN] --> " + wSTR ) ); }
-const sleep = function( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
+const wcl = function( wSTR ) { console.log( colors.black.bgCyan( "[STREAMLINK_MAN] --> " + wSTR ) ); };
+const sleep = function( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); };
+
+function createTMP_DIR() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await REMOVE_TMP_DIR();
+			CREATE_TMP_DIR();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});f
+}
 
 
 // https://mpv.io/manual/master/#property-list
@@ -34,6 +61,7 @@ var wSTATUS = null;
 var wELAPSED_TIME = null;
 var wMPV_WID = null;
 async function startSocketListeners() {
+	//await sleep( 10000 );
 	wMPVSocketClient = net.createConnection( MPV_SOCKET_FP );
 	wMPVSocketClient.on( "connect" , function() { wcl( "CONNECTED TO UNIX-SOCKET !!!!" ); } );
 	wMPVSocketClient.on( "end" , function() { clearInterval( wMPVSocketListenInterval ); wcl( "DISCONNECTED FROM UNIX-SOCKET !!!!" ); } );
@@ -52,7 +80,7 @@ async function startSocketListeners() {
 	});
 	await sleep( 2000 );
 	startMPVStatusListener();
-	await sleep( 5000 ); 
+	//await sleep( 5000 ); 
 	wFullScreen();
 }
 
@@ -60,15 +88,19 @@ async function startMPVStatusListener() { wMPVSocketListenInterval = setInterval
 
 async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 
-	CREATE_TMP_DIR();
+	SET_RANDOM_TMP_DIR();
+	await CREATE_TMP_DIR();
+	SET_STREAMLINK_LAUNCHER_FP();
+	SET_MPV_SOCKET_FP();
 
+	await sleep( 500 );
 	exec( "pkill -9 vlc" , { silent: true , async: false } );
 	exec( "pkill -9 mpv" , { silent: true , async: false } );
 	await sleep( 300 );
 	exec( "pkill -9 streamlink" , { silent: true , async: false } );
 	await sleep( 300 );
 
-	var SL_CMD = `streamlink --hls-segment-threads 3 ${wURL} ${wQuality}`;
+	var SL_CMD = `streamlink --hls-segment-threads=4 --hls-live-edge=3 --ringbuffer-size=196M ${wURL} ${wQuality}`;
 	wPlayerOptions = wPlayerOptions || "";
 	SL_CMD = SL_CMD + " -p 'mpv --input-unix-socket=" + MPV_SOCKET_FP + " " + wPlayerOptions + "'";
 	console.log( "\n" + SL_CMD );
@@ -91,6 +123,8 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 function wQuit() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			wPROC_QUIT();
+			await sleep( 1000 );
 			exec( "pkill -9 mpv" , { silent: true , async: false } );
 			await sleep( 300 );
 			exec( "pkill -9 streamlink" , { silent: true , async: false } );
@@ -102,6 +136,7 @@ function wQuit() {
 }
 function wFullScreen() { wMPV_WID = xdo_GETID( "mpv" ); xdo_SET_FULL( wMPV_WID ); }
 function wGetStatus() { wMPVSocketClient.write( '{ "command": ["get_property", "playback-time"] }\r\n' ); }
+function wPROC_QUIT() { wMPVSocketClient.write( '{ "command": ["quit", "1"] }\r\n' ); }
 
 module.exports.openLink = LAUNCH_STREAM_LINK_MPV;
 module.exports.quit = wQuit;
@@ -132,4 +167,4 @@ module.exports.getCurrentTime = wGetStatus;
 // process.on('SIGINT', async function () {
 // 	await REMOVE_TMP_DIR();
 // 	process.exit(1);
-// });
+// })

@@ -29,7 +29,7 @@ server.listen( port , function() {
 
 process.on('SIGINT', function () {
 	wEmitter.emit( "closeEverything" );
-	setTimeout( function() { process.exit(1); } , 5000 );
+	setTimeout( function() { process.exit(1); } , 10000 );
 });
 
 process.on( "unhandledRejection" , function( reason , p ) {

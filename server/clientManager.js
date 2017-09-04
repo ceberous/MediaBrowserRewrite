@@ -27,7 +27,7 @@ function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 			// console.log( LAST_SS[ "LocalVideo" ] );
 			// console.log("\n");
 			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
-			wcl( wOBJ );
+			console.log( wOBJ );
 			LAST_SS[ wProp ][ xProp ] = wOBJ;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -40,7 +40,7 @@ function xUpdate_Last_SS_OBJ_PROP( wProp , xProp , wOBJ_Key , jProp ) {
 	return new Promise( function( resolve , reject ) {
 		try {
 			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
-			wcl( jProp );
+			console.log( jProp );
 			LAST_SS[ wProp ][ xProp ][ wOBJ_Key ] = jProp;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -56,7 +56,7 @@ function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key ,
 			// console.log( LAST_SS[ "LocalVideo" ] );
 			// console.log("\n");			
 			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " --- " + wOBJ_Key + " --- " + wSECONDARY_KEY +" <-- TO --> " );
-			wcl( jProp );
+			console.log( jProp );
 			LAST_SS[ wProp ][ xProp ][ wOBJ_Key ][ wSECONDARY_KEY ] = jProp;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -100,7 +100,7 @@ function stopMopidyYTLiveBackground() {
 const STATE_ACTION_MAP = {
 	"MopidyYTLiveBackground": { start: startMopidyYTLiveBackground , stop: stopMopidyYTLiveBackground , pause: MOPIDY_MAN.pause , resume: MOPIDY_MAN.resume  },
 	"YTStandard": { start: YOUTUBE_MAN.startYTStandard , stop: YOUTUBE_MAN.stopYTStandard },
-	"TwitchLive": {},
+	"TwitchLive": { start: TWITCH_MAN.playLive , stop: TWITCH_MAN.stopLive },
 	"SkypeCall": { start: SKYPE_MAN.startCall , stop: SKYPE_MAN.endCall },
 	"LocalMovie": {},
 	"LocalTVShow": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
@@ -108,7 +108,9 @@ const STATE_ACTION_MAP = {
 	"AudioBook": {},
 };
 
-function startCurrentAction( wArg1 , wArg2 , wArg3 , wArg4 ) { console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArg1 , wArg2 , wArg3 , wArg4 ); }
+var CACHED_START_PREVIOUS_ARGS = null;
+var CACHED_START_CURRENT_ARGS = null;
+function startCurrentAction( wArgArray ) { CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS; CACHED_START_CURRENT_ARGS = wArgArray; console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArgArray[0] , wArgArray[1] , wArgArray[2] , wArgArray[3] ); }
 function stopCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( wArg ); /*LAST_SS.CURRENT_ACTION = null;*/ } }
 function pauseCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); GLOBAL_PAUSED = true; } }
 function resumeCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; } }
@@ -120,11 +122,11 @@ function restorePreviousAction( wArg ) {
 		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop();
 		LAST_SS.CURRENT_ACTION = LAST_SS.PREVIOUS_ACTION; 
 		LAST_SS.PREVIOUS_ACTION = null; 
-		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start();
+		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( CACHED_START_PREVIOUS_ARGS );
 	}
 }
 
-async function properShutdown() { stopCurrentAction(); await wSleep( 3000 ); process.exit(1); }
+async function properShutdown() { stopCurrentAction(); }
 
 wEmitter.on( "closeEverything" , function() { properShutdown(); });
 //wEmitter.on( "restorePreviousAction" , function() { console.log("we should be restoring previous action = " + LAST_SS.PREVIOUS_ACTION); restorePreviousAction(); });
@@ -135,19 +137,23 @@ wEmitter.on( "button1Press" , async function() {
 	wcl( "PRESSED BUTTON 1" );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
-	startCurrentAction( "classic" );
+	startCurrentAction( [ "classic" ] );
 });
 
 wEmitter.on( "button2Press" , function() {
 	wcl( "PRESSED BUTTON 2" );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
-	startCurrentAction( "edm" );
+	startCurrentAction( [ "edm" ] );
 });
 
 wEmitter.on( "button3Press" , function() {
 	wcl( "PRESSED BUTTON 3" );
 	// YOUTUBE STANDARD
+	stopCurrentAction();
+	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
+	LAST_SS.CURRENT_ACTION = "TwitchLive";
+	startCurrentAction( [ "twitch.tv/exbc" ] );	
 });
 
 wEmitter.on( "button4Press" , function() {
@@ -156,7 +162,7 @@ wEmitter.on( "button4Press" , function() {
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "SkypeCall";
-	startCurrentAction( "live:ccerb96" );	
+	startCurrentAction( [ "live:ccerb96" ] );	
 });
 
 wEmitter.on( "button5Press" , function() {
@@ -165,7 +171,7 @@ wEmitter.on( "button5Press" , function() {
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "SkypeCall";
-	startCurrentAction( "haley.cerbus" );
+	startCurrentAction( [ "haley.cerbus" ] );
 });
 
 wEmitter.on( "button6Press" , function() {
@@ -208,5 +214,5 @@ wEmitter.on( "button12Press" , function() {
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalTVShow";
 	//startCurrentAction( "TVShows" , "SouthPark" , 2 , 13 );
-	startCurrentAction( "TVShows" , "TheRedGreenShow" , 2 , 1 );
+	startCurrentAction( [ "TVShows" , "TheRedGreenShow" , 2 , 1 ] );
 });

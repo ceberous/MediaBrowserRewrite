@@ -37,6 +37,17 @@ def OnCall(call, status):
         
     elif ( wText == "Never placed" ):
         call.Finish()
+        print("NeverPlaced")
+        sys.stdout.flush()
+        #sys.exit(1)
+        CallStatus = Skype4Py.clsFinished
+        sys.exit(1)
+        raise SystemExit
+        return
+
+    elif ( wText == "Sorry, call failed!" ):
+        #call.Finish()
+        print("CallFailed")
         sys.stdout.flush()
         #sys.exit(1)
         CallStatus = Skype4Py.clsFinished
