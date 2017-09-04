@@ -32,13 +32,13 @@ process.on('SIGINT', function () {
 	setTimeout( function() { process.exit(1); } , 5000 );
 });
 
-// process.on( "unhandledRejection" , function( reason , p ) {
-//     console.error( reason, "Unhandled Rejection at Promise" , p );
-//     console.trace();
-//     //wEmitter.emit( "closeEverything" );
-// });
-// process.on( "uncaughtException" , function( err ) {
-//     console.error( err , "Uncaught Exception thrown" );
-//     console.trace();
-//     //wEmitter.emit( "closeEverything" );
-// });
+process.on( "unhandledRejection" , function( reason , p ) {
+    console.error( reason, "Unhandled Rejection at Promise" , p );
+    console.trace();
+    //wEmitter.emit( "closeEverything" );
+});
+process.on( "uncaughtException" , function( err ) {
+    console.error( err , "Uncaught Exception thrown" );
+    console.trace();
+    //wEmitter.emit( "closeEverything" );
+});

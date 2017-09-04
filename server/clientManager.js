@@ -8,17 +8,56 @@ var wEmitter	= require('../main.js').wEmitter;
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+
+// DATABASE BULLSHIT
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+			// ehhhh????? 
+			// http://www.tingodb.com/
+			// https://github.com/louischatriot/nedb
 var 	LAST_SS = { PREVIOUS_ACTION: null, CURRENT_ACTION: null, Firefox: {} ,  SkypeCall: {} , LocalVideo: {} , Mopidy: {} , YTLiveBackground: {} , YTFeed: {} , Twitch: {} };
 const 	LAST_SS_FILE_PATH 	= path.join( __dirname , "save_files" , "lastSavedState.json" );
 function WRITE_LAST_SAVED_STATE_FILE() { jsonfile.writeFileSync( LAST_SS_FILE_PATH , LAST_SS ); }
-try { lastSavedState = jsonfile.readFileSync( LAST_SS_FILE_PATH ); }
+try { LAST_SS = jsonfile.readFileSync( LAST_SS_FILE_PATH ); }
 catch ( error ){ wcl( "LAST_SAVED_STATE_FILE NOT FOUND !!!" ); WRITE_LAST_SAVED_STATE_FILE(); }
 function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-			//console.log( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
-			//console.log( wOBJ );
+			// console.log("\n");
+			// console.log( LAST_SS[ "LocalVideo" ] );
+			// console.log("\n");
+			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
+			wcl( wOBJ );
 			LAST_SS[ wProp ][ xProp ] = wOBJ;
+			WRITE_LAST_SAVED_STATE_FILE();
+			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
+			resolve( "success" );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+function xUpdate_Last_SS_OBJ_PROP( wProp , xProp , wOBJ_Key , jProp ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
+			wcl( jProp );
+			LAST_SS[ wProp ][ xProp ][ wOBJ_Key ] = jProp;
+			WRITE_LAST_SAVED_STATE_FILE();
+			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
+			resolve( "success" );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key , wSECONDARY_KEY , jProp ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			// console.log("\n");
+			// console.log( LAST_SS[ "LocalVideo" ] );
+			// console.log("\n");			
+			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " --- " + wOBJ_Key + " --- " + wSECONDARY_KEY +" <-- TO --> " );
+			wcl( jProp );
+			LAST_SS[ wProp ][ xProp ][ wOBJ_Key ][ wSECONDARY_KEY ] = jProp;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
 			resolve( "success" );
@@ -28,14 +67,18 @@ function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 }
 //wEmitter.on( "updateLastSS" , ( wProp , xProp , wOBJ )=> { xUpdate_Last_SS( wProp , xProp , wOBJ ); });
 module.exports.update_Last_SS = xUpdate_Last_SS;
+module.exports.update_Last_SS_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP;
+module.exports.xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
 module.exports.get_Last_SS = function() { return LAST_SS; };
 module.exports.restorePreviousAction = restorePreviousAction;
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 var GLOBAL_PAUSED = false;
 
 var BTN_MAN 			= require( "./buttonManager.js" );
 var USB_IR_MAN 			= require( "./usbIRManager.js" );
-//var FIREFOX_MAN 		= require( "./firefoxManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
 var MOPIDY_MAN 			= require( "./mopidyManager.js" );
 var LOCAL_VIDEO_MAN		= require( "./localVideoManager.js" );
@@ -164,5 +207,6 @@ wEmitter.on( "button12Press" , function() {
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalTVShow";
-	startCurrentAction( "TVShows" , "SouthPark" , 2 , 13 );
+	//startCurrentAction( "TVShows" , "SouthPark" , 2 , 13 );
+	startCurrentAction( "TVShows" , "TheRedGreenShow" , 2 , 1 );
 });

@@ -1,6 +1,8 @@
 const path = require("path");
 const spawn = require("child_process").spawn;
+const colors = require("colors");
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+function wcl( wSTR ) { console.log( colors.black.bgMagenta( "[MPLAYER_MAN] --> " + wSTR ) ); }
 
 function fixPathSpace(wFP) {
 	wFP = wFP.replace( " " , String.fromCharCode(92) + " " );
@@ -20,7 +22,7 @@ function cleanupChildPROC() { clearInterval( wPROC_INT ); wPROC.unref(); }
 function wPlayFilePath( wFP ) {
 	
 	process.env.mplayerFP = fixPathSpace( wFP );
-	//console.log( process.env.mplayerFP );
+	wcl( process.env.mplayerFP );
 
 	var wOptions = {
 		stdio: [ "pipe" , 1 , 2 , "ipc" ], // === 2 way communication
@@ -37,14 +39,14 @@ function wPlayFilePath( wFP ) {
 	});
 
 }
-
-function wQuit() { wPROC.send( "quit" ); return wPROC_TIME; }
-function wPause() { wPROC.send( "pause" ); return wPROC_TIME; }
-function wStop() { wPROC.send( "stop" ); return wPROC_TIME; }
-function wSeekSeconds( wSeconds ) { wPROC.send( "seekSeconds/" + wSeconds.toString() ); }
-function wSeekPercent( wPercent ) { wPROC.send( "seekPercent/" + wPercent.toString() ); }
-function wHideSubtitles() { wPROC.send( "hideSubtitles" ); }
-function wFullScreen() { wPROC.send( "fullscreen" ); }
+{ if ( wPROC !== null ) { wPROC.send( "fullscreen" ); } }
+function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); return wPROC_TIME; } }
+function wPause() { if ( wPROC !== null ) { wPROC.send( "pause" ); return wPROC_TIME; } }
+function wStop() { if ( wPROC !== null ) { wPROC.send( "stop" ); return wPROC_TIME; } }
+function wSeekSeconds( wSeconds ) { if ( wPROC !== null ) { wPROC.send( "seekSeconds/" + wSeconds.toString() ); } }
+function wSeekPercent( wPercent ) { if ( wPROC !== null ) { wPROC.send( "seekPercent/" + wPercent.toString() ); } }
+function wHideSubtitles() { if ( wPROC !== null ) { wPROC.send( "hideSubtitles" ); } }
+function wFullScreen() { if ( wPROC !== null ) { wPROC.send( "fullscreen" ); } }
 function wGetCurrentTime() { return wPROC_TIME }
 
 module.exports.playFilePath = wPlayFilePath;

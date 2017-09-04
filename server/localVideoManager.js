@@ -1,5 +1,7 @@
 //var wEmitter = require('../main.js').wEmitter;
 var wUpdate_Last_SS = require( "./clientManager.js" ).update_Last_SS;
+var wUpdate_Last_SS_OBJ_PROP = require( "./clientManager.js" ).update_Last_SS_OBJ_PROP;
+var wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = require( "./clientManager.js" ).xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
 require('shelljs/global');
 const path = require("path");
 const colors = require("colors");
@@ -20,6 +22,9 @@ var HARD_DRIVE_REFERENCE_STRUCT = {};
 var LAST_PLAYED = {};
 var NEED_TO_RESET_LP = false;
 const HARD_DRIVE_STRUCT_FP = path.join( __dirname , "save_files" , "hdFolderStructure.json" );
+
+var NOW_PLAYING = null;
+
 function WRITE_HARD_DRIVE_STRUCT_FILE() { 
 	return new Promise( function( resolve , reject ) {
 		try {
@@ -35,18 +40,24 @@ async function INITIALIZE_HARD_DRIVE_STRUCT_FILE() {
 	wcl( "hdFolderStructure.json NOT FOUND !!!" ); 
 	NeedToUpdateHDStruct = true;
 	LAST_PLAYED = { 
-		"AudioBooks": { by_pos: 0 , time: 0 , rs_map: [] },
-		"DVDs": { by_pos: 0 , time: 0 , rs_map: [] },
-		"Movies": { by_pos: 0 , time: 0 , rs_map: [] },
-		"Music": { by_pos: 0 , time: 0 , rs_map: [] },
-		"Podcasts": { by_pos: 0 , time: 0 , rs_map: [] },
-		"TVShows": { by_pos: 0 , time: 0 , rs_map: [] }	
+		// "AudioBooks": { by_pos: 0 , time: 0 , rs_map: [] },
+		// "DVDs": { by_pos: 0 , time: 0 , rs_map: [] },
+		// "Movies": { by_pos: 0 , time: 0 , rs_map: [] },
+		// "Music": { by_pos: 0 , time: 0 , rs_map: [] },
+		// "Podcasts": { by_pos: 0 , time: 0 , rs_map: [] },
+		// "TVShows": { by_pos: 0 , time: 0 , rs_map: [] }
+		"AudioBooks": { last_pos: 0 },
+		"DVDs": { last_pos: 0 },
+		"Movies": { last_pos: 0 },
+		"Music": { last_pos: 0 },
+		"Podcasts": { last_pos: 0 },
+		"TVShows": { last_pos: 0 }
 	};
 	NEED_TO_RESET_LP = true;
 	await WRITE_HARD_DRIVE_STRUCT_FILE(); 
 	BEGIN_INITIALIZATION();
 }
-try { HARD_DRIVE_STRUCT = jsonfile.readFileSync( HARD_DRIVE_STRUCT_FP ); BEGIN_INITIALIZATION(); }
+try { HARD_DRIVE_STRUCT = jsonfile.readFileSync( HARD_DRIVE_STRUCT_FP ); LAST_PLAYED = HARD_DRIVE_STRUCT[ "LAST_PLAYED" ]; BEGIN_INITIALIZATION(); }
 catch ( error ){ 
 	INITIALIZE_HARD_DRIVE_STRUCT_FILE();
 }
@@ -157,18 +168,28 @@ function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() {
 }
 
 function PLAY_FROM_REFERENCE_STRUCT( wSection , wName , wSeason , wEpisode ) {
+	
+	// console.log("\n");
+	// console.log( "SECTION = " + wSection );
+	// console.log( "NAME = " + wName );
+	// console.log( "SEASON = " + wSeason );
+	// console.log( "EPISODE = " + wEpisode );
+	// console.log("\n");
+
 	wSeason = ( wSeason - 1 );
-	wEpisode = ( wEpisode - 1 );
+	if ( wEpisode ) { wEpisode = ( wEpisode - 1 ); }
 	var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + wSection + "/" + wName;
 	//console.log( wPath );
+
+
 	if ( wSeason ) {
 		wPath = wPath + "/" + HARD_DRIVE_STRUCT[ wSection ][ HARD_DRIVE_REFERENCE_STRUCT[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "name" ];
-		if ( wEpisode ) {
-			wPath = wPath + "/" + HARD_DRIVE_STRUCT[ wSection ][ HARD_DRIVE_REFERENCE_STRUCT[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "children" ][ wEpisode ].name;
-		}
+		wPath = wPath + "/" + HARD_DRIVE_STRUCT[ wSection ][ HARD_DRIVE_REFERENCE_STRUCT[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "children" ][ wEpisode ].name;
 	}
-	wcl( "STARTING --> \n" + wPath );
+	wcl( "STARTING --> MPLAYER" );
 	MPLAYER_MAN.playFilePath( wPath );
+	NOW_PLAYING = [ wSection , wName , wSeason , wEpisode ];
+
 }
 
 // Initialization
@@ -180,20 +201,51 @@ async function BEGIN_INITIALIZATION() {
 	if ( NeedToUpdateHDStruct ) { 
 		await UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE(); 
 		await wUpdate_Last_SS( "LocalVideo" , "REFERENCE" , HARD_DRIVE_REFERENCE_STRUCT );
-		await wUpdate_Last_SS( "LocalVideo" , "LAST_PLAYED" , HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] );
+		console.log( HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] );
+		if ( NEED_TO_RESET_LP ) { await wUpdate_Last_SS( "LocalVideo" , "LAST_PLAYED" , HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] ); }
+		//await wUpdate_Last_SS( "LAST_PLAYED" , HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] );
 	}
 
 }
 
-function wStop() {
-	var wLastTime = MPLAYER_MAN.stop();
-	console.log( "LAST TIME = " + wLastTime );
+
+
+
+
+async function updateLastPlayed( wTime ) {
+	if ( NOW_PLAYING !== null ) {
+		var wOBJ = { by_pos: HARD_DRIVE_REFERENCE_STRUCT[ NOW_PLAYING[0] ][ NOW_PLAYING[1] ].pos , time: wTime , rs_map: [ NOW_PLAYING[2] , NOW_PLAYING[3] ] };
+		await wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( "LocalVideo" , "LAST_PLAYED" , NOW_PLAYING[0] , NOW_PLAYING[1] , wOBJ );
+	}
 }
 
-function wPause() {
-	var wLastTime = MPLAYER_MAN.pause();
+function wStop() {
+	var wLastTime = MPLAYER_MAN.stop();
+	if ( !wLastTime ) { wLastTime = -1; }
 	console.log( "LAST TIME = " + wLastTime );
+	updateLastPlayed( wLastTime );
 }
+
+// wSection , wName , wSeason , wEpisode
+
+function wPause() {
+	console.log( NOW_PLAYING );
+	var wLastTime = MPLAYER_MAN.pause();
+	if ( !wLastTime ) { wLastTime = -1; }
+	console.log( "LAST TIME = " + wLastTime );
+	updateLastPlayed( wLastTime );
+}
+
+
+function wPlayNextByPosition( wSection ) {
+
+
+
+}
+
+
+
+
 
 module.exports.getAvailableMedia = ()=> { return HARD_DRIVE_REFERENCE_STRUCT; }
 
@@ -202,3 +254,5 @@ module.exports.play 			= PLAY_FROM_REFERENCE_STRUCT;
 module.exports.pause 			= wPause;
 module.exports.resume 			= wPause;
 module.exports.stop 			= wStop;
+
+module.exports.playNextByPosition = wPlayNextByPosition;
