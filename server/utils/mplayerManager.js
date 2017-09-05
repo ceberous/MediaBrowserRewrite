@@ -19,7 +19,7 @@ var wPROC_INT = null;
 var wPROC_STATUS = null;
 var wPROC_DURATION = null;
 var wPROC_TIME = null;
-function cleanupChildPROC() { clearInterval( wPROC_INT ); wPROC.unref(); }
+function cleanupChildPROC() { clearInterval( wPROC_INT ); try{wPROC.unref();}catch(e){} }
 function wPlayFilePath( wFP ) {
 	
 	process.env.mplayerFP = fixPathSpace( wFP );
@@ -33,17 +33,22 @@ function wPlayFilePath( wFP ) {
 
 	wPROC = spawn( "node" , [ mplayerWrapperScript_FP ] , wOptions );
 	wPROC.on( "message" , function( wMessage ) {
-		if ( wMessage.feedback ) { /* console.log( wMessage.feedback ); */  if ( wMessage.feedback === "UNREF_ME" ) { cleanupChildPROC();  } }
-		else if ( wMessage.status ) { /* console.log( wMessage.status ); */ wPROC_STATUS = wMessage.status; wPROC_DURATION = Math.floor( wMessage.status.duration ); }
-		//else if ( wMessage.duration ) { /* console.log( wMessage.duration ); */ wPROC_DURATION = wMessage.duration; }
-		else if ( wMessage.time ) {  wPROC_TIME = Math.floor( wMessage.time ); }
+		if ( wMessage.ended ) { console.log("\nEnded = ");  console.log( wMessage ); console.log("\n");  if ( wMessage.ended === "UNREF_ME" ) { wPROC_TIME = Math.floor( wMessage.time ); cleanupChildPROC();  } }
+		if ( wMessage.status ) { /* console.log( wMessage.status ); */  wPROC_STATUS = wMessage.status; wPROC_DURATION = Math.floor( wMessage.status.duration ); }
+		if ( wMessage.time ) { var x1 = Math.floor( wMessage.time ); wPROC_TIME = ( x1 >= 1 ) ? x1 : wPROC_TIME; }
 	});
 
 }
 
-function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); return wPROC_TIME; } }
+function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); wPROC = null; return wPROC_TIME;  } }
 function wPause() { if ( wPROC !== null ) { wPROC.send( "pause" ); return wPROC_TIME; } }
-function wStop() { if ( wPROC !== null ) { wPROC.send( "stop" ); return wPROC_TIME; } }
+function wStop() { if ( wPROC !== null ) {
+	console.log( "inside wStop() and wPROC_TIME = " + wPROC_TIME.toString() ); 
+	try { wPROC.send( "stop" ); }
+	catch(e){ console.log(e); }
+	wPROC = null; 
+	return wPROC_TIME;
+}}
 function wSeekSeconds( wSeconds ) { if ( wPROC !== null ) { wPROC.send( "seekSeconds/" + wSeconds.toString() ); } }
 function wSeekPercent( wPercent ) { if ( wPROC !== null ) { wPROC.send( "seekPercent/" + wPercent.toString() ); } }
 function wHideSubtitles() { if ( wPROC !== null ) { wPROC.send( "hideSubtitles" ); } }

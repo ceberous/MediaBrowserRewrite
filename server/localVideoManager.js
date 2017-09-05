@@ -8,6 +8,29 @@ const dirTree = require("./utils/dirtreeutil.js");
 
 function wcl( wSTR ) { console.log( colors.black.bgGreen( "[LOCAL_VIDEO_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+function fixPathSpace( wFP ) {
+	var fixSpace = new RegExp( " " , "g" );
+	wFP = wFP.replace( fixSpace , String.fromCharCode(92) + " " );
+	wFP = wFP.replace( ")" , String.fromCharCode(92) + ")" );
+	wFP = wFP.replace( "(" , String.fromCharCode(92) + "(" );
+	wFP = wFP.replace( "'" , String.fromCharCode(92) + "'" );
+	return wFP;
+}
+function wGetDuration( wFP ) {
+	try {
+		wFP = fixPathSpace( wFP );
+		var z1 = "ffprobe -v error -show_format -i " + wFP;
+		console.log( z1 );
+		var x1 = exec( z1 , { silent: true , async: false } );
+		if ( x1.stderr ) { return( x1.stderr ); }
+		
+		var wMatched = x1.stdout.match( /duration="?(\d*\.\d*)"?/ );
+		//console.log( "Our Duration = ?? " + Math.floor( wMatched[1] ).toString() );
+		var f1 = Math.floor( wMatched[1] );
+		return f1;
+	}
+	catch( error ) { console.log( error ); }
+}
 
 //var wEmitter = require('../main.js').wEmitter;
 var wUpdate_Last_SS = require( "./clientManager.js" ).update_Last_SS;
@@ -176,6 +199,7 @@ function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() {
 // STATE-DEFINITIONS
 // ===============================================
 // ===============================================
+var ACTIVE = false;
 var NOW_PLAYING_REF = null;
 var NOW_PLAYING_DURATION = null;
 var NOW_PLAYING_3PERCENT_LEFT = null;
@@ -197,8 +221,10 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 	var wSeek = wArgArray[4];
 	if ( wSeek === -1  ) { wSeek = null; }
 
-	//wSeason = ( wSeason - 1 );
-	//if ( wEpisode ) { wEpisode = ( wEpisode - 1 ); }
+	NOW_PLAYING_REF = [ wSection , wName , wSeason , wEpisode ];
+
+	wSeason = ( wSeason - 1 );
+	if ( wEpisode ) { wEpisode = ( wEpisode - 1 ); }
 	
 	var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + wSection + "/" + wName;
 	console.log( wPath );
@@ -206,7 +232,7 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 	console.log( "Show POS = " + HD_REF[ wSection ][ wName ].pos.toString() );
 	console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ] );
 	console.log( "Show Season = " + wSeason.toString() );
-	console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ]["children"][ wSeason ] );
+	console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ]["children"][ wSeason ].name );
 
 	if ( wSeason === 0 || wSeason ) {
 		wPath = wPath + "/" + HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "name" ];
@@ -215,17 +241,18 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 
 	wcl( "STARTING --> MPLAYER" );
 	console.log( wPath );
-	NOW_PLAYING_REF = [ wSection , wName , wSeason , wEpisode ];
+	
 	
 	MPLAYER_MAN.playFilePath( wPath );
-	if ( wSeek !== null ) {
-		await wSleep( 1000 );
-		MPLAYER_MAN.seekSeconds( wSeek );
+	if ( wSeek ) {
+		if ( wSeek >= 1 ) {
+			console.log( "Seeking --> " + wSeek.toString() );
+			await wSleep( 1000 );
+			MPLAYER_MAN.seekSeconds( wSeek );
+		}
 	}
 	
-	await wSleep( 3000 );
-	console.log("were done waiting");
-	NOW_PLAYING_DURATION = MPLAYER_MAN.getDuration();
+	NOW_PLAYING_DURATION = wGetDuration( wPath );
 	NOW_PLAYING_3PERCENT_LEFT = Math.floor( ( NOW_PLAYING_DURATION - ( NOW_PLAYING_DURATION * 0.025 ) ) );
 
 	console.log( "NOW_PLAYING_DURATION = " + NOW_PLAYING_DURATION.toString() );
@@ -237,6 +264,8 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 	//console.log( HARD_DRIVE_STRUCT[ wSection ][ NP_HD_S_POS ] );
 
 	await wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( "LocalVideo" , "LAST_PLAYED" , wSection , "last_pos" , NP_HD_S_POS );
+
+	ACTIVE = true;
 
 }
 
@@ -293,6 +322,9 @@ function wPlay( wConfig ) {
 		var wLastPlayedShowsPosition = wConfig.last_played.last_pos;
 		var wTotalShows = ( Object.keys( HD_REF[ wConfig.type ] ).length - 1 ); // offset for array-indexing
 		
+		// Testing ADDON-HACK
+		wConfig.last_played.always_advance_next_show = false;
+
 		// If using DEFAULT method of always showing "Next" in line TV Show
 		if ( wConfig.last_played.always_advance_next_show ) {
 			
@@ -321,12 +353,14 @@ function wPlay( wConfig ) {
 
 		}
 
-		var wCurrentSeason = ( wConfig.last_played[ wLastPlayedShowsPosition ].rs_map[ 0 ] - 1 ); // offset for array-indexing
-		var wNextEpisode = ( wConfig.last_played[ wLastPlayedShowsPosition ].rs_map[ 1 ] + 1 );
-		var wTotalEpisodesInCurrentSeason = ( HD_REF[ wConfig.type ][ wLastPlayedShowsPosition ].items[ wCurrentSeason ] - 1 ); // offset for arr-indx
+		var wCurrentShowName = HARD_DRIVE_STRUCT[ wConfig.type ][ wLastPlayedShowsPosition ].name;
+		console.log( "wCurrentShowName = " +  wCurrentShowName );
+		var wCurrentSeason = ( wConfig.last_played[ wCurrentShowName ].rs_map[ 0 ] - 1 ); // offset for array-indexing
+		var wNextEpisode = ( wConfig.last_played[ wCurrentShowName ].rs_map[ 1 ] + 1 );
+		var wTotalEpisodesInCurrentSeason = ( HD_REF[ wConfig.type ][ wCurrentShowName ].items[ wCurrentSeason ] - 1 ); // offset for arr-indx
 		var wNextSeason = wCurrentSeason;
 		if ( wNextEpisode > wTotalEpisodesInCurrentSeason ) { wNextEpisode = 0; wNextSeason = wCurrentSeason + 1 }
-		if ( ( wNextSeason + 1 ) > HD_REF[ wConfig.type ][ wLastPlayedShowsPosition ].items.length ) { wNextSeason = 0; }
+		if ( ( wNextSeason + 1 ) > HD_REF[ wConfig.type ][ wCurrentShowName ].items.length ) { wNextSeason = 0; }
 
 		return [
 			wConfig.type ,
@@ -337,7 +371,8 @@ function wPlay( wConfig ) {
 
  	}
 
- 	console.log( wConfig.type );
+ 	console.log( "\nwConfig = \n" );
+ 	console.log( wConfig );
  	var wNowPlayingARGArray = build_NP_ArgArray();
  	console.log( wNowPlayingARGArray );
 
@@ -346,16 +381,19 @@ function wPlay( wConfig ) {
 }
 
 function wStop() {
-	var wLastTime = MPLAYER_MAN.stop();
-	if ( !wLastTime || wLastTime === undefined ) { wLastTime = -1; }
-	console.log( "LAST TIME = " + wLastTime );
-	updateLastPlayed( wLastTime );
+	if ( ACTIVE ) {
+		var wLastTime = MPLAYER_MAN.stop();
+		ACTIVE = false;
+		//if ( !wLastTime || wLastTime === undefined ) { wLastTime = -1; }
+		console.log( "LAST TIME = " + wLastTime );
+		updateLastPlayed( wLastTime );
+	}
 }
 
 function wPause() {
 	console.log( NOW_PLAYING_REF );
 	var wLastTime = MPLAYER_MAN.pause();
-	if ( !wLastTime || wLastTime === undefined ) { wLastTime = -1; }
+	//if ( !wLastTime || wLastTime === undefined ) { wLastTime = -1; }
 	console.log( "LAST TIME = " + wLastTime );
 	updateLastPlayed( wLastTime );
 }

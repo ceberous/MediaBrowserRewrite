@@ -246,18 +246,10 @@ function BUTTON_PRESS_11( wArgArray ) {
 
 function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
-	
-	//wArgArray = wArgArray || [ "TVShows" , "TheRedGreenShow" , 2 , 1 ];
-	//wArgArray = wArgArray || [ "TVShows" , "SouthPark" , 2 , 13 ];
-
-
-
 	wcl( "PRESSED BUTTON 12" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalTVShow";
-	//startCurrentAction( wArgArray );
-
 	startCurrentAction( [ { type: "TVShows" , last_played: LAST_SS[ "LocalVideo" ][ "LAST_PLAYED" ][ "TVShows" ] } ] );
 }
 

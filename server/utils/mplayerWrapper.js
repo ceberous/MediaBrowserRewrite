@@ -10,6 +10,7 @@ player.setOptions({
     cacheMin: 1
 });
 
+var LPT = 0; // Latest Played Time
 player.openFile( process.env.mplayerFP );
 
 player.on( "status" , function( wStatus ) {
@@ -17,6 +18,7 @@ player.on( "status" , function( wStatus ) {
 });
 
 player.on( "time" , function( wTime ) {
+	LPT = wTime;
 	process.send( { time: wTime } );
 });
 
@@ -26,7 +28,7 @@ player.on( "stop" ,  function( wTime ) {
 
 async function triggerQuit() {
     // player.player.cmd('quit');
-    process.send( { feedback: "UNREF_ME" , time: wTime } );
+    process.send( { ended: "UNREF_ME" , time: LPT } );
     await sleep( 2000 );
     process.exit(0);
 }
