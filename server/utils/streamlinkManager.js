@@ -147,6 +147,7 @@ function wQuit() {
 
 			
 			// DO NOT ER EVER CALL UNLESS YOU MPV TO NOT CLOSE SOCKET CORRECTLY
+			// https://github.com/streamlink/streamlink/commit/c38d020086079b7807e80ead4e91db1e5f1d84ec
 			//wMPVSocketClient.destroy(); 
 			
 			await sleep( 300 );

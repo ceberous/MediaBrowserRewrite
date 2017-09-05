@@ -1,6 +1,6 @@
-var fs 			= require('fs');
-var path 		= require("path");
-var colors 		= require("colors");
+var fs			= require('fs');
+var path		= require("path");
+var colors		= require("colors");
 var jsonfile	= require("jsonfile");
 
 var wEmitter	= require('../main.js').wEmitter;
@@ -102,10 +102,10 @@ const STATE_ACTION_MAP = {
 	"YTStandard": { start: YOUTUBE_MAN.startYTStandard , stop: YOUTUBE_MAN.stopYTStandard },
 	"TwitchLive": { start: TWITCH_MAN.playLive , stop: TWITCH_MAN.stopLive },
 	"SkypeCall": { start: SKYPE_MAN.startCall , stop: SKYPE_MAN.endCall },
-	"LocalMovie": {},
+	"LocalMovie": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
 	"LocalTVShow": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
-	"Odyssey": {},
-	"AudioBook": {},
+	"Odyssey": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
+	"AudioBook": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
 };
 
 var GLOBAL_PAUSED = false;
@@ -141,6 +141,7 @@ async function restorePreviousAction( wArg ) {
 	}
 }
 
+
 async function properShutdown() { stopCurrentAction(); }
 //wEmitter.on( "restorePreviousAction" , function() { console.log("we should be restoring previous action = " + LAST_SS.PREVIOUS_ACTION); restorePreviousAction(); });
 wEmitter.on( "closeEverything" , function() { properShutdown(); });
@@ -165,6 +166,7 @@ function stopMopidyYTLiveBackground() {
 function BUTTON_PRESS_1( wArgArray ) {
 	wArgArray = wArgArray || [ "classic" ];
 	wcl( "PRESSED BUTTON 1" );
+	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
 	startCurrentAction( wArgArray );
@@ -173,6 +175,7 @@ function BUTTON_PRESS_1( wArgArray ) {
 function BUTTON_PRESS_2( wArgArray ) {
 	wcl( "PRESSED BUTTON 2" );
 	wArgArray = wArgArray || [ "edm" ];
+	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
 	startCurrentAction( wArgArray );
@@ -243,13 +246,19 @@ function BUTTON_PRESS_11( wArgArray ) {
 
 function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
-	wArgArray = wArgArray || [ "TVShows" , "TheRedGreenShow" , 2 , 1 ];
+	
+	//wArgArray = wArgArray || [ "TVShows" , "TheRedGreenShow" , 2 , 1 ];
+	//wArgArray = wArgArray || [ "TVShows" , "SouthPark" , 2 , 13 ];
+
+
+
 	wcl( "PRESSED BUTTON 12" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalTVShow";
-	//startCurrentAction( "TVShows" , "SouthPark" , 2 , 13 );
-	startCurrentAction( wArgArray );
+	//startCurrentAction( wArgArray );
+
+	startCurrentAction( [ { type: "TVShows" , last_played: LAST_SS[ "LocalVideo" ][ "LAST_PLAYED" ][ "TVShows" ] } ] );
 }
 
 function wPressButtonMaster( wButtonNum , wArgArray ) { 

@@ -1,0 +1,3 @@
+#!/bin/bash
+_URL="http://localhost:6969/buttonpress/$1"
+curl -H 'Accept: application/vnd.twitchtv.v5+json' -X GET $_URL

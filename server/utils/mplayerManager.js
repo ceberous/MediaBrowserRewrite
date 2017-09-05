@@ -5,7 +5,8 @@ function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms )
 function wcl( wSTR ) { console.log( colors.black.bgMagenta( "[MPLAYER_MAN] --> " + wSTR ) ); }
 
 function fixPathSpace(wFP) {
-	wFP = wFP.replace( " " , String.fromCharCode(92) + " " );
+	var fixSpace = new RegExp( " " , "g" );
+	wFP = wFP.replace( fixSpace , String.fromCharCode(92) + " " );
 	wFP = wFP.replace( ")" , String.fromCharCode(92) + ")" );
 	wFP = wFP.replace( "(" , String.fromCharCode(92) + "(" );
 	wFP = wFP.replace( "'" , String.fromCharCode(92) + "'" );
@@ -33,13 +34,13 @@ function wPlayFilePath( wFP ) {
 	wPROC = spawn( "node" , [ mplayerWrapperScript_FP ] , wOptions );
 	wPROC.on( "message" , function( wMessage ) {
 		if ( wMessage.feedback ) { /* console.log( wMessage.feedback ); */  if ( wMessage.feedback === "UNREF_ME" ) { cleanupChildPROC();  } }
-		else if ( wMessage.status ) { /* console.log( wMessage.status ); */ wPROC_STATUS = wMessage.status }
-		else if ( wMessage.duration ) { /* console.log( wMessage.duration ); */ wPROC_DURATION = wMessage.duration; }
-		else if ( wMessage.time ) {  wPROC_TIME = wMessage.time; }
+		else if ( wMessage.status ) { /* console.log( wMessage.status ); */ wPROC_STATUS = wMessage.status; wPROC_DURATION = Math.floor( wMessage.status.duration ); }
+		//else if ( wMessage.duration ) { /* console.log( wMessage.duration ); */ wPROC_DURATION = wMessage.duration; }
+		else if ( wMessage.time ) {  wPROC_TIME = Math.floor( wMessage.time ); }
 	});
 
 }
-{ if ( wPROC !== null ) { wPROC.send( "fullscreen" ); } }
+
 function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); return wPROC_TIME; } }
 function wPause() { if ( wPROC !== null ) { wPROC.send( "pause" ); return wPROC_TIME; } }
 function wStop() { if ( wPROC !== null ) { wPROC.send( "stop" ); return wPROC_TIME; } }
@@ -47,7 +48,9 @@ function wSeekSeconds( wSeconds ) { if ( wPROC !== null ) { wPROC.send( "seekSec
 function wSeekPercent( wPercent ) { if ( wPROC !== null ) { wPROC.send( "seekPercent/" + wPercent.toString() ); } }
 function wHideSubtitles() { if ( wPROC !== null ) { wPROC.send( "hideSubtitles" ); } }
 function wFullScreen() { if ( wPROC !== null ) { wPROC.send( "fullscreen" ); } }
-function wGetCurrentTime() { return wPROC_TIME }
+function wGetCurrentTime() { return wPROC_TIME; }
+function wGetDuration() { return wPROC_DURATION; }
+
 
 module.exports.playFilePath = wPlayFilePath;
 module.exports.quit = wQuit;
@@ -58,6 +61,7 @@ module.exports.seekPercent = wSeekPercent;
 module.exports.hideSubtitles = wHideSubtitles;
 module.exports.fullscreen = wFullScreen;
 module.exports.getCurrentTime = wGetCurrentTime;
+module.exports.getDuration = wGetDuration;
 
 
 
