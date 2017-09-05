@@ -14,9 +14,10 @@ const rimraf = require("rimraf");
 //const TMP_DIR_PATH = path.join( __dirname , "TMP2" );
 var   TMP_DIR_PATH = null;
 const SET_RANDOM_TMP_DIR = function() { TMP_DIR_PATH = "TMP_" + Math.random().toString(36).slice(2, 8); TMP_DIR_PATH = path.join( __dirname , TMP_DIR_PATH ) };
-const REMOVE_TMP_DIR = function() { 
+function REMOVE_TMP_DIR() { 
 	return new Promise( function( resolve , reject ) { 
 		try { 
+			console.log("trying to remove TMP_DIR = " + TMP_DIR_PATH );
 			rimraf( TMP_DIR_PATH , function () { 
 				resolve("done"); 
 			}); 
@@ -79,7 +80,7 @@ async function startSocketListeners() {
 			}
 			wcl( wLAST_EVENT + " === " + wSTATUS + " === " + wELAPSED_TIME ); 
 		});
-		await sleep( 10000 );
+		await sleep( 3000 );
 		startMPVStatusListener();
 		wFullScreen();
 	}
@@ -96,16 +97,18 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 
 	SET_RANDOM_TMP_DIR();
 	await CREATE_TMP_DIR();
+	await sleep( 1000 );
 	SET_STREAMLINK_LAUNCHER_FP();
 	SET_MPV_SOCKET_FP();
 
-	await sleep( 1000 );
+	await sleep( 3000 );
 	//exec( "pkill -9 mpv" , { silent: true , async: false } );
 	//await sleep( 300 );
 	//exec( "pkill -9 streamlink" , { silent: true , async: false } );
 	//await sleep( 300 );
 
 	var SL_CMD = `streamlink --hls-segment-threads=4 --hls-live-edge=3 --ringbuffer-size=196M ${wURL} ${wQuality}`;
+	SL_CMD = SL_CMD + " --verbose-player --player-no-close";
 	wPlayerOptions = wPlayerOptions || "";
 	SL_CMD = SL_CMD + " -p 'mpv --input-unix-socket=" + MPV_SOCKET_FP + " " + wPlayerOptions + "'";
 	console.log( "\n" + SL_CMD );
@@ -114,12 +117,16 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 	console.log( "\n" + WRITE_STR );
 	fs.writeFileSync( StreamlinkLauncher_FP , WRITE_STR );
 	
-	spawn( "node" , [ StreamlinkLauncher_FP ], {
+	await sleep ( 1000 );
+	var x1 = spawn( "node" , [ StreamlinkLauncher_FP ], {
 	    stdio: 'ignore',
 	    detached: true
-	}).unref(); // child._channel.unref()
+	}); // child._channel.unref()
 	
-	await sleep( 90000 );
+	await sleep ( 3000 );
+	x1.unref();
+
+	await sleep( 40000 );
 	startSocketListeners();
 
 }
@@ -128,18 +135,28 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 function wQuit() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			console.log("inside wQuit from StreamLinkManager.js");
-			wPROC_QUIT();
+			console.log( "inside wQuit from StreamLinkManager.js" );
+			console.log( "Current mpv.sock PATH = " + MPV_SOCKET_FP );
+			
+			try { wPROC_QUIT(); console.log( "sent ['quit' , '1'] to --> mpv.sock" ); }
+			catch( err ) { /*console.log(err); */ }
 			await sleep( 1000 );
-			//wMPVSocketClient.destroy(); // DO NOT EVER EVER CALL UNLESS YOU MPV TO NOT CLOSE SOCKET CORRECTLY
-			fs.unlinkSync( MPV_SOCKET_FP );
+			
+			try { fs.unlinkSync( MPV_SOCKET_FP ); console.log( "mpv.sock unlinked" ); }
+			catch( err ) { /*console.log(err); */ }	
+
+			
+			// DO NOT ER EVER CALL UNLESS YOU MPV TO NOT CLOSE SOCKET CORRECTLY
+			//wMPVSocketClient.destroy(); 
+			
 			await sleep( 300 );
-			console.log( "mpv.sock unlinked" );
 			await REMOVE_TMP_DIR();
 			console.log( "TMP_DIR_PATH removed" );
-			//exec( "pkill -9 mpv" , { silent: true , async: false } );
-			await sleep( 300 );
-			//exec( "pkill -9 streamlink" , { silent: true , async: false } );
+			
+			await sleep( 3000 );			
+			exec( "pkill -9 mpv" , { silent: true , async: false } );
+			exec( "pkill -9 streamlink" , { silent: true , async: false } );
+
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

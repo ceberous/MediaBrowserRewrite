@@ -118,19 +118,26 @@ var CACHED_START_CURRENT_ARGS = null;
 // STATE-CONTROLLERS
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function startCurrentAction( wArgArray ) { CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS; CACHED_START_CURRENT_ARGS = wArgArray; console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArgArray[0] , wArgArray[1] , wArgArray[2] , wArgArray[3] ); }
+function startCurrentAction( wArgArray ) { 
+	CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS; 
+	CACHED_START_CURRENT_ARGS = wArgArray; 
+	console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); 
+	STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArgArray[0] , wArgArray[1] , wArgArray[2] , wArgArray[3] ); 
+}
 function stopCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( wArg ); /*LAST_SS.CURRENT_ACTION = null;*/ } }
 function pauseCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].pause( wArg ); GLOBAL_PAUSED = true; } }
 function resumeCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; } }
-function restorePreviousAction( wArg ) {
+async function restorePreviousAction( wArg ) {
 	wcl("inside restore previous action");
-	wcl( LAST_SS.PREVIOUS_ACTION );
-	wcl( LAST_SS.CURRENT_ACTION );
+	await wSleep( 3000 );
+	wcl( LAST_SS.PREVIOUS_ACTION  + " = " + CACHED_START_PREVIOUS_ARGS );
+	wcl( LAST_SS.CURRENT_ACTION + " = " + CACHED_START_CURRENT_ARGS );
 	if ( LAST_SS.PREVIOUS_ACTION !== null ) {
 		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop();
+		await wSleep( 3000 );
 		LAST_SS.CURRENT_ACTION = LAST_SS.PREVIOUS_ACTION; 
 		LAST_SS.PREVIOUS_ACTION = null; 
-		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( CACHED_START_PREVIOUS_ARGS );
+		startCurrentAction( CACHED_START_PREVIOUS_ARGS );
 	}
 }
 
