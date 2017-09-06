@@ -1,16 +1,12 @@
-const notifier = require('mail-notifier');
+const notifier = require( "mail-notifier" );
 
-var sD = {
-    listenEmail: "olah.ttneilc@gmx.com",
-    listenEmailPass: "fz5Jk5zahn3irEXiUF3n3KYNv",
-    listenEmailIMAP: "imap.gmx.com",
-};
+const wEmailCREDS = require( "../personal.js" ).emailServer;
 const imap = {
-  user: sD.listenEmail,
-  password: sD.listenEmailPass,
-  host: sD.listenEmailIMAP,
-  port: 993, // imap port
-  tls: true,// use secure connection
+  user: wEmailCREDS.listenEmail ,
+  password: wEmailCREDS.listenEmailPass ,
+  host: wEmailCREDS.listenEmailIMAP ,
+  port: 993 , // imap port
+  tls: true ,// use secure connection
   tlsOptions: { rejectUnauthorized: false }
 };
 const wEmailNotifier = notifier( imap );
