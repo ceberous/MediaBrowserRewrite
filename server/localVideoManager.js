@@ -20,19 +20,16 @@ function wGetDuration( wFP ) {
 	try {
 		wFP = fixPathSpace( wFP );
 		var z1 = "ffprobe -v error -show_format -i " + wFP;
-		console.log( z1 );
 		var x1 = exec( z1 , { silent: true , async: false } );
 		if ( x1.stderr ) { return( x1.stderr ); }
-		
 		var wMatched = x1.stdout.match( /duration="?(\d*\.\d*)"?/ );
-		//console.log( "Our Duration = ?? " + Math.floor( wMatched[1] ).toString() );
 		var f1 = Math.floor( wMatched[1] );
 		return f1;
 	}
 	catch( error ) { console.log( error ); }
 }
 
-//var wEmitter = require('../main.js').wEmitter;
+var wEmitter = require('../main.js').wEmitter;
 var wUpdate_Last_SS = require( "./clientManager.js" ).update_Last_SS;
 var wUpdate_Last_SS_OBJ_PROP = require( "./clientManager.js" ).update_Last_SS_OBJ_PROP;
 var wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = require( "./clientManager.js" ).xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
@@ -114,13 +111,6 @@ function FIND_USB_STORAGE_PATH_FROM_UUID( wUUID ) {
 					if ( wUSER.stderr ) { console.log("error finding USB Hard Drive"); process.exit(1); }
 					wUSER = wUSER.stdout.trim();
 
-					// var wUID = exec( "id -u" , { silent:true , async: false } );
-					// if ( wUID.stderr ) { console.log("error finding USER's ID"); process.exit(1); }
-					// wUID = wUID.stdout.trim();
-					// var wGID = exec( "id -g" , { silent:true , async: false } );
-					// if ( wGID.stderr ) { console.log("error finding USER's Group ID"); process.exit(1); }
-					// wGID = wGID.stdout.trim();				
-
 					var wPath = path.join( "/" , "media" , wUSER , wUUID )
 
 					var wMKDIR = exec( "sudo mkdir -p " + wPath , { silent: true , async: false } );
@@ -168,29 +158,26 @@ function BUILD_HD_REF() {
 	if ( NEED_TO_RESET_LP ) { HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] = LAST_PLAYED; }
 }
 
-function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() {
-	return new Promise( async function( resolve , reject ) {
+function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() { 
+	return new Promise( async function( resolve , reject ) { 
 		try {
 			var wAcceptedFolders = [ "AudioBooks" , "DVDs" , "Movies" , "Music" , "Podcasts" , "TVShows" ];
 			var wSTRUCT = await dirTree( HD_MOUNT_POINT );
 			var wTMP = {};
-			for ( var i = 0; i < wSTRUCT[ "children" ].length; ++i ) {
-				for ( var j = 0; j < wAcceptedFolders.length; ++j ) {
-					if ( wAcceptedFolders[ j ] === wSTRUCT[ "children" ][ i ].name ) {
-						wTMP[ wAcceptedFolders[ j ] ] = wSTRUCT[ "children" ][ i ][ "children" ];
-						wAcceptedFolders.splice( j , 1 );
-					}
+			for ( var i = 0; i < wSTRUCT[ "children" ].length; ++i ) { for ( var j = 0; j < wAcceptedFolders.length; ++j ) {
+				if ( wAcceptedFolders[ j ] === wSTRUCT[ "children" ][ i ].name ) {
+					wTMP[ wAcceptedFolders[ j ] ] = wSTRUCT[ "children" ][ i ][ "children" ];
+					wAcceptedFolders.splice( j , 1 );
 				}
-			}
-
+			} }
 			wTMP[ "BASE_PATH" ] = HD_MOUNT_POINT;
 			HARD_DRIVE_STRUCT = wTMP;
 			BUILD_HD_REF();
 			WRITE_HARD_DRIVE_STRUCT_FILE();
 			resolve();
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
+ 		} 
+ 		catch( error ) { console.log( error ); reject( error ); } 
+ 	});
 }
 // ====================================================================================================================================================
 // ====================================================================================================================================================
@@ -231,6 +218,7 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 
 	console.log( "Show POS = " + HD_REF[ wSection ][ wName ].pos.toString() );
 	console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ] );
+	console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "children" ][ wEpisode ] );
 	console.log( "Show Season = " + wSeason.toString() );
 	console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ]["children"][ wSeason ].name );
 
@@ -281,100 +269,94 @@ async function updateLastPlayed( wTime ) {
 			completed: wCompleted,
 			rs_map: [ NOW_PLAYING_REF[2] , NOW_PLAYING_REF[3] ]
 		};
-
 		await wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( "LocalVideo" , "LAST_PLAYED" , NOW_PLAYING_REF[0] , NOW_PLAYING_REF[1] , wOBJ );
 	}
 }
 
 function wPlay( wConfig ) {
 
-	// wSection , wName , wSeason , wEpisode ,
-	// PLAY_FROM_REFERENCE_STRUCT(  );
+ 	function build_Next_Arg_Array() {
 
-	// { 
-	// 	type: 'TVShows',
- //  		last_p: { 
- //  			always_advance_next_show: true,
- //     		last_pos: 0,
- //     		locked_show: null 
- //     	} 
- //    }
+	 	console.log("");
+	 	// Last Played Name *Show* Name
+	 	var LP_Name = HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name;
 
-
- 	function build_NP_ArgArray() {
-
- 		// If we have Never Watched anything Before
-	 	if ( Object.keys( wConfig.last_played ).length <= 3 ) {
-	 		return [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ 0 ].name , 1 , 1 ];
-	 	}
-	 	
 	 	// If we have an un-finished show still
 	 	if ( !wConfig.last_played[ HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ].completed ) {
-	 		return [ 
-	 			wConfig.type ,
-	 			HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ,
-	 			wConfig.last_played[ HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ].rs_map[ 0 ] ,
-	 			wConfig.last_played[ HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ].rs_map[ 1 ] ,
-	 			wConfig.last_played[ HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ].current_time
-	 		];
+	 		console.log("STAGE_1");
+	 		return [ wConfig.type , LP_Name , wConfig.last_played[ LP_Name ].rs_map[ 0 ] , wConfig.last_played[ LP_Name ].rs_map[ 1 ] , wConfig.last_played[ LP_Name ].current_time ]; 
 	 	}
 
-		var wLastPlayedShowsPosition = wConfig.last_played.last_pos;
-		var wTotalShows = ( Object.keys( HD_REF[ wConfig.type ] ).length - 1 ); // offset for array-indexing
+		var LP_POS = wConfig.last_played.last_pos;
+		var TOTAL_SHOWS_IN_SECTION = ( Object.keys( HD_REF[ wConfig.type ] ).length - 1 ); // offset for array-indexing
 		
 		// Testing ADDON-HACK
+		// ====================================================
+		// ====================================================
 		wConfig.last_played.always_advance_next_show = false;
+		// ====================================================
+		// ====================================================
 
 		// If using DEFAULT method of always showing "Next" in line TV Show
 		if ( wConfig.last_played.always_advance_next_show ) {
-			
-			var wNextShowsPosition = ( wLastPlayedShowsPosition + 1 );
-			if ( wNextShowsPosition > wTotalShows ) { wNextShowsPosition = 0; }
-			var wNextShowName = HARD_DRIVE_STRUCT[ wConfig.type ][ wNextShowsPosition ].name;
+			console.log("STAGE_2 - Advance Next Show");
+			var NEXT_POS = ( LP_POS + 1 );
+			if ( NEXT_POS > TOTAL_SHOWS_IN_SECTION ) { NEXT_POS = 0; }
+			var NEXT_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name;
 
 			// If we have NEVER watched the "next" show
-			if ( !wConfig.last_played[ wNextShowName ] ) {
+			if ( !wConfig.last_played[ NEXT_SHOW_NAME ] ) {
 				return [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name , 1 , 1 ]; 
 			}
 
-			var wCurrentSeason = ( wConfig.last_played[ wNextShowName ].rs_map[ 0 ] - 1 ); // offset for array-indexing
-			var wNextEpisode = ( wConfig.last_played[ wNextShowName ].rs_map[ 1 ] + 1 );
-			var wTotalEpisodesInCurrentSeason = ( HD_REF[ wConfig.type ][ wNextShowName ].items[ wCurrentSeason ] - 1 ); // offset for arr-indx
-			var wNextSeason = wCurrentSeason;
-			if ( wNextEpisode > wTotalEpisodesInCurrentSeason ) { wNextEpisode = 0; wNextSeason = wCurrentSeason + 1 }
-			if ( ( wNextSeason + 1 ) > HD_REF[ wConfig.type ][ wNextShowName ].items.length ) { wNextSeason = 0; }
+			var NEXT_SEASON = ( wConfig.last_played[ NEXT_SHOW_NAME ].rs_map[ 0 ] + 1 );
+			var NEXT_EPISODE = ( wConfig.last_played[ NEXT_SHOW_NAME ].rs_map[ 1 ] + 1 );
+			var NEXT_TOTAL_EPISODES = ( HD_REF[ wConfig.type ][ NEXT_SHOW_NAME ].items[ NEXT_SEASON ] - 1 ); // offset for arr-indx
+			var NEXT_TOTAL_SEASONS = HD_REF[ wConfig.type ][ NEXT_SHOW_NAME ].items.length;
+			if ( NEXT_EPISODE > NEXT_TOTAL_EPISODES ) { NEXT_EPISODE = 1; NEXT_SEASON = NEXT_SEASON + 1; }
+			if ( NEXT_SEASON > NEXT_TOTAL_SEASONS ) { NEXT_SEASON = 1; }
 
-			return [
-				wConfig.type ,
-				HARD_DRIVE_STRUCT[ wConfig.type ][ wNextShowsPosition ].name ,
- 				wNextSeason ,
- 				wNextEpisode ,
-			];
+			return [ wConfig.type , NEXT_SHOW_NAME , NEXT_SEASON , NEXT_EPISODE ];
 
 		}
 
-		var wCurrentShowName = HARD_DRIVE_STRUCT[ wConfig.type ][ wLastPlayedShowsPosition ].name;
-		console.log( "wCurrentShowName = " +  wCurrentShowName );
-		var wCurrentSeason = ( wConfig.last_played[ wCurrentShowName ].rs_map[ 0 ] - 1 ); // offset for array-indexing
-		var wNextEpisode = ( wConfig.last_played[ wCurrentShowName ].rs_map[ 1 ] + 1 );
-		var wTotalEpisodesInCurrentSeason = ( HD_REF[ wConfig.type ][ wCurrentShowName ].items[ wCurrentSeason ] - 1 ); // offset for arr-indx
-		var wNextSeason = wCurrentSeason;
-		if ( wNextEpisode > wTotalEpisodesInCurrentSeason ) { wNextEpisode = 0; wNextSeason = wCurrentSeason + 1 }
-		if ( ( wNextSeason + 1 ) > HD_REF[ wConfig.type ][ wCurrentShowName ].items.length ) { wNextSeason = 0; }
+		console.log("STAGE_3 - Get Next Episode");
+		var CUR_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ LP_POS ].name;
+		var CUR_SEASON = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 0 ] ); // offset for array-indexing
+		var NEXT_EPISODE = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 1 ] + 1 );
+		var CUR_SEASON_TOTAL_EPISODES = ( HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items[ CUR_SEASON ] - 1 ); // offset for arr-indx
+		var CUR_SHOW_TOTAL_SEASONS = HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items.length;
+		if ( NEXT_EPISODE > CUR_SEASON_TOTAL_EPISODES ) { NEXT_EPISODE = 1; CUR_SEASON = CUR_SEASON + 1; }
+		if ( CUR_SEASON > CUR_SHOW_TOTAL_SEASONS ) { CUR_SEASON = 1; }
 
-		return [
-			wConfig.type ,
-			HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ,
-			wNextSeason ,
- 			wNextEpisode ,
-		];
+		return [ wConfig.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
 
  	}
 
- 	console.log( "\nwConfig = \n" );
- 	console.log( wConfig );
- 	var wNowPlayingARGArray = build_NP_ArgArray();
- 	console.log( wNowPlayingARGArray );
+ 	function build_Previous_Arg_Array() {
+
+ 		// Last Played Name *Show* Name
+	 	var LP_Name = HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name;
+	 	var LP_POS = wConfig.last_played.last_pos;
+		var TOTAL_SHOWS_IN_SECTION = ( Object.keys( HD_REF[ wConfig.type ] ).length - 1 ); // offset for array-indexing
+
+		var CUR_SHOW_TOTAL_SEASONS = HD_REF[ wConfig.type ][ LP_Name ].items.length;
+		var CUR_SEASON = wConfig.last_played[ NEXT_SHOW_NAME ].rs_map[ 0 ];
+		var PREV_EPISODE = ( wConfig.last_played[ NEXT_SHOW_NAME ].rs_map[ 1 ] - 1 );
+		if ( PREV_EPISODE === 0 ) { CUR_SEASON = CUR_SHOW_TOTAL_SEASONS; PREV_EPISODE = ( HD_REF[ wConfig.type ][ LP_Name ].items[ CUR_SEASON ] - 1 ); }
+
+		return [ wConfig.type , LP_Name , CUR_SEASON , PREV_EPISODE ];
+
+ 	}
+
+ 	var wNowPlayingARGArray = null;
+ 	
+ 	// If We Have Never Watched Anything Before
+	if ( Object.keys( wConfig.last_played ).length < 4 ) { wNowPlayingARGArray = [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ 0 ].name , 1 , 1 ]; }
+ 	
+ 	else if ( !wConfig.action ) { wNowPlayingARGArray = build_Next_Arg_Array(); }
+ 	else if ( wConfig.action === "next" ) { wNowPlayingARGArray = build_Next_Arg_Array(); }
+ 	else if ( wConfig.action === "previous" ) { wNowPlayingARGArray = build_Previous_Arg_Array(); }
 
  	PLAY_FROM_REFERENCE_STRUCT( wNowPlayingARGArray );
 
@@ -402,6 +384,11 @@ function wPause() {
 function wPlayNextByPosition( wSection ) {
 
 }
+
+function wOnNowPlayingOver( wResult ) {
+	wcl( "THE VIDEO WE STARTED IS OVER !!!!!" );
+}
+wEmitter.on( "MPlayerOVER" , wOnNowPlayingOver );
 // ====================================================================================================================================================
 // ====================================================================================================================================================
 

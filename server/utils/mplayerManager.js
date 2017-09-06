@@ -12,14 +12,14 @@ function fixPathSpace(wFP) {
 	wFP = wFP.replace( "'" , String.fromCharCode(92) + "'" );
 	return wFP;
 }
-
+var wEmitter = require('../../main.js').wEmitter;
 const mplayerWrapperScript_FP = path.join( __dirname , "mplayerWrapper.js" );
 var wPROC = null;
 var wPROC_INT = null;
 var wPROC_STATUS = null;
 var wPROC_DURATION = null;
 var wPROC_TIME = null;
-function cleanupChildPROC() { clearInterval( wPROC_INT ); try{wPROC.unref();}catch(e){} }
+function cleanupChildPROC() { clearInterval( wPROC_INT ); try{wPROC.unref();}catch(e){} wEmitter.emit( "MPlayerOVER" ); }
 function wPlayFilePath( wFP ) {
 	
 	process.env.mplayerFP = fixPathSpace( wFP );
@@ -45,7 +45,7 @@ function wPause() { if ( wPROC !== null ) { wPROC.send( "pause" ); return wPROC_
 function wStop() { if ( wPROC !== null ) {
 	console.log( "inside wStop() and wPROC_TIME = " + wPROC_TIME.toString() ); 
 	try { wPROC.send( "stop" ); }
-	catch(e){ console.log(e); }
+	catch(e){ /*console.log(e);*/ }
 	wPROC = null; 
 	return wPROC_TIME;
 }}
