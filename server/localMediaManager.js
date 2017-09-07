@@ -333,9 +333,6 @@ function wPlay( wConfig ) {
 		return [ wConfig.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
 
  	}
-
-
- 	//if ( ACTIVE ) { wStop( true ); }
  
  	NP_CACHED_CONFIG = wConfig;
  	var wNowPlayingARGArray = null;

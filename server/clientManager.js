@@ -109,6 +109,7 @@ const STATE_ACTION_MAP = {
 	},
 };
 
+var FIRST_ACTION_FROM_BOOT = true;
 var GLOBAL_PAUSED = false;
 var CACHED_START_PREVIOUS_ARGS = null;
 var CACHED_START_CURRENT_ARGS = null;
@@ -119,8 +120,13 @@ var CACHED_START_CURRENT_ARGS = null;
 // STATE-CONTROLLERS
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function startCurrentAction( wArgArray ) { 
-	CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS; 
+function startCurrentAction( wArgArray ) {
+	if ( FIRST_ACTION_FROM_BOOT ) {
+		CACHED_START_PREVIOUS_ARGS = wArgArray;
+		LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
+		FIRST_ACTION_FROM_BOOT = false;
+	}
+	else { CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS;  }
 	CACHED_START_CURRENT_ARGS = wArgArray; 
 	//console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); 
 	STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArgArray[0] , wArgArray[1] , wArgArray[2] , wArgArray[3] ); 
@@ -130,6 +136,7 @@ function pauseCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { S
 function resumeCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; } }
 async function restorePreviousAction( wArg ) {
 	wcl("inside restore previous action");
+	if ( LAST_SS.PREVIOUS_ACTION === LAST_SS.CURRENT_ACTION ) { return; }
 	await wSleep( 3000 );
 	wcl( LAST_SS.PREVIOUS_ACTION  + " = " + CACHED_START_PREVIOUS_ARGS );
 	wcl( LAST_SS.CURRENT_ACTION + " = " + CACHED_START_CURRENT_ARGS );
@@ -205,7 +212,7 @@ function BUTTON_PRESS_4( wArgArray ) {
 
 function BUTTON_PRESS_5( wArgArray ) {
 	// SKYPE COLLIN
-	wArgArray = wArgArray || [ "haley.cerbus" ];
+	wArgArray = wArgArray || [ "live:46f88501549629cb" ];
 	wcl( "PRESSED BUTTON 5" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
@@ -251,7 +258,7 @@ function BUTTON_PRESS_11( wArgArray ) {
 async function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
 	wcl( "PRESSED BUTTON 12" );
-	stopCurrentAction( true );
+	stopCurrentAction();
 	await wSleep( 1000 );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalMedia";

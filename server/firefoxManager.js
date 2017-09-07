@@ -42,19 +42,20 @@ var ffWrapper = {
 			var wT = isFFOpen[i].split(" ");
 			if ( wT[wT.length-1] === ffBinaryLocation1 ) {
 				ffWrapper.instancePID = wT[1].toString();
-				wcl( "is OPEN" );
+				//wcl( "is OPEN" );
 				ffWrapper.binaryOpen = true;
 				return true;
 			}
 			else if ( ( wT[wT.length-3] + " " + wT[wT.length-2] + " " + wT[wT.length-1] ) === ffBinaryLocation2 ){
 				ffWrapper.instancePID = wT[1].toString();
-				wcl( "is OPEN" );
+				//wcl( "is OPEN" );
 				ffWrapper.binaryOpen = true;
 				return true;
 			}
 		}
-		wcl( "is CLOSED" );
+		//wcl( "is CLOSED" );
 		ffWrapper.binaryOpen = false;
+		return false;
 
 	},
 
@@ -88,6 +89,8 @@ var ffWrapper = {
 	},
 
 	terminateFF: function() {
+		//var isOpenNow = ffWrapper.isFFOpen();
+		if ( !ffWrapper.binaryOpen ) { return; }
 		var wEX2 = exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
 		if ( wEX2.stderr.length > 1 ) { wcl( "ERROR --> Could not Terminate FF Binary" ); return null; }
 		wcl( "Killed Firefox" );
@@ -131,7 +134,7 @@ module.exports.openURL = function( wURL ) {
 
 	if ( ffWrapper.binaryOpen ) { ffWrapper.terminateFF(); }
 	ffWrapper.stagedLink = wURL;
-	setTimeout( function() { ffWrapper.launchFF( false ); } , 2000 );
+	setTimeout( function() { ffWrapper.launchFF( false ); } , 3000 );
 
 };
 
