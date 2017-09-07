@@ -20,16 +20,17 @@ var wPROC_STATUS = null;
 var wPROC_DURATION = null;
 var wPROC_TIME = null;
 
-var IGNORE_OVER_EVENT = false;
+var EMIT_OVER_EVENT = true;
 function cleanupChildPROC() { 
 	clearInterval( wPROC_INT ); 
 	try{wPROC.unref();}
 	catch(e){}
-	if ( !IGNORE_OVER_EVENT ) { wEmitter.emit( "MPlayerOVER" ); wcl( "Media is Over !!!" ); }
+	if ( EMIT_OVER_EVENT ) { wEmitter.emit( "MPlayerOVER" ); }
+	wcl( "Media is Over !!!" );
 }
 function wPlayFilePath( wFP ) {
 
-	IGNORE_OVER_EVENT = false;
+	EMIT_OVER_EVENT = true;
 	
 	process.env.mplayerFP = fixPathSpace( wFP );
 	wcl( process.env.mplayerFP );
@@ -52,12 +53,19 @@ function wPlayFilePath( wFP ) {
 function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); wPROC = null; return wPROC_TIME;  } }
 function wPause() { if ( wPROC !== null ) { wPROC.send( "pause" ); return wPROC_TIME; } }
 function wStop( wIgnoreOverEvent ) { if ( wPROC !== null ) {
-	if ( wIgnoreOverEvent ) { IGNORE_OVER_EVENT = true; }
+	if ( wIgnoreOverEvent ) { IGNORE_OVER_EVENT = true; console.log( "\nignore event === true\n" ); }
 	try { wPROC.send( "stop" ); }
 	catch(e){ /*console.log(e);*/ }
 	wPROC = null; 
 	return wPROC_TIME;
 }}
+function wSilentStop() {
+	EMIT_OVER_EVENT = false;
+	try { wPROC.send( "stop" ); }
+	catch(e){ /*console.log(e);*/ }
+	wPROC = null; 
+	return wPROC_TIME;
+}
 function wSeekSeconds( wSeconds ) { if ( wPROC !== null ) { wcl( "Seeking --> " + wSeconds.toString() ); wPROC.send( "seekSeconds/" + wSeconds.toString() ); } }
 function wSeekPercent( wPercent ) { if ( wPROC !== null ) { wPROC.send( "seekPercent/" + wPercent.toString() ); } }
 function wHideSubtitles() { if ( wPROC !== null ) { wPROC.send( "hideSubtitles" ); } }
@@ -70,37 +78,10 @@ module.exports.playFilePath = wPlayFilePath;
 module.exports.quit = wQuit;
 module.exports.pause = wPause;
 module.exports.stop = wStop;
+module.exports.silentStop = wSilentStop;
 module.exports.seekSeconds = wSeekSeconds;
 module.exports.seekPercent = wSeekPercent;
 module.exports.hideSubtitles = wHideSubtitles;
 module.exports.fullscreen = wFullScreen;
 module.exports.getCurrentTime = wGetCurrentTime;
 module.exports.getDuration = wGetDuration;
-
-
-
-											// "USER_LAND" tests
-// --------------------------------------------------------------------------------------------------------------------------------------
-
-// var x1S = "/home/morpheous/Downloads/South Park Season 1 480p x264 SCREENTIME/South Park - S01E10 Damien - 480p x264 SCREENTIME.mp4";
-// var x2S = "/home/morpheous/TMP2/example.mp4";
-// var x3S = "/home/morpheous/TMP2/sliced-output.mp4";
-// var x4S = "/home/morpheous/TMP2/test1.mp3";
-// var x5S = "/home/morpheous/TMP2/example2.mp4";
-
-
-//wPlayFilePath( x2S );
-
-// var x1IDX = 0;
-// wPROC_INT = setInterval(function(){
-// 	x1IDX = x1IDX + 25;
-// 	wSeekPercent( x1IDX );
-// } , 6000 );
-
-// setTimeout( function() {
-// 	wQuit();
-// } , 20000 );
-
-// setInterval(function(){
-// 	console.log("we are still alive !!! unfortunately ");
-// } , 4000 );

@@ -3,7 +3,7 @@ var path		= require("path");
 var colors		= require("colors");
 var jsonfile	= require("jsonfile");
 
-var wEmitter	= require('../main.js').wEmitter;
+var wEmitter	= require("../main.js").wEmitter;
 
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -134,7 +134,7 @@ async function restorePreviousAction( wArg ) {
 	wcl( LAST_SS.PREVIOUS_ACTION  + " = " + CACHED_START_PREVIOUS_ARGS );
 	wcl( LAST_SS.CURRENT_ACTION + " = " + CACHED_START_CURRENT_ARGS );
 	if ( LAST_SS.PREVIOUS_ACTION !== null ) {
-		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop();
+		STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( true );
 		await wSleep( 3000 );
 		LAST_SS.CURRENT_ACTION = LAST_SS.PREVIOUS_ACTION; 
 		LAST_SS.PREVIOUS_ACTION = null; 
@@ -248,10 +248,11 @@ function BUTTON_PRESS_11( wArgArray ) {
 	wcl( "PRESSED BUTTON 11" );
 }
 
-function BUTTON_PRESS_12( wArgArray ) {
+async function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
 	wcl( "PRESSED BUTTON 12" );
-	stopCurrentAction();
+	stopCurrentAction( true );
+	await wSleep( 1000 );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalMedia";
 	//if ( LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "TVShows" ] )

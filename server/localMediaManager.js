@@ -191,6 +191,7 @@ var NOW_PLAYING_REF = null;
 var NOW_PLAYING_DURATION = null;
 var NOW_PLAYING_3PERCENT_LEFT = null;
 var NP_CACHED_CONFIG = null;
+var CONTINUOUS_PLAYING = true;
 // ===============================================
 // ===============================================
 
@@ -333,6 +334,8 @@ function wPlay( wConfig ) {
 
  	}
 
+
+ 	//if ( ACTIVE ) { wStop( true ); }
  
  	NP_CACHED_CONFIG = wConfig;
  	var wNowPlayingARGArray = null;
@@ -345,9 +348,10 @@ function wPlay( wConfig ) {
 
 }
 
-function wStop( wIgnoreOverEvent ) {
+
+function wStop( wSilentStop ) {
 	if ( ACTIVE ) {
-		var wLastTime = MPLAYER_MAN.stop( wIgnoreOverEvent );
+		var wLastTime = MPLAYER_MAN.silentStop();
 		ACTIVE = false;
 		wcl( "LAST TIME = " + wLastTime );
 		updateLastPlayed( wLastTime );
@@ -427,6 +431,7 @@ async function wPrevious() {
 
 function wOnNowPlayingOver( wResult ) {
 	wcl( "THE VIDEO WE STARTED IS OVER !!!!!" );
+	console.trace();
 	wNext();
 }
 wEmitter.on( "MPlayerOVER" , wOnNowPlayingOver );
