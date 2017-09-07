@@ -122,7 +122,7 @@ var CACHED_START_CURRENT_ARGS = null;
 function startCurrentAction( wArgArray ) { 
 	CACHED_START_PREVIOUS_ARGS = CACHED_START_CURRENT_ARGS; 
 	CACHED_START_CURRENT_ARGS = wArgArray; 
-	console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); 
+	//console.log( STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ] ); 
 	STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].start( wArgArray[0] , wArgArray[1] , wArgArray[2] , wArgArray[3] ); 
 }
 function stopCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].stop( wArg ); /*LAST_SS.CURRENT_ACTION = null;*/ } }
