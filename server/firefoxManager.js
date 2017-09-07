@@ -89,7 +89,6 @@ var ffWrapper = {
 	},
 
 	terminateFF: function() {
-		//var isOpenNow = ffWrapper.isFFOpen();
 		if ( !ffWrapper.binaryOpen ) { return; }
 		var wEX2 = exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
 		if ( wEX2.stderr.length > 1 ) { wcl( "ERROR --> Could not Terminate FF Binary" ); return null; }

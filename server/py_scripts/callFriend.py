@@ -25,6 +25,8 @@ def OnCall(call, status):
     global retryCount
     CallStatus = status
     wText = CallStatusText(status)
+    wText = [ s.strip() for s in wText.splitlines() ]
+    wText = wText[-1]
     #print wText
     if ( wText == "Recording" ):
         time.sleep(5)
@@ -34,11 +36,31 @@ def OnCall(call, status):
         CallStatus = Skype4Py.clsFinished
         sys.exit(1)
         raise SystemExit
-        
+
+    # elif ( wText == "Uploading Voicemail" ):
+    #     print( "UploadingVoicemail" )
+    #     sys.stdout.flush()
+    #     time.sleep(2)
+    #     #sys.exit(1)
+    #     CallStatus = CallIsFinished[0]
+    #     sys.exit(1)        
+    #     raise SystemExit
+    #     return
+
+    elif ( wText == "Voicemail Has Been Sent" ):
+        print( "VoicemailSent" )
+        sys.stdout.flush()
+        time.sleep(2)
+        #sys.exit(1)
+        CallStatus = Skype4Py.clsFinished
+        sys.exit(1)
+        raise SystemExit
+        return        
+
     elif ( wText == "Never placed" ):
-        call.Finish()
         print("NeverPlaced")
         sys.stdout.flush()
+        call.Finish()
         #sys.exit(1)
         CallStatus = Skype4Py.clsFinished
         sys.exit(1)
@@ -61,28 +83,29 @@ def OnCall(call, status):
     		time.sleep(2)
     		makeCall()
 
-    elif ( wText == "Uploading Voicemail" ):
-        time.sleep(2)
-        #sys.exit(1)
-        CallStatus = CallIsFinished[0]
-        sys.exit(1)        
-        raise SystemExit
-        return
+    elif ( wText == "Finished" ):
+        print( "Finished" )
+        sys.stdout.flush()
 
-    elif ( wText == "Voicemail Has Been Sent" ):
-        time.sleep(2)
-        #sys.exit(1)
+    elif ( wText == "Call in Progress" ):
+        print( "CallLive" )
+        sys.stdout.flush()
+
+    elif ( wText == "API attachment status: Refused" ):
+        print "SkypeAPIDown"
+        sys.stdout.flush()
         CallStatus = Skype4Py.clsFinished
         sys.exit(1)
         raise SystemExit
         return
-
-    else:
-        print 'Call status: ' + wText
-        sys.stdout.flush()
+   
+    #else:
+        #print 'Call status: ' + wText
+        #sys.stdout.flush()
 
 def OnAttach(status): 
-    print 'API attachment status: ' + AttachmentStatusText(status)
+    #print 'API attachment status: ' + AttachmentStatusText(status)
+    sys.stdout.flush()
     if status == Skype4Py.apiAttachAvailable:
         skype.Attach()
 
@@ -123,7 +146,7 @@ skype.Attach()
 
 def makeCall():
     callingName = sys.argv[1]
-    print 'Calling ' + callingName + '..'
+    #print 'Calling ' + callingName + '..'
     callobj1 = skype.PlaceCall(callingName)
     # Loop until CallStatus gets one of "call terminated" values in OnCall handler
     while not CallStatus in CallIsFinished:

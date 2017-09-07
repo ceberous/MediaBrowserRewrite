@@ -87,7 +87,7 @@ var BTN_MAN 			= require( "./buttonManager.js" );
 var USB_IR_MAN 			= require( "./usbIRManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
 var MOPIDY_MAN 			= require( "./mopidyManager.js" );
-var LOCAL_VIDEO_MAN		= require( "./localMediaManager.js" ); // Rename to LOCAL_MEDIA_MAN , 1 State Action Map entry instead of 4
+var LOCAL_VIDEO_MAN		= require( "./localMediaManager.js" );
 var TWITCH_MAN			= require( "./twitchManager.js" );
 var YOUTUBE_MAN			= require( "./youtubeManager.js" );
 // =====================================================================
@@ -108,7 +108,6 @@ const STATE_ACTION_MAP = {
 		next: LOCAL_VIDEO_MAN.next , previous: LOCAL_VIDEO_MAN.previous 
 	},
 };
-
 var FIRST_ACTION_FROM_BOOT = true;
 var GLOBAL_PAUSED = false;
 var CACHED_START_PREVIOUS_ARGS = null;
@@ -151,7 +150,7 @@ async function restorePreviousAction( wArg ) {
 function nextMediaInCurrentAction() { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].next(); } }
 function previousMediaInCurrentAction() { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].previous(); } }
 
-async function properShutdown() { stopCurrentAction(); }
+function properShutdown() { stopCurrentAction(); }
 //wEmitter.on( "restorePreviousAction" , function() { console.log("we should be restoring previous action = " + LAST_SS.PREVIOUS_ACTION); restorePreviousAction(); });
 wEmitter.on( "closeEverything" , function() { properShutdown(); });
 

@@ -23,21 +23,21 @@ function xRestorePreviousAction() {
 		NEED_TO_RESTORE_SERVICE = false;
 	}
 }
-function wRestoreCleanup() { exec( "sudo kill -9 " + VIDEO_CALL_SCRIPT_PID.toString() , { silent: true ,  async: false } ); xRestorePreviousAction(); }
-function wRegularCleanup() { /*VIDEO_CALL_SCRIPT_PROC.unref(); */  exec( "sudo kill -9 " + VIDEO_CALL_SCRIPT_PID.toString() , { silent: true ,  async: false } ); }
+function wRestoreCleanup() { wcl( "Call Over" ); exec( "sudo kill -9 " + VIDEO_CALL_SCRIPT_PID.toString() , { silent: true ,  async: false } ); xRestorePreviousAction(); }
+function wRegularCleanup() { wcl( "Call Ended" ); exec( "sudo kill -9 " + VIDEO_CALL_SCRIPT_PID.toString() , { silent: true ,  async: false } ); }
 //async function wVoiceMailCleanup() { await wSleep( 5000 );  exec( "sudo kill -9 " + VIDEO_CALL_SCRIPT_PID.toString() , { silent: true ,  async: false } ); }
 function wHandleOutput( wMessage ) {
 	if ( wMessage === undefined  ) { return; }
 	wMessage = wMessage.trim();
 	//wcl( "MESSAGE --> " + wMessage );
-	//console.log( wMessage );
 	switch( wMessage ) {
 
 		case "NeverPlaced":
 			setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
 
-		case "API attachment status: Refused":
+		//case "API attachment status: Refused":
+		case "SkypeAPIDown":
 			wRestoreCleanup();
 			setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
@@ -48,20 +48,13 @@ function wHandleOutput( wMessage ) {
 			//setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
 
-		case "Call in Progress":
+		case "CallLive":
 			ACTUALLY_A_LIVE_CALL = true;
 			wSetFullScreen();
 			break;
 
-		case "Recording":
-			setTimeout( function() { wRestoreCleanup(); } , 5000 );
-			break;			
-
-		case "Uploading Voicemail":
-			wRestoreCleanup();
-			break;
-
-		case "Call status: Voicemail Has Been Sent":
+		//case "Call status: Voicemail Has Been Sent":
+		case "VoicemailSent":
 			wRestoreCleanup();
 			break;
 
@@ -80,11 +73,12 @@ function wHandleOutput( wMessage ) {
 
 }
 async function wSetFullScreen() {
-	SKYPE_WINDOW_ID = await xdotoolWrapper.ensureWindowNameIsReady( "Call with" );
-	xdotoolWrapper.activateWindowID( SKYPE_WINDOW_ID );
-	xdotoolWrapper.setWindowIDFocus( SKYPE_WINDOW_ID );
-	xdotoolWrapper.windowRaise( SKYPE_WINDOW_ID );
-	xdotoolWrapper.setWindowIDFullScreen( SKYPE_WINDOW_ID , "1" );
+	wcl( "Skype Call is Live !!!" );
+	SKYPE_WINDOW_ID = await xdoWrapper.ensureWindowNameIsReady( "Call with" );
+	xdoWrapper.activateWindowID( SKYPE_WINDOW_ID );
+	xdoWrapper.setWindowIDFocus( SKYPE_WINDOW_ID );
+	xdoWrapper.windowRaise( SKYPE_WINDOW_ID );
+	xdoWrapper.setWindowIDFullScreen( SKYPE_WINDOW_ID , "0" );
 }
 
 function wMaxTimeoutHandler() {

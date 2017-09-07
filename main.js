@@ -1,3 +1,4 @@
+require("shelljs/global");
 var fs = require('fs');
 var path = require("path");
 var colors = require("colors");
@@ -29,7 +30,10 @@ server.listen( port , function() {
 
 process.on('SIGINT', function () {
 	wEmitter.emit( "closeEverything" );
-	setTimeout( function() { process.exit(1); } , 5000 );
+	setTimeout( ()=> {
+		exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
+		process.exit(1);
+	} , 5000 );
 });
 
 process.on( "unhandledRejection" , function( reason , p ) {
