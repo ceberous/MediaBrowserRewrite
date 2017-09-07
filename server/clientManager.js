@@ -26,7 +26,7 @@ module.exports.pressButtonMaster = wPressButtonMaster;
 			// ehhhh????? 
 			// http://www.tingodb.com/
 			// https://github.com/louischatriot/nedb
-var 	LAST_SS = { PREVIOUS_ACTION: null, CURRENT_ACTION: null, Firefox: {} ,  SkypeCall: {} , LocalVideo: {} , Mopidy: {} , YTLiveBackground: {} , YTFeed: {} , Twitch: {} };
+var 	LAST_SS = { PREVIOUS_ACTION: null, CURRENT_ACTION: null, Firefox: {} ,  SkypeCall: {} , LocalMedia: {} , Mopidy: {} , YTLiveBackground: {} , YTFeed: {} , Twitch: {} };
 const 	LAST_SS_FILE_PATH 	= path.join( __dirname , "save_files" , "lastSavedState.json" );
 function WRITE_LAST_SAVED_STATE_FILE() { jsonfile.writeFileSync( LAST_SS_FILE_PATH , LAST_SS ); }
 try { LAST_SS = jsonfile.readFileSync( LAST_SS_FILE_PATH ); }
@@ -35,7 +35,7 @@ function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 	return new Promise( function( resolve , reject ) {
 		try {
 			// console.log("\n");
-			// console.log( LAST_SS[ "LocalVideo" ] );
+			// console.log( LAST_SS[ "LocalMedia" ] );
 			// console.log("\n");
 			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
 			console.log( wOBJ );
@@ -64,7 +64,7 @@ function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key ,
 	return new Promise( function( resolve , reject ) {
 		try {
 			// console.log("\n");
-			// console.log( LAST_SS[ "LocalVideo" ] );
+			// console.log( LAST_SS[ "LocalMedia" ] );
 			// console.log("\n");			
 			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " --- " + wOBJ_Key + " --- " + wSECONDARY_KEY +" <-- TO --> " );
 			console.log( jProp );
@@ -87,7 +87,7 @@ var BTN_MAN 			= require( "./buttonManager.js" );
 var USB_IR_MAN 			= require( "./usbIRManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
 var MOPIDY_MAN 			= require( "./mopidyManager.js" );
-var LOCAL_VIDEO_MAN		= require( "./localVideoManager.js" );
+var LOCAL_VIDEO_MAN		= require( "./localMediaManager.js" ); // Rename to LOCAL_MEDIA_MAN , 1 State Action Map entry instead of 4
 var TWITCH_MAN			= require( "./twitchManager.js" );
 var YOUTUBE_MAN			= require( "./youtubeManager.js" );
 // =====================================================================
@@ -102,10 +102,11 @@ const STATE_ACTION_MAP = {
 	"YTStandard": { start: YOUTUBE_MAN.startYTStandard , stop: YOUTUBE_MAN.stopYTStandard },
 	"TwitchLive": { start: TWITCH_MAN.playLive , stop: TWITCH_MAN.stopLive },
 	"SkypeCall": { start: SKYPE_MAN.startCall , stop: SKYPE_MAN.endCall },
-	"LocalMovie": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
-	"LocalTVShow": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
-	"Odyssey": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
-	"AudioBook": { start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume  },
+	"LocalMedia": { 
+		start: LOCAL_VIDEO_MAN.play , stop: LOCAL_VIDEO_MAN.stop , 
+		pause: LOCAL_VIDEO_MAN.pause , resume: LOCAL_VIDEO_MAN.resume , 
+		next: LOCAL_VIDEO_MAN.next , previous: LOCAL_VIDEO_MAN.previous 
+	},
 };
 
 var GLOBAL_PAUSED = false;
@@ -140,7 +141,8 @@ async function restorePreviousAction( wArg ) {
 		startCurrentAction( CACHED_START_PREVIOUS_ARGS );
 	}
 }
-
+function nextMediaInCurrentAction() { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].next(); } }
+function previousMediaInCurrentAction() { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].previous(); } }
 
 async function properShutdown() { stopCurrentAction(); }
 //wEmitter.on( "restorePreviousAction" , function() { console.log("we should be restoring previous action = " + LAST_SS.PREVIOUS_ACTION); restorePreviousAction(); });
@@ -227,11 +229,13 @@ function BUTTON_PRESS_7( wArgArray ) {
 function BUTTON_PRESS_8( wArgArray ) {
 	// PREVIOUS MEDIA
 	wcl( "PRESSED BUTTON 8" );
+	previousMediaInCurrentAction();
 }
 
 function BUTTON_PRESS_9( wArgArray ) {
 	// NEXT MEDIA
 	wcl( "PRESSED BUTTON 9" );
+	nextMediaInCurrentAction();
 }
 
 function BUTTON_PRESS_10( wArgArray ) {
@@ -249,8 +253,9 @@ function BUTTON_PRESS_12( wArgArray ) {
 	wcl( "PRESSED BUTTON 12" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
-	LAST_SS.CURRENT_ACTION = "LocalTVShow";
-	startCurrentAction( [ { type: "TVShows" , last_played: LAST_SS[ "LocalVideo" ][ "LAST_PLAYED" ][ "TVShows" ] } ] );
+	LAST_SS.CURRENT_ACTION = "LocalMedia";
+	//if ( LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "TVShows" ] )
+	startCurrentAction( [ { type: "TVShows" , last_played: LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "TVShows" ] } ] );
 }
 
 function wPressButtonMaster( wButtonNum , wArgArray ) { 

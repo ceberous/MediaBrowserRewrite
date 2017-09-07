@@ -19,8 +19,17 @@ var wPROC_INT = null;
 var wPROC_STATUS = null;
 var wPROC_DURATION = null;
 var wPROC_TIME = null;
-function cleanupChildPROC() { clearInterval( wPROC_INT ); try{wPROC.unref();}catch(e){} wEmitter.emit( "MPlayerOVER" ); }
+
+var IGNORE_OVER_EVENT = false;
+function cleanupChildPROC() { 
+	clearInterval( wPROC_INT ); 
+	try{wPROC.unref();}
+	catch(e){}
+	if ( !IGNORE_OVER_EVENT ) { wEmitter.emit( "MPlayerOVER" ); }
+}
 function wPlayFilePath( wFP ) {
+
+	IGNORE_OVER_EVENT = false;
 	
 	process.env.mplayerFP = fixPathSpace( wFP );
 	wcl( process.env.mplayerFP );
@@ -42,10 +51,11 @@ function wPlayFilePath( wFP ) {
 
 function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); wPROC = null; return wPROC_TIME;  } }
 function wPause() { if ( wPROC !== null ) { wPROC.send( "pause" ); return wPROC_TIME; } }
-function wStop() { if ( wPROC !== null ) {
+function wStop( wIgnoreOverEvent ) { if ( wPROC !== null ) {
+	if ( wIgnoreOverEvent ) { IGNORE_OVER_EVENT = true; }
 	console.log( "inside wStop() and wPROC_TIME = " + wPROC_TIME.toString() ); 
 	try { wPROC.send( "stop" ); }
-	catch(e){ /*console.log(e);*/ }
+	catch(e){ console.log(e); }
 	wPROC = null; 
 	return wPROC_TIME;
 }}
