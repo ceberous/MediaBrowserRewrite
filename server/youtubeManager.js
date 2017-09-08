@@ -59,11 +59,10 @@ var LIVE_MAN = {
 		LMFOLTOTAL = LMFOLIDS.length;
 		var x1 = 0;
 		return new Promise( async function( resolve , reject ) {
-
 			var xResults = [];
 			while ( x1 < LMFOLTOTAL ) {
 				var wR1 = await LIVE_MAN.searchUserName( LMFOLIDS[ x1 ] );
-                xResults.push(wR1);
+                xResults.push( wR1 );
                 x1 = x1 + 1;
 			}
 			CACHED_RESULTS = xResults;
@@ -128,7 +127,6 @@ var LIVE_MAN = {
 	},
 
 	addToBlacklist: function( wID ) {
-
 		var wF = false;
 		for ( var i = 0; i < YT_BLACKLIST.LIVE.length; ++i ) {
 			if ( YT_BLACKLIST.LIVE[ i ] === wID ) { wF = true; return; }
@@ -144,7 +142,6 @@ var LIVE_MAN = {
 				}
 			}
 		}
-
 	},
 
 	removeFromBlacklist: function( wID ) {
@@ -165,6 +162,9 @@ var LIVE_MAN = {
 // FEED_MAN
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+const wMonth = 2629800;
+const wWeek = 604800;
+const wDay = 86400;
 var FEED_MAN = {
 
 	init: async function() {
@@ -174,23 +174,122 @@ var FEED_MAN = {
 	enumerateFollowers: function() {
 		return new Promise( async function( resolve , reject ) {
 			try {
-				for ( var follower in YT_SF[ "FEED" ][ "FOLLOWERS" ] ) {
-					console.log( YT_SF[ "FEED" ][ "FOLLOWERS" ][ follower ] )
-					//await fetchXML();
+				var x1 = 0;
+				var wFollowers = Object.keys( YT_SF[ "FEED" ][ "FOLLOWERS" ] );
+				var wTotal = wFollowers.length;
+				while( x1 < wTotal ) {
+					await FEED_MAN.fetchXML( wFollowers[ x1 ] );
+					x1 = x1 + 1;
 				}
+				FEED_MAN.filterOldVideos();
+				WRITE_YT_SF();
 				resolve();
 			}
 			catch( error ) { console.log( error ); reject( error ); }
 		});
 	},
 
-	fetchXML: function() {
+	fetchXML: function( channelID ) {
 		return new Promise( function( resolve , reject ) {
 			try {
-				resolve();
+				var wFP_Options = { "normalize": true ,"feedurl": wFeedURL };
+				var feedparser = new FeedParser( [ wFP_Options ] );
+
+				var wResults = [];
+				var wFeedURL = "https://www.youtube.com/feeds/videos.xml?channel_id=" + channelID;
+				var req = request( wFeedURL );
+				req.on( "error" , function ( error ) { console.log(error); } );
+				req.on( "response" , function ( res ) {
+					if ( res.statusCode !== 200 ) { reject( res.statusCode ); }
+					else { this.pipe( feedparser ); }
+				});
+				feedparser.on( "error" , function ( error ) { console.log( error ); } );
+				feedparser.on( "readable" , function () {
+					var item; while ( item = this.read() ) { wResults.push( item ); }
+				});
+				feedparser.on( "end" , parseResults );
+				function parseResults() {
+					for ( var i = 0; i < wResults.length; ++i ) {
+						var xID = wResults[i]["yt:videoid"]["#"];
+						if ( !YT_SF[ "FEED" ][ "FOLLOWERS" ][ channelID ][ xID ] ) {
+							var t1 = new Date( wResults[ i ].pubdate );
+							var t2 = Math.round( t1.getTime() / 1000 );
+							YT_SF[ "FEED" ][ "FOLLOWERS" ][ channelID ][ xID ] = {
+								title: wResults[i].title ,
+								pubdate: t2 ,
+								completed: false ,
+								skipped: false ,
+								current_time: 0 ,
+								remaining_time: 0,
+								duration: 0 ,
+							};
+						}
+					}
+					resolve();
+				}
 			}
 			catch( error ) { console.log( error ); reject( error ); }
 		});
+	},
+
+	filterOldVideos: function() {
+		var n1 = new Date();
+		var n2 = Math.round( n1.getTime() / 1000 );
+		for ( var wCID in YT_SF[ "FEED" ][ "FOLLOWERS" ] ) {
+			for ( var wVID in YT_SF[ "FEED" ][ "FOLLOWERS" ][ wCID ] ) {
+				var x1 = YT_SF[ "FEED" ][ "FOLLOWERS" ][ wCID ][ wVID ][ "pubdate" ];
+				if ( ( n2 - x1 ) > wMonth ) {
+					try{ delete YT_SF[ "FEED" ][ "FOLLOWERS" ][ wCID ][ wVID ]; }
+					catch( err ) { console.log( err ); }
+				}
+			}
+		}
+	},
+
+	addVideo: function( wID , wOBJ ) {
+
+	},
+
+	removeVideo: function( wID ) {
+
+	},
+
+	updateVideo: function( wID , wOBJ ) {
+
+	},
+
+	addFollower: function( wID ) {
+		try { YT_SF.FEED.FOLLOWERS[ wID ] = {}; WRITE_YT_SF(); }
+		catch( error ) { wcl( error ); }
+	},
+
+	removeFollower: function( wID ) {
+		try { delete YT_SF.FEED.FOLLOWERS[ wID ]; WRITE_YT_SF(); }
+		catch( error ) { wcl( error ); }
+	},
+
+	addToBlacklist: function( wID ) {
+		var wF = false;
+		for ( var i = 0; i < YT_BLACKLIST.FEED.length; ++i ) {
+			if ( YT_BLACKLIST.LIVE[ i ] === wID ) { wF = true; return; }
+		}
+		if ( wF ) { wcl( "Already Exists in Blacklist File" ); return; }
+		else { YT_BLACKLIST.FEED.push( wID ); WRITE_YT_BLACKLIST(); }
+
+		for ( iprop in YT_SF.FEED.FOLLOWERS ) {
+			for ( jprop in YT_SF.FEED.FOLLOWERS[ iprop ] ) {
+				if ( jprop === wID ) { 
+					try { delete YT_SF.FEED.FOLLOWERS[ iprop ][ jprop ]; WRITE_YT_SF(); }
+					catch( error ) { wcl( error ); }
+				}
+			}
+		}
+	},
+
+	removeFromBlacklist: function( wID ) {
+		YT_BLACKLIST.FEED.forEach( function( wItem , wIDX ) {
+			if ( wItem === wID ) { YT_BLACKLIST.FEED = YT_BLACKLIST.FEED.splice( wIDX , 1 ); WRITE_YT_BLACKLIST(); return; }
+		});		
 	}
 
 };
@@ -220,33 +319,33 @@ function stopYTStandardService() {
 
 }
 
-
-//LIVE_MAN.init();
-
-//FEED_MAN.init();
-
-
 module.exports.startYTLiveBackground = startYTLiveBackgroundService;
 module.exports.stopYTLiveBackground = stopYTLiveBackgroundService;
 
-module.exports.startYTStandard = startYTStandardService;
-module.exports.stopYTStandard = stopYTStandardService;
+module.exports.startYTStandard 		= startYTStandardService;
+module.exports.stopYTStandard 		= stopYTStandardService;
 
-module.exports.updateLiveList = LIVE_MAN.enumerateFollowers;
-module.exports.addLiveFollower = LIVE_MAN.addFollower;
-module.exports.removeLiveFollower = LIVE_MAN.removeLiveFollower;
+module.exports.getFollowers 		= ()=> { return YT_SF; }
 
-module.exports.getFollowers = ()=> { return YT_SF; }
+module.exports.updateLiveList 		= LIVE_MAN.enumerateFollowers;
+module.exports.addLiveFollower 		= LIVE_MAN.addFollower;
+module.exports.removeLiveFollower 	= LIVE_MAN.removeFollower;
+module.exports.addLiveBlacklist 	= LIVE_MAN.addToBlacklist;
+module.exports.removeLiveBlacklist 	= LIVE_MAN.removeFromBlacklist;
 
-module.exports.addLiveFollower = LIVE_MAN.addFollower;
-module.exports.removeLiveFollower = LIVE_MAN.removeFollower;
-module.exports.addLiveBlacklist = LIVE_MAN.addToBlacklist;
-module.exports.removeLiveBlacklist = LIVE_MAN.removeFromBlacklist;
+module.exports.updateFeedList		= FEED_MAN.enumerateFollowers;
+module.exports.addFeedFollower		= FEED_MAN.addFollower;
+module.exports.removeFeedFollower	= FEED_MAN.removeFollower;
+module.exports.addFeedBlacklist		= FEED_MAN.addToBlacklist;
+module.exports.removeFeedBlacklist	= FEED_MAN.removeFromBlacklist;
+module.exports.addFeedVideo			= FEED_MAN.addVideo;
+module.exports.removeFeedVideo		= FEED_MAN.removeVideo;
+module.exports.updateFeedVideo		= FEED_MAN.updateVideo;
 
 
-//LIVE_MAN.addFollower( "MontereyBayAquarium" );
-//LIVE_MAN.addFollower( "calacademy" );
-//LIVE_MAN.addFollower( "ouramazingspace" );
+// Kyle Laundry ? = UCk0UErv9b4Hn5ucNNjqD1UQ
+// https://www.youtube.com/feeds/videos.xml?channel_id=UCk0UErv9b4Hn5ucNNjqD1UQ
+//FEED_MAN.addFollower( "UCk0UErv9b4Hn5ucNNjqD1UQ" );
 
-//LIVE_MAN.removeFollower( "UCEpDjqeFIGTqHwk-uULx72Q" );
-//LIVE_MAN.removeFollower( "UCbYNIUYxdzeQTKdb9GfJl3w" );
+//LIVE_MAN.init();
+//FEED_MAN.init();

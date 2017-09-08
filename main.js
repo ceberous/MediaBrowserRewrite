@@ -4,7 +4,7 @@ var path = require("path");
 var colors = require("colors");
 var wEmitter = new (require('events').EventEmitter);
 module.exports.wEmitter = wEmitter;
-
+console.trace();
 function wcl( wSTR ) { console.log( colors.green.bgBlack( "[MAIN] --> " + wSTR ) ); }
 
 var port = process.env.PORT || 6969;
