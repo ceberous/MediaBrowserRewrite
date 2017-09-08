@@ -62,8 +62,8 @@ var LIVE_MAN = {
 			var xResults = [];
 			while ( x1 < LMFOLTOTAL ) {
 				var wR1 = await LIVE_MAN.searchUserName( LMFOLIDS[ x1 ] );
-                xResults.push( wR1 );
-                x1 = x1 + 1;
+				xResults.push( wR1 );
+				x1 = x1 + 1;
 			}
 			CACHED_RESULTS = xResults;
 			resolve( xResults );

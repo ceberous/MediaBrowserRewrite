@@ -39,7 +39,6 @@ function wHandleOutput( wMessage ) {
 		//case "API attachment status: Refused":
 		case "SkypeAPIDown":
 			wRestoreCleanup();
-			setTimeout( ()=> { wVideoCallUserName(); } , 2000 );
 			break;
 
 		case "CallFailed":
@@ -94,11 +93,11 @@ var CACHED_USER_NAME = null;
 var NEED_TO_RESTORE_SERVICE = false;
 var ACTUALLY_A_LIVE_CALL = false;
 function wVideoCallUserName( wUserName ) {
+	if ( ACTUALLY_A_LIVE_CALL ) { return; }
 	ACTUALLY_A_LIVE_CALL = false;
 	NEED_TO_RESTORE_SERVICE = true;
 	CACHED_USER_NAME = wUserName;
 	VIDEO_CALL_SCRIPT_PROC = spawn( 'python' , [ VIDEO_CALL_SCRIPT , CACHED_USER_NAME ] , { detatched: false } );
-	wcl( "callFriend.py spawned" );
 	VIDEO_CALL_SCRIPT_PID = VIDEO_CALL_SCRIPT_PROC.pid;
 	VIDEO_CALL_SCRIPT_PROC.stdout.on( "data" , function( data ) {
 		var message = decoder.write(data);
