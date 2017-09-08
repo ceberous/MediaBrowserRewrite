@@ -5,8 +5,8 @@ function sendJSONResponse( res , status , content ) { if ( status ) { res.status
 module.exports.press1 = function( req , res ) { wPressButtonMaster( 1 ); sendJSONResponse( res , 200 , { buttonPress: "Play Youtube.Live Background Video with A 'Classic' Style Mopidy Playlist" } ); };
 module.exports.press2 = function( req , res ) { wPressButtonMaster( 2 ); sendJSONResponse( res , 200 , { buttonPress: "Play Youtube.Live Background Video with A 'EDM/House' Style Mopidy Playlist" } ); };
 module.exports.press3 = function( req , res ) { wPressButtonMaster( 3 ); sendJSONResponse( res , 200 , { buttonPress: "if ( Twitch-Follower.isLive ) { Play Next Twitch.Live } else { Play Next 'Feed' Video from Youtube/Twitch Followers }" } ); };
-module.exports.press4 = function( req , res ) { wPressButtonMaster( 4 ); sendJSONResponse( res , 200 , { buttonPress: "Skype - 'cameron'" } ); };
-module.exports.press5 = function( req , res ) { wPressButtonMaster( 5 ); sendJSONResponse( res , 200 , { buttonPress: "Skype - '*******'" } ); };
+module.exports.press4 = function( req , res ) { wPressButtonMaster( 4 ); sendJSONResponse( res , 200 , { buttonPress: "Skype - 'ONE'" } ); };
+module.exports.press5 = function( req , res ) { wPressButtonMaster( 5 ); sendJSONResponse( res , 200 , { buttonPress: "Skype - 'TWO'" } ); };
 module.exports.press6 = function( req , res ) { wPressButtonMaster( 6 ); sendJSONResponse( res , 200 , { buttonPress: "Stop" } ); };
 module.exports.press7 = function( req , res ) { wPressButtonMaster( 7 ); sendJSONResponse( res , 200 , { buttonPress: "Pause" } ); };
 module.exports.press8 = function( req , res ) { wPressButtonMaster( 8 ); sendJSONResponse( res , 200 , { buttonPress: "Previous" } ); };

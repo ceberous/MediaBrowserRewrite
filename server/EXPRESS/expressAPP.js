@@ -39,8 +39,6 @@ app.get( "/youtubeLiveBackground" , function( req , res , next ) {
 });
 
 
-
-
 var adminPanelRoutes = require( "./ROUTES/adminPanelRTR.js" );
 app.use('/admin/v1/' , adminPanelRoutes );
 app.get( "/admin" , function( req , res , next ) {
@@ -49,5 +47,8 @@ app.get( "/admin" , function( req , res , next ) {
 
 var buttonsRoutes = require( "./ROUTES/buttonsRTR.js" );
 app.use('/buttonpress/' , buttonsRoutes );
+
+var youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
+app.use('/youtube-man/' , youtubeRoutes );
 
 module.exports = app;

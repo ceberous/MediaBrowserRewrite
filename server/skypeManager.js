@@ -121,7 +121,7 @@ function wVideoCallUserName( wUserName ) {
 // }());
 
 module.exports.startCall = wVideoCallUserName;
-module.exports.endCall = wRegularCleanup
+module.exports.endCall = wRegularCleanup;
 
 // process.on('SIGINT', function () {
 // 	wcl( "Shutting Down" );

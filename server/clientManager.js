@@ -4,6 +4,7 @@ var colors		= require("colors");
 var jsonfile	= require("jsonfile");
 
 var wEmitter	= require("../main.js").wEmitter;
+var wSkypeNames = require("../personal.js").skypeNames;
 
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -200,8 +201,8 @@ function BUTTON_PRESS_3( wArgArray ) {
 }
 
 function BUTTON_PRESS_4( wArgArray ) {
-	// SKYPE CAMERON
-	wArgArray = wArgArray || [ "live:ccerb96" ];
+	// SKYPE One
+	wArgArray = wArgArray || [ wSkypeNames.one ];
 	wcl( "PRESSED BUTTON 4" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
@@ -210,8 +211,8 @@ function BUTTON_PRESS_4( wArgArray ) {
 }
 
 function BUTTON_PRESS_5( wArgArray ) {
-	// SKYPE COLLIN
-	wArgArray = wArgArray || [ "live:46f88501549629cb" ];
+	// SKYPE Two
+	wArgArray = wArgArray || [ wSkypeNames.two ];
 	wcl( "PRESSED BUTTON 5" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
@@ -261,7 +262,6 @@ async function BUTTON_PRESS_12( wArgArray ) {
 	await wSleep( 1000 );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "LocalMedia";
-	//if ( LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "TVShows" ] )
 	startCurrentAction( [ { type: "TVShows" , last_played: LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "TVShows" ] } ] );
 }
 

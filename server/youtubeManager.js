@@ -62,15 +62,17 @@ var LIVE_MAN = {
 			LMFOLIDS.forEach( async function( wFollowerID , wIndex ) {
 				var wR1 = await LIVE_MAN.searchUserName( wFollowerID );
                 xResults.push(wR1);
-                if ( wIndex === ( LMFOLTOTAL - 1 ) ) { /*WRITE_YT_SF();*/ CACHED_RESULTS = xResults; resolve( xResults ); }
+                if ( wIndex === ( LMFOLTOTAL - 1 ) ) { WRITE_YT_SF(); CACHED_RESULTS = xResults; resolve( xResults ); }
 			});
 		});
 	},
 
 	searchUserName: async function( wChannelID ) {
 
-		var wURL ="https://www.youtube.com/user/" + wChannelID + "/videos?view=2&live_view=501&flow=grid";
-
+		var wURL = null;
+		if ( wChannelID.substring( 0 , 2 ) === "UC" ) { wURL = "https://www.youtube.com/channel/" + wChannelID + "/videos?view=2&live_view=501&flow=grid"; }
+		else { wURL = "https://www.youtube.com/user/" + wChannelID + "/videos?view=2&live_view=501&flow=grid"; }
+		
 		return new Promise( function( resolve , reject ) {
 			var wResults = [];
 			request( wURL , function ( err , response , body ) {
@@ -91,16 +93,16 @@ var LIVE_MAN = {
 		        		
 		        		for ( var j = 0; j < YT_BLACKLIST.LIVE.length; ++j ) {
 							if ( YT_BLACKLIST.LIVE[j] === wResults[i][ "id" ] ) { 
-								wcl( "Found Blacklisted ID --> " + wResults[i][ "id" ] );
+								//wcl( "Found Blacklisted ID --> " + wResults[i][ "id" ] );
 								wBL = true;
 							}
 						}
 						if ( wBL === false ) { 
 							YT_SF.LIVE.FOLLOWERS[ wChannelID ][ wResults[i][ "id" ] ] = wResults[i][ "title" ]; 
-							wcl( wChannelID + " --> " + wResults[i][ "id" ] );
+							//wcl( wChannelID + " --> " + wResults[i][ "id" ] );
 						}
 						else {
-							wcl( "trying to remove --> " + wResults[i][ "id" ] );
+							//wcl( "trying to remove --> " + wResults[i][ "id" ] );
 							try { delete YT_SF.LIVE.FOLLOWERS[ wChannelID ][ wResults[i][ "id" ] ]; }
 							catch( error ) { wcl( error ); }
 							try { delete wResults[i][ "id" ]; }
@@ -110,7 +112,7 @@ var LIVE_MAN = {
 		        	}
 
 				}
-
+				for ( var i = 0; i < wResults.length; ++i ) { wcl( wChannelID + " --> " + wResults[ i ][ "id" ] ); }
 				resolve( wResults );
 
 			});
@@ -202,8 +204,8 @@ function emitStagedFFTask() { wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION
 wEmitter.on( "FF_YT_Live_Background_Ready" , function() { emitStagedFFTask(); });
 async function startYTLiveBackgroundService() {
 	STAGED_FF_ACTION = "YTLiveBackground";
-	FIREFOX_MAN.openURL( "http://localhost:6969/youtubeLiveBackground" );
 	await LIVE_MAN.enumerateFollowers();
+	FIREFOX_MAN.openURL( "http://localhost:6969/youtubeLiveBackground" );
 }
 async function stopYTLiveBackgroundService() {
 	wEmitter.emit( "socketSendTask" , "shutdown" );
@@ -234,6 +236,12 @@ module.exports.updateLiveList = LIVE_MAN.enumerateFollowers;
 module.exports.addLiveFollower = LIVE_MAN.addFollower;
 module.exports.removeLiveFollower = LIVE_MAN.removeLiveFollower;
 
+module.exports.getFollowers = ()=> { return YT_SF; }
+
+module.exports.addLiveFollower = LIVE_MAN.addFollower;
+module.exports.removeLiveFollower = LIVE_MAN.removeFollower;
+module.exports.addLiveBlacklist = LIVE_MAN.addToBlacklist;
+module.exports.removeLiveBlacklist = LIVE_MAN.removeFromBlacklist;
 
 
 //LIVE_MAN.addFollower( "MontereyBayAquarium" );
