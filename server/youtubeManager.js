@@ -57,13 +57,17 @@ var LIVE_MAN = {
 		if ( !YT_SF.LIVE.FOLLOWERS ) { wcl("No Live Followers!!!"); return; }
 		LMFOLIDS = Object.keys( YT_SF.LIVE.FOLLOWERS );
 		LMFOLTOTAL = LMFOLIDS.length;
-		return new Promise( function( resolve , reject ) {
+		var x1 = 0;
+		return new Promise( async function( resolve , reject ) {
+
 			var xResults = [];
-			LMFOLIDS.forEach( async function( wFollowerID , wIndex ) {
-				var wR1 = await LIVE_MAN.searchUserName( wFollowerID );
+			while ( x1 < LMFOLTOTAL ) {
+				var wR1 = await LIVE_MAN.searchUserName( LMFOLIDS[ x1 ] );
                 xResults.push(wR1);
-                if ( wIndex === ( LMFOLTOTAL - 1 ) ) { WRITE_YT_SF(); CACHED_RESULTS = xResults; resolve( xResults ); }
-			});
+                x1 = x1 + 1;
+			}
+			CACHED_RESULTS = xResults;
+			resolve( xResults );
 		});
 	},
 
@@ -75,6 +79,7 @@ var LIVE_MAN = {
 		
 		return new Promise( function( resolve , reject ) {
 			var wResults = [];
+			var wFR = [];
 			request( wURL , function ( err , response , body ) {
 		
 		        if (err) { wcl( err ); reject(err); return; }
@@ -86,34 +91,26 @@ var LIVE_MAN = {
 		        	wResults.push( { title: $(this).text() , id: wID } );
 		        });
 
+		        if ( YT_BLACKLIST.LIVE.length < 1 ) { resolve( wResults ); }
+
 		        for ( var i = 0; i < wResults.length; ++i ) {
 
 		        	var wBL = false;
-		        	if ( YT_BLACKLIST.LIVE.length > 0 ) {
-		        		
-		        		for ( var j = 0; j < YT_BLACKLIST.LIVE.length; ++j ) {
-							if ( YT_BLACKLIST.LIVE[j] === wResults[i][ "id" ] ) { 
-								//wcl( "Found Blacklisted ID --> " + wResults[i][ "id" ] );
-								wBL = true;
-							}
-						}
-						if ( wBL === false ) { 
-							YT_SF.LIVE.FOLLOWERS[ wChannelID ][ wResults[i][ "id" ] ] = wResults[i][ "title" ]; 
-							//wcl( wChannelID + " --> " + wResults[i][ "id" ] );
-						}
-						else {
-							//wcl( "trying to remove --> " + wResults[i][ "id" ] );
-							try { delete YT_SF.LIVE.FOLLOWERS[ wChannelID ][ wResults[i][ "id" ] ]; }
-							catch( error ) { wcl( error ); }
-							try { delete wResults[i][ "id" ]; }
-							catch( error ) { wcl( error ); }
-						}
-
-		        	}
+		        	// Check VideoID against Blacklist File 
+	        		for ( var j = 0; j < YT_BLACKLIST.LIVE.length; ++j ) { if ( YT_BLACKLIST.LIVE[j] === wResults[i][ "id" ] ) { wBL = true; } }
+					
+					// If Not In Blacklist , add to Results
+					if ( wBL === false ) { YT_SF.LIVE.FOLLOWERS[ wChannelID ][ wResults[i][ "id" ] ] = wResults[i][ "title" ]; wFR.push( wResults[i] ); }
+					
+					else {
+						//wcl( "trying to remove --> " + wResults[i][ "id" ] );
+						try { delete YT_SF.LIVE.FOLLOWERS[ wChannelID ][ wResults[i][ "id" ] ]; }
+						catch( error ) { wcl( error ); }
+					}
 
 				}
 				for ( var i = 0; i < wResults.length; ++i ) { wcl( wChannelID + " --> " + wResults[ i ][ "id" ] ); }
-				resolve( wResults );
+				resolve( wFR );
 
 			});
 		});
@@ -163,6 +160,8 @@ var LIVE_MAN = {
 
 
 // https://github.com/ceberous/MediaBrowser/blob/master/server/videoManager.js
+// from view-source:https://www.youtube.com/user/$USER_NAME/about
+// data-channel-external-id=
 // FEED_MAN
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -206,6 +205,7 @@ async function startYTLiveBackgroundService() {
 	STAGED_FF_ACTION = "YTLiveBackground";
 	await LIVE_MAN.enumerateFollowers();
 	FIREFOX_MAN.openURL( "http://localhost:6969/youtubeLiveBackground" );
+	WRITE_YT_SF();
 }
 async function stopYTLiveBackgroundService() {
 	wEmitter.emit( "socketSendTask" , "shutdown" );
