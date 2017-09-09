@@ -85,6 +85,7 @@ function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key ,
 // =====================================================================
 // =====================================================================
 var BTN_MAN 			= require( "./buttonManager.js" );
+var EMAIL_MAN 			= require( "./emailManager.js" );
 var USB_IR_MAN 			= require( "./usbIRManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
 var MOPIDY_MAN 			= require( "./mopidyManager.js" );

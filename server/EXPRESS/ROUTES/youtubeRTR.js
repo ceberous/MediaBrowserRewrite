@@ -5,9 +5,9 @@ var youtubeCTRL = require( "../CONTROLLERS/youtubeCTRL.js" );
 
 router.get( '/followers/' , youtubeCTRL.getFollowers );
 
-router.get( '/live-add-follower/:wID' , youtubeCTRL.addLiveFollower );
-router.get( '/live-remove-follower/:wID' , youtubeCTRL.removeLiveFollower );
-router.get( '/live-add-blacklist/:wID' , youtubeCTRL.addLiveBlacklist );
-router.get( '/live-remove-blacklist/:wID' , youtubeCTRL.removeLiveBlacklist );
+router.get( '/live/follower/add/:wID' , youtubeCTRL.addLiveFollower );
+router.get( '/live/follower/remove/:wID' , youtubeCTRL.removeLiveFollower );
+router.get( '/live/blacklist/add/:wID' , youtubeCTRL.addLiveBlacklist );
+router.get( '/live/blacklist/remove/:wID' , youtubeCTRL.removeLiveBlacklist );
 
 module.exports = router;

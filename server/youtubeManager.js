@@ -6,7 +6,8 @@ var path = require("path");
 var jsonfile = require("jsonfile");
 
 var wEmitter = require('../main.js').wEmitter;
-var FIREFOX_MAN = require( "./firefoxManager.js" );
+var FF_OPEN = require( "./firefoxManager.js" ).openURL;
+var FF_CLOSE = require( "./firefoxManager.js" ).terminateFF;
 
 function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -220,7 +221,7 @@ var FEED_MAN = {
 								completed: false ,
 								skipped: false ,
 								current_time: 0 ,
-								remaining_time: 0,
+								remaining_time: 0 ,
 								duration: 0 ,
 							};
 						}
@@ -247,15 +248,17 @@ var FEED_MAN = {
 	},
 
 	addVideo: function( wID , wOBJ ) {
-
+		YT_SF[ "FEED" ][ wID ] = wOBJ;
+		WRITE_YT_SF();
 	},
 
 	removeVideo: function( wID ) {
-
+		try { delete YT_SF[ "FEED" ][ wID ]; }
+		catch( error ) { console.log( error ); }
 	},
 
 	updateVideo: function( wID , wOBJ ) {
-
+		if ( YT_SF[ "FEED" ][ wID ] ) { YT_SF[ "FEED" ][ wID ] = wOBJ; WRITE_YT_SF(); }
 	},
 
 	addFollower: function( wID ) {
@@ -303,13 +306,13 @@ wEmitter.on( "FF_YT_Live_Background_Ready" , function() { emitStagedFFTask(); })
 async function startYTLiveBackgroundService() {
 	STAGED_FF_ACTION = "YTLiveBackground";
 	await LIVE_MAN.enumerateFollowers();
-	FIREFOX_MAN.openURL( "http://localhost:6969/youtubeLiveBackground" );
+	FF_OPEN( "http://localhost:6969/youtubeLiveBackground" );
 	WRITE_YT_SF();
 }
 async function stopYTLiveBackgroundService() {
 	wEmitter.emit( "socketSendTask" , "shutdown" );
 	await wSleep( 3000 );
-	FIREFOX_MAN.terminateFF();
+	FF_CLOSE();
 }
 
 function startYTStandardService() {

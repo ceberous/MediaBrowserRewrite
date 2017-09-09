@@ -29,26 +29,27 @@ app.use(function(req, res, next) {
 });
 */
 
-// Routes
+// Main-Routes
 app.get( "/" , function( req , res , next ) {
 	res.render( 'index.html' );
 });
-
-app.get( "/youtubeLiveBackground" , function( req , res , next ) {
-	res.render( 'youtubeLiveBackground.html' );
-});
-
-
 var adminPanelRoutes = require( "./ROUTES/adminPanelRTR.js" );
 app.use('/admin/v1/' , adminPanelRoutes );
 app.get( "/admin" , function( req , res , next ) {
 	res.render( 'adminPanel.html' );
 });
-
 var buttonsRoutes = require( "./ROUTES/buttonsRTR.js" );
 app.use('/buttonpress/' , buttonsRoutes );
 
+// Youtube-Routes
+app.get( "/youtubeLiveBackground" , function( req , res , next ) {
+	res.render( 'youtubeLiveBackground.html' );
+});
 var youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
-app.use('/youtube-man/' , youtubeRoutes );
+app.use('/youtube/' , youtubeRoutes );
+
+// Twitch-Routes
+var twitchRoutes = require( "./ROUTES/twitchRTR.js" );
+app.use('/twitch/' , twitchRoutes );
 
 module.exports = app;
