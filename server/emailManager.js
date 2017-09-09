@@ -40,8 +40,8 @@ const imap = {
   user: wEmailCREDS.listenEmail ,
   password: wEmailCREDS.listenEmailPass ,
   host: wEmailCREDS.listenEmailIMAP ,
-  port: 993 , // imap port
-  tls: true ,// use secure connection
+  port: 993 ,
+  tls: true ,
   tlsOptions: { rejectUnauthorized: false }
 };
 const wEmailNotifier = notifier( imap );
@@ -63,7 +63,7 @@ function parseEmail( wMail ) {
             parseTwitch( wMail );
             break;
         default:
-            console.log("unknown email , skipping");
+            //console.log("unknown email , skipping");
             break;
     }
 }
