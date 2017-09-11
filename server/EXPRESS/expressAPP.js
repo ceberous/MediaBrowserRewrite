@@ -49,6 +49,9 @@ var youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
 app.use('/youtube/' , youtubeRoutes );
 
 // Twitch-Routes
+app.get( "/twitchLive" , function( req , res , next ) {
+	res.render( "twitchLive.html" );
+});
 var twitchRoutes = require( "./ROUTES/twitchRTR.js" );
 app.use('/twitch/' , twitchRoutes );
 

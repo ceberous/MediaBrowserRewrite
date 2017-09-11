@@ -1,4 +1,5 @@
-//var GET_FOLLOWERS = require( "../../twitchManager.js" ).getFollowers;
+var GET_LSS = require( "../../clientManager.js" ).get_Last_SS_PROP;
+const getLiveFollowers = function() { return GET_LSS( "Twitch" ); }
 
 // var FEED_ADD_FOLLOWER = require( "../../youtubeManager.js" ).addFeedFollower;
 // var FEED_REMOVE_FOLLOWER = require( "../../youtubeManager.js" ).removeFeedFollower;
@@ -9,7 +10,7 @@ function sendJSONResponse( res , status , content ) { if ( status ) { res.status
 
 
 //module.exports.getFollowers = function( req , res ) { sendJSONResponse( res , 200 , GET_FOLLOWERS() ); };
-module.exports.getFollowers = function( req , res ) { sendJSONResponse( res , 200 , { status: "we are here" } ); };
+module.exports.getLiveFollowers = function( req , res ) { sendJSONResponse( res , 200 , getLiveFollowers() ); };
 
 // module.exports.addLiveFollower = function( req , res ) {
 // 	LIVE_ADD_FOLLOWER( req.params.wID );

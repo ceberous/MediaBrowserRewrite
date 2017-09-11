@@ -3,11 +3,11 @@ var router = express.Router();
 
 var twitchCTRL = require( "../CONTROLLERS/twitchCTRL.js" );
 
-router.get( '/followers/' , twitchCTRL.getFollowers );
+router.get( '/live/' , twitchCTRL.getLiveFollowers );
 
-// router.get( '/live-add-follower/:wID' , youtubeCTRL.addLiveFollower );
-// router.get( '/live-remove-follower/:wID' , youtubeCTRL.removeLiveFollower );
-// router.get( '/live-add-blacklist/:wID' , youtubeCTRL.addLiveBlacklist );
-// router.get( '/live-remove-blacklist/:wID' , youtubeCTRL.removeLiveBlacklist );
+// router.get( '/live/follower/add/:wID' , youtubeCTRL.addLiveFollower );
+// router.get( '/live/follower/remove/:wID' , youtubeCTRL.removeLiveFollower );
+// router.get( '/live/blacklist/add/:wFollower/:wID' , youtubeCTRL.addLiveBlacklist );
+// router.get( '/live/blacklist/remove/:wFollower/:wID' , youtubeCTRL.removeLiveBlacklist );
 
 module.exports = router;

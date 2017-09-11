@@ -2,7 +2,7 @@ const notifier = require( "mail-notifier" );
 const sendEmail = require( "emailjs/email" );
 
 const wEmailCREDS = require( "../personal.js" ).emailServer;
-const wNotifyTwitchManViewerIsLive = require( "./twitchManager.js" ).followerIsNowLive;
+const wNotifyTwitchManViewerIsLive = require( "./twitchManager.js" ).followerIsNowLiveEmailUpdate;
 
 var sendEmailServer = null;
 function wConnectSendEmailServer() {

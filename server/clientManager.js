@@ -16,6 +16,7 @@ module.exports.update_Last_SS = xUpdate_Last_SS;
 module.exports.update_Last_SS_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP;
 module.exports.xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
 module.exports.get_Last_SS = function() { return LAST_SS; };
+module.exports.get_Last_SS_PROP = function( wProp ) { return LAST_SS[ wProp ]; };
 module.exports.restorePreviousAction = restorePreviousAction;
 module.exports.pressButtonMaster = wPressButtonMaster;
 // ==========================================================================================================
@@ -194,7 +195,10 @@ function BUTTON_PRESS_2( wArgArray ) {
 
 function BUTTON_PRESS_3( wArgArray ) {
 	// YOUTUBE STANDARD / TWITCH LIVE 
-	wArgArray = wArgArray || [ "twitch.tv/tim885885" ];
+	wArgArray = wArgArray || [ "stormviewlive" ];
+	// if ( LAST_SS[ "Twitch" ][ "LIVE" ].length > 0 ) {
+	// 	wArgArray = [ "twitch.tv/" + LAST_SS[ "Twitch" ][ "LIVE" ][0].name , "720p" ];
+	// }
 	wcl( "PRESSED BUTTON 3" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;

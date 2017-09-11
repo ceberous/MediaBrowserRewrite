@@ -123,7 +123,7 @@ async function LAUNCH_STREAM_LINK_MPV( wURL , wQuality , wPlayerOptions ) {
 	    detached: true
 	}); // child._channel.unref()
 	
-	await sleep ( 3000 );
+	await sleep ( 10000 );
 	x1.unref();
 
 	await sleep( 40000 );

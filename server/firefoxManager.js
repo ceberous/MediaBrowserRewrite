@@ -107,13 +107,17 @@ var ffWrapper = {
 		xdoWrapper.windowRaise( ffWrapper.windowID );
 		xdoWrapper.restoreFullScreen( ffWrapper.windowID );
 		xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
-		setTimeout( function() { xdoWrapper.mouseLeftClick( ffWrapper.windowID ); } , 500 );
+		setTimeout( function() { xdoWrapper.mouseLeftClick(); } , 500 );
 		setTimeout( function() { xdoWrapper.pressKeyboardKey( "f" ); } , 1000 );
 
 	},
 
 	twitchFullScreen: function() {
-
+		xdoWrapper.windowRaise( ffWrapper.windowID );
+		xdoWrapper.restoreFullScreen( ffWrapper.windowID );
+		xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
+		setTimeout( function() { xdoWrapper.mouseDoubleClick(); } , 1000 );
+		//setTimeout( function() { xdoWrapper.mouseLeftClick( ffWrapper.windowID ); } , 500 );
 	},
 
 };

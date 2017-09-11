@@ -80,7 +80,7 @@ function wRestoreFullScreen( wID ) {
 }
 
 function wMoveMouseToCenterOfWindow() {
-	var centerOfWindow2Screen = "xdotool mousemove --window %0 2537 510"
+	var centerOfWindow2Screen = "xdotool mousemove --window %0 2537 510";
 	//var centerOfWindow13Inch = "xdotool mousemove --window %0 687 282";
 	
 	//var centerOfWindow2ndMonitor = "xdotool mousemove 687 282";
@@ -88,8 +88,14 @@ function wMoveMouseToCenterOfWindow() {
 }
 
 function wMouseLeftClick() {
-	var click = "xdotool click 1"
+	var click = "xdotool click 1";
 	exec( click , { silent: true , async: false } );
+}
+
+function wMouseDoubleClick() {
+	var click = "xdotool click --repeat 2 --delay 200 1";
+	exec( click , { silent: true , async: false } );
+	wcl( "mouse double clicked" );
 }
 
 function wPressKeyboardKey( wKey ) {
@@ -109,6 +115,7 @@ module.exports.resetFocus 					= wResetFocus;
 module.exports.restoreFullScreen 			= wRestoreFullScreen;
 module.exports.moveMouseToCenterOfWindow 	= wMoveMouseToCenterOfWindow;
 module.exports.mouseLeftClick 				= wMouseLeftClick;
+module.exports.mouseDoubleClick 			= wMouseDoubleClick;
 module.exports.pressKeyboardKey 			= wPressKeyboardKey;
 
 module.exports.setFullScreen = function( wID , wScreenNum ) {
