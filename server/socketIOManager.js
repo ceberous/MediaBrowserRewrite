@@ -21,7 +21,8 @@ module.exports.wOC = function( socket ) {
 	socket.on( 'youtubeReadyForFullScreenGlitch' , function( data ){ wEmitter.emit( "ffGlitchFullScreenYoutube" ); });
 
 	socket.on( "twitchLiveReady" , function( data ) { wEmitter.emit( "FF_Twitch_Live_Ready" ); } );
-	socket.on( "twitchReadyForFullScreenGlitch" , function( data ) { wEmitter.emit( "ffGlitchFullScreenTwitch" ); } );
+	socket.on( "twitchReadyForFullScreenGlitch" , function( data ) { wEmitter.emit( "ffGlitchFullScreenTwitch" ); wEmitter.emit("twitchLivePlaying"); } );
+	socket.on( "twitchLiveStatus" , function( data ) { wEmitter.emit( "twitchLiveStatus" , data ); });
 
 	wEmitter.on( 'controlStatusUpdate' , function( wLast_SS ) { socket.emit( 'controlStatusUpdate' , wLast_SS ); } );
 

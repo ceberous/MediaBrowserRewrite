@@ -76,6 +76,10 @@ function wConfirmLiveStatus() {
 // =========================================================================================================================
 // =========================================================================================================================
 
+	// State-Definitions
+var PLAYING = false;
+
+
 
 
 	// Sate-Controllers
@@ -92,7 +96,11 @@ async function wStopLiveTwitchStreamlink() {
 
 var STAGED_FF_ACTION = null;
 var STAGED_LIVE_USERS = null;
-function emitStagedFFTask() { wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION , { liveUsers: [ STAGED_LIVE_USERS ] } ); }
+async function emitStagedFFTask() { 
+	wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION , { liveUsers: [ STAGED_LIVE_USERS ] } );
+	await wsleep( 20000 );
+	testingNextChannel();
+}
 wEmitter.on( "FF_Twitch_Live_Ready" , function() { emitStagedFFTask(); });
 function wOpenLiveTwitchFirefox( wUserName , wQuality ) {
 	STAGED_FF_ACTION = "StartLiveTwitch";
@@ -104,6 +112,13 @@ async function wStopLiveTwitchFirefox() {
 	await wsleep( 3000 );
 	FF_CLOSE();
 }
+
+wEmitter.on( "twitchLiveStatus" , function( wData ) {
+	console.log( wData );
+});
+
+
+function testingNextChannel() { wEmitter.emit( "socketSendTask" , "twitchLiveNewChannel" , { newChannelName: "awkwards_travel" } ); }
 // =========================================================================================================================
 // =========================================================================================================================
 

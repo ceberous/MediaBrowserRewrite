@@ -195,7 +195,7 @@ function BUTTON_PRESS_2( wArgArray ) {
 
 function BUTTON_PRESS_3( wArgArray ) {
 	// YOUTUBE STANDARD / TWITCH LIVE 
-	wArgArray = wArgArray || [ "stormviewlive" ];
+	wArgArray = wArgArray || [ "dizzykitten" ];
 	// if ( LAST_SS[ "Twitch" ][ "LIVE" ].length > 0 ) {
 	// 	wArgArray = [ "twitch.tv/" + LAST_SS[ "Twitch" ][ "LIVE" ][0].name , "720p" ];
 	// }
