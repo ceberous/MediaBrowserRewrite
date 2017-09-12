@@ -18,6 +18,17 @@ var wUpdate_Last_SS = require( "./clientManager.js" ).update_Last_SS;
 // pip install 'git+https://github.com/belak/mopidy@add-download-flag-to-playbin#egg=mopidy' --upgrade
 // -->> but requires mopidy to be run stand-alone aka not as a service 
 
+// .... so....
+// 1.) sudo pip install 'git+https://github.com/belak/mopidy@add-download-flag-to-playbin#egg=mopidy' --upgrade
+// 2.) sudo pip install Mopidy-MusicBox-Webclient
+// 3.) sudo pip install -U requests[security]
+// 4.) sudo pip install mopidy-gmusic
+// 5.) Change File --> /usr/local/lib/python2.7/dist-packages/gmusicapi/clients/mobileclient.py
+// 							--> @ Line Number 143
+//									self.android_id = self._validate_device_id(device_id, is_mac=is_mac)
+// 							--> TO
+//									self.android_id = "VALID_DEVICE_ID"
+
 var colors = require("colors");
 var path = require("path");
 var jsonfile = require("jsonfile");
@@ -34,13 +45,13 @@ var DAY = 86400000;
 
 var mopidy = null;
 Mopidy.prototype._handleWebSocketError = function (error) { console.log( "Mopdiy WebSocket ERROR" ); this._cleanup(); };
-// try {
-// 	mopidy = new Mopidy({ 
-// 		webSocketUrl: "ws://localhost:6680/mopidy/ws/",
-// 		autoConnect: true,
-// 		callingConvention: "by-position-or-by-name"
-// 	});
-// } catch( error ) { wcl( "ERROR --> Mopdiy Binary not Running !" ); }
+try {
+	mopidy = new Mopidy({ 
+		webSocketUrl: "ws://localhost:6690/mopidy/ws/",
+		autoConnect: true,
+		callingConvention: "by-position-or-by-name"
+	});
+	} catch( error ) { wcl( "ERROR --> Mopdiy Binary not Running !" ); }
 
 
 var LIB_CACHE = null;
@@ -50,6 +61,7 @@ var UPDATE_OVERRIDE = false;
 try { LIB_CACHE = jsonfile.readFileSync( LIB_CACHE_SFP ); }
 catch( error ) { wcl( error ); UPDATE_OVERRIDE = true; LIB_CACHE = { "lastUpdatedTime": null, "playlists": { "classic": {} , "edm": {} , "misc": {} , "relax": {} , "unknown": {} } }; WRITE_LIBRARY_CACHE(); }
 
+var NOW_PLAYING = false;
 
 var MM = {
 
@@ -79,11 +91,12 @@ var MM = {
 		//process.exit(1);
 	},
 
-	startNewTask: function( wTaskName , wOption1 , wOption2 ) {
+	startNewTask: async function( wTaskName , wOption1 , wOption2 ) {
 
 		switch( wTaskName ) {
 			case "buildAndPlayRandomGenreList":
-				MM.buildAndPlayRandomGenreList( wOption1 , wOption2 );
+				var x1 = await MM.buildAndPlayRandomGenreList( wOption1 , wOption2 );
+				if ( x1 === "success" ) { NOW_PLAYING = true; NOW_PLAYING_IDX = 0; }
 				break;
 			case "playRandomListFromGenre":
 				MM.TRACKLIST.loadRandomList( wOption1 ); // genre
@@ -506,34 +519,37 @@ var MM = {
 }
 
 
-// mopidy.on( 'state:online' , async function () {
-//     var x1 = await MM.init();
-//     if ( x1 === "success" ) { await wUpdate_Last_SS( "Mopidy" , "active" , true ); }
-//     else { await wUpdate_Last_SS( "Mopidy" , "active" , false ); }
-// });
+mopidy.on( 'state:online' , async function () {
+    var x1 = await MM.init();
+    wcl( "Connected !" );
+    if ( x1 === "success" ) { await wUpdate_Last_SS( "Mopidy" , "active" , true ); }
+    else { await wUpdate_Last_SS( "Mopidy" , "active" , false ); }
+});
 
-// mopidy.on( 'event:trackPlaybackEnded' , async function ( wEvent ) {
-// 	wcl( "PLAYBACK --> ENDED" );
-// });
+mopidy.on( 'event:trackPlaybackEnded' , async function ( wEvent ) {
+	wcl( "PLAYBACK --> ENDED" );
+	var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
+	console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );	
+});
 
-// mopidy.on( 'event:trackPlaybackStarted' , async function ( wEvent ) {
-// 	await sleep( 1000 );
-// 	var wCT = await MM.PLAYBACK.getCurrentTrack();
-// 	wcl( "PLAYBACK --> STARTED || CURRENT-TRACK --> " );
-// 	//wEmitter.emit( "update_Last_SS" , "Mopidy" , "nowPlaying" , wCT );
-// 	await wUpdate_Last_SS( "Mopidy" , "nowPlaying" , wCT );
-// 	console.log( wCT );
-// });
+mopidy.on( 'event:trackPlaybackStarted' , async function ( wEvent ) {
+	await sleep( 1000 );
+	var wCT = await MM.PLAYBACK.getCurrentTrack();
+	wcl( "PLAYBACK --> STARTED || CURRENT-TRACK --> " );
+	//wEmitter.emit( "update_Last_SS" , "Mopidy" , "nowPlaying" , wCT );
+	await wUpdate_Last_SS( "Mopidy" , "nowPlaying" , wCT );
+	console.log( wCT );
+});
 
-// mopidy.on( 'event:playbackStateChanged' , async function ( wEvent ) {
-//     await sleep( 3000 );
-//     wcl( "PLAYBACK --> CHANGED --> " );
-//     console.log( wEvent );
-//     var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
-//     console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
+mopidy.on( 'event:playbackStateChanged' , async function ( wEvent ) {
+	await sleep( 3000 );
+	wcl( "PLAYBACK --> CHANGED --> " );
+	console.log( wEvent );
+	var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
+	console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
 
-// 	if ( wCTIDX === null ) { /* start next playlist of CURRENT_ACTION type */ }
-// });
+	if ( wCTIDX === null ) { /* start next playlist of CURRENT_ACTION type */ }
+});
 
 module.exports.buildAndPlayRandomGenreList = function( wGenre , wListName ) { return MM.buildAndPlayRandomGenreList( wGenre , wListName ); }
 
@@ -552,6 +568,7 @@ module.exports.getCachedPlaylists = function() { return MM.LIBRARY.getCachedPlay
 module.exports.updatePlaylistGenre = function( wPlaylistID , wOldGenre , wNewGenre ) { return MM.LIBRARY.updatePlaylistGenre( wPlaylistID , wOldGenre , wNewGenre ); };
 
 module.exports.shutdown = function() { MM.shutdown(); };
+//module.exports.freshenUP = function() { MM.PLAYBACK.stop();  };
 
 module.exports.startNewTask = MM.startNewTask;
 

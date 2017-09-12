@@ -3,7 +3,10 @@ var request = require("request");
 var path = require("path");
 var jsonfile = require("jsonfile");
 
-// REQUIREMENT =
+// https://launchpad.net/~overcoder/+archive/ubuntu/hexchat
+// --> join "irc.chat.twitch.tv/6667"
+// --> https://twitchapps.com/tmi/
+// https://obsproject.com/forum/threads/script-twitch-irc-chat-overlay-txt-output-last-fm.2713/
 // https://addons.mozilla.org/en-US/firefox/addon/twitch-video-control/?src=search
 
 function wcl( wSTR ) { console.log( colors.white.bgMagenta( "[TWITCH_MAN] --> " + wSTR ) ); }

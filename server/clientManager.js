@@ -154,18 +154,18 @@ async function restorePreviousAction( wArg ) {
 function nextMediaInCurrentAction() { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].next(); } }
 function previousMediaInCurrentAction() { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].previous(); } }
 
-function properShutdown() { stopCurrentAction(); LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION; WRITE_LAST_SAVED_STATE_FILE(); }
+function properShutdown() { stopCurrentAction(); MOPIDY_MAN.shutdown(); LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION; WRITE_LAST_SAVED_STATE_FILE(); }
 //wEmitter.on( "restorePreviousAction" , function() { console.log("we should be restoring previous action = " + LAST_SS.PREVIOUS_ACTION); restorePreviousAction(); });
 wEmitter.on( "closeEverything" , function() { properShutdown(); });
 
 function startMopidyYTLiveBackground( wGenre ) {
-	//LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
-	//MOPIDY_MAN.startNewTask( LAST_SS.Mopidy.activeTask , wGenre , "RandomGen1" );
+	LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
+	MOPIDY_MAN.startNewTask( LAST_SS.Mopidy.activeTask , wGenre , "RandomGen1" );
 	YOUTUBE_MAN.startYTLiveBackground();
 
 }
 function stopMopidyYTLiveBackground() {
-	MOPIDY_MAN.shutdown();
+	MOPIDY_MAN.stop();
 	YOUTUBE_MAN.stopYTLiveBackground();
 }
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
