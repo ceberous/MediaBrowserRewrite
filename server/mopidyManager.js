@@ -334,8 +334,8 @@ var MM = {
 
 		getCurrentTrackIndex: function() {
 			return new Promise( function( resolve , reject ) {
-				try { mopidy.tracklist.index( {} ).then( function( data ) { resolve( data ); }).catch( function( wERR ) { reject( wERR ); } );	}
-				catch( error ) { console.log( error ); reject( error ); }
+				try { mopidy.tracklist.index( {} ).then( function( data ) { resolve( data ); }).catch( function( wERR ) { /*console.log( error );*/ } ); }
+				catch( error ) { /*console.log( error );*/ /* reject( error ); */ }
 			});
 		},
 
@@ -575,8 +575,8 @@ module.exports.startNewTask = MM.startNewTask;
 module.exports.pause = function() { MM.PLAYBACK.pause(); };
 module.exports.resume = function() { MM.PLAYBACK.resume(); };
 module.exports.stop = function() { MM.PLAYBACK.stop(); };
-module.exports.previousSong = function() { MM.PLAYBACK.previous(); };
-module.exports.nextSong = function() { MM.PLAYBACK.next(); };
+module.exports.previous = function() { MM.PLAYBACK.previous(); };
+module.exports.next = function() { MM.PLAYBACK.next(); };
 
 // process.on('SIGINT', function () {
 // 	wcl( "Shutting Down" );

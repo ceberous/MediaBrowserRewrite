@@ -39,8 +39,8 @@ function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 			// console.log("\n");
 			// console.log( LAST_SS[ "LocalMedia" ] );
 			// console.log("\n");
-			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
-			console.log( wOBJ );
+			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " + wOBJ);
+			//console.log( wOBJ );
 			LAST_SS[ wProp ][ xProp ] = wOBJ;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -52,8 +52,8 @@ function xUpdate_Last_SS( wProp , xProp , wOBJ ) {
 function xUpdate_Last_SS_OBJ_PROP( wProp , xProp , wOBJ_Key , jProp ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " );
-			console.log( jProp );
+			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " <-- TO --> " + jProp );
+			//console.log( jProp );
 			LAST_SS[ wProp ][ xProp ][ wOBJ_Key ] = jProp;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -68,8 +68,8 @@ function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key ,
 			// console.log("\n");
 			// console.log( LAST_SS[ "LocalMedia" ] );
 			// console.log("\n");			
-			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " --- " + wOBJ_Key + " --- " + wSECONDARY_KEY +" <-- TO --> " );
-			console.log( jProp );
+			wcl( "updating LAST_SS property --> " + wProp + " -- " + xProp + " --- " + wOBJ_Key + " --- " + wSECONDARY_KEY +" <-- TO --> " + jProp );
+			//console.log( jProp );
 			LAST_SS[ wProp ][ xProp ][ wOBJ_Key ][ wSECONDARY_KEY ] = jProp;
 			WRITE_LAST_SAVED_STATE_FILE();
 			wEmitter.emit( "controlStatusUpdate" , LAST_SS );
@@ -101,7 +101,11 @@ var YOUTUBE_MAN			= require( "./youtubeManager.js" );
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 const STATE_ACTION_MAP = {
-	"MopidyYTLiveBackground": { start: startMopidyYTLiveBackground , stop: stopMopidyYTLiveBackground , pause: MOPIDY_MAN.pause , resume: MOPIDY_MAN.resume  },
+	"MopidyYTLiveBackground": { 
+		start: startMopidyYTLiveBackground , stop: stopMopidyYTLiveBackground , 
+		pause: MOPIDY_MAN.pause , resume: MOPIDY_MAN.resume ,
+		next: MOPIDY_MAN.next , previous: MOPIDY_MAN.previous
+	},
 	"YTStandard": { start: YOUTUBE_MAN.startYTStandard , stop: YOUTUBE_MAN.stopYTStandard },
 	"TwitchLive": { start: TWITCH_MAN.playLive , stop: TWITCH_MAN.stopLive },
 	"SkypeCall": { start: SKYPE_MAN.startCall , stop: SKYPE_MAN.endCall },
@@ -161,7 +165,7 @@ wEmitter.on( "closeEverything" , function() { properShutdown(); });
 function startMopidyYTLiveBackground( wGenre ) {
 	LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
 	MOPIDY_MAN.startNewTask( LAST_SS.Mopidy.activeTask , wGenre , "RandomGen1" );
-	YOUTUBE_MAN.startYTLiveBackground();
+	//YOUTUBE_MAN.startYTLiveBackground();
 
 }
 function stopMopidyYTLiveBackground() {
@@ -195,10 +199,11 @@ function BUTTON_PRESS_2( wArgArray ) {
 
 function BUTTON_PRESS_3( wArgArray ) {
 	// YOUTUBE STANDARD / TWITCH LIVE 
-	wArgArray = wArgArray || [ "dizzykitten" ];
-	// if ( LAST_SS[ "Twitch" ][ "LIVE" ].length > 0 ) {
-	// 	wArgArray = [ "twitch.tv/" + LAST_SS[ "Twitch" ][ "LIVE" ][0].name , "720p" ];
-	// }
+	wArgArray = wArgArray || [ "exbc" ];
+	console.log( LAST_SS[ "Twitch" ][ "LIVE" ] );
+	if ( LAST_SS[ "Twitch" ][ "LIVE" ].length > 0 ) {
+		wArgArray = [ "twitch.tv/" + LAST_SS[ "Twitch" ][ "LIVE" ][0].name , "720p" ];
+	}
 	wcl( "PRESSED BUTTON 3" );
 	stopCurrentAction();
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;

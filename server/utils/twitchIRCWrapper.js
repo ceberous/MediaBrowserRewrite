@@ -18,7 +18,7 @@ var twitchIRCClient = new tmi.client({
         username: "madalbreiht",
         password: "oauth:xh6hehkvbg60bovzocuedq6wciu0i4"
     },    
-    channels: ["#ram_ram_ram_ram"]
+    channels: ["#exbc"]
 });
   
 var EMOTES = {

@@ -102,7 +102,7 @@ var STAGED_LIVE_USERS = null;
 async function emitStagedFFTask() { 
 	wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION , { liveUsers: [ STAGED_LIVE_USERS ] } );
 	await wsleep( 20000 );
-	testingNextChannel();
+	//testingNextChannel();
 }
 wEmitter.on( "FF_Twitch_Live_Ready" , function() { emitStagedFFTask(); });
 function wOpenLiveTwitchFirefox( wUserName , wQuality ) {
