@@ -164,9 +164,10 @@ wEmitter.on( "closeEverything" , function() { properShutdown(); });
 
 function startMopidyYTLiveBackground( wGenre ) {
 	LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
+	LAST_SS.Mopidy.selectedGenre = wGenre;
+	LAST_SS.Mopidy.activeListName = "RandomGen1";
 	MOPIDY_MAN.startNewTask( LAST_SS.Mopidy.activeTask , wGenre , "RandomGen1" );
-	//YOUTUBE_MAN.startYTLiveBackground();
-
+	YOUTUBE_MAN.startYTLiveBackground();
 }
 function stopMopidyYTLiveBackground() {
 	MOPIDY_MAN.stop();
@@ -182,7 +183,7 @@ function stopMopidyYTLiveBackground() {
 function BUTTON_PRESS_1( wArgArray ) {
 	wArgArray = wArgArray || [ "classic" ];
 	wcl( "PRESSED BUTTON 1" );
-	stopCurrentAction();
+	if ( LAST_SS.CURRENT_ACTION !== "MopidyYTLiveBackground" ) { stopCurrentAction(); }
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
 	startCurrentAction( wArgArray );
@@ -191,7 +192,7 @@ function BUTTON_PRESS_1( wArgArray ) {
 function BUTTON_PRESS_2( wArgArray ) {
 	wcl( "PRESSED BUTTON 2" );
 	wArgArray = wArgArray || [ "edm" ];
-	stopCurrentAction();
+	if ( LAST_SS.CURRENT_ACTION !== "MopidyYTLiveBackground" ) { stopCurrentAction(); }
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
 	LAST_SS.CURRENT_ACTION = "MopidyYTLiveBackground";
 	startCurrentAction( wArgArray );
@@ -261,9 +262,15 @@ function BUTTON_PRESS_10( wArgArray ) {
 	wcl( "PRESSED BUTTON 10" );
 }
 
-function BUTTON_PRESS_11( wArgArray ) {
+async function BUTTON_PRESS_11( wArgArray ) {
 	// LOCAL ODYSSEY
 	wcl( "PRESSED BUTTON 11" );
+	stopCurrentAction();
+	await wSleep( 1000 );
+	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
+	LAST_SS.CURRENT_ACTION = "LocalMedia";
+	startCurrentAction( [ { type: "Odyssey" , last_played: LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "Odyssey" ] } ] );
+	YOUTUBE_MAN.startYTLiveBackground();
 }
 
 async function BUTTON_PRESS_12( wArgArray ) {

@@ -34,6 +34,14 @@ var path = require("path");
 var jsonfile = require("jsonfile");
 var Mopidy = require("mopidy");
 
+function getRandomFromRange( wMin , wMax ) { return Math.floor( Math.random() * ( wMax - wMin + 1 ) ) + wMin; }
+
+Math.seed = function( s ) { return function() { s = Math.sin( s ) * 10000; return s - Math.floor( s ); }; };
+var wRanSeedStart = getRandomFromRange( 1 , 100 );
+var random1 = Math.seed( wRanSeedStart );
+var random2 = Math.seed( random1() );
+Math.random = Math.seed( random2() );
+
 function wcl( wSTR ) { console.log( colors.white.bgBlue( "[MOPIDY_MAN] --> " + wSTR ) ); }
 function tryIgnoreError( wFunc ) { try { wFunc(); } catch( error ) { return; } }
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -65,7 +73,10 @@ var NOW_PLAYING = false;
 
 var MM = {
 
-	firstLaunchReady: false,
+	firstLaunchReady: false ,
+	activeTask: null ,
+	selectedGenre: null ,
+	activeListName: null ,
 
 	init: function() {
 		return new Promise( async function( resolve , reject ) {
@@ -95,8 +106,11 @@ var MM = {
 
 		switch( wTaskName ) {
 			case "buildAndPlayRandomGenreList":
+				MM.activeTask = wTaskName;
+				MM.selectedGenre = wOption1;
+				MM.activeListName = wOption2;
 				var x1 = await MM.buildAndPlayRandomGenreList( wOption1 , wOption2 );
-				if ( x1 === "success" ) { NOW_PLAYING = true; NOW_PLAYING_IDX = 0; }
+				if ( x1 === "success" ) { NOW_PLAYING = true; }
 				break;
 			case "playRandomListFromGenre":
 				MM.TRACKLIST.loadRandomList( wOption1 ); // genre
@@ -528,17 +542,23 @@ mopidy.on( 'state:online' , async function () {
 
 mopidy.on( 'event:trackPlaybackEnded' , async function ( wEvent ) {
 	wcl( "PLAYBACK --> ENDED" );
-	var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
-	console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );	
+	//var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
+	//console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
+	// if ( wCTIDX === "0" || wCTIDX === 0 ) {
+	// 	MM.startNewTask( MM.activeTask , MM.selectedGenre , MM.activeListName );
+	// }
 });
 
 mopidy.on( 'event:trackPlaybackStarted' , async function ( wEvent ) {
 	await sleep( 1000 );
 	var wCT = await MM.PLAYBACK.getCurrentTrack();
-	wcl( "PLAYBACK --> STARTED || CURRENT-TRACK --> " );
 	//wEmitter.emit( "update_Last_SS" , "Mopidy" , "nowPlaying" , wCT );
+	if ( wCT === null ) { return; }
 	await wUpdate_Last_SS( "Mopidy" , "nowPlaying" , wCT );
-	console.log( wCT );
+	console.log("");
+	wcl( "PLAYBACK --> STARTED || CURRENT-TRACK --> " );
+	wcl( "Title = " + wCT[ "name" ] );
+	wcl( "Artist = " + wCT[ "artists" ][0].name );
 });
 
 mopidy.on( 'event:playbackStateChanged' , async function ( wEvent ) {
@@ -548,7 +568,7 @@ mopidy.on( 'event:playbackStateChanged' , async function ( wEvent ) {
 	var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
 	console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
 
-	if ( wCTIDX === null ) { /* start next playlist of CURRENT_ACTION type */ }
+	if ( wCTIDX === null ) { MM.startNewTask( MM.activeTask , MM.selectedGenre , MM.activeListName ); }
 });
 
 module.exports.buildAndPlayRandomGenreList = function( wGenre , wListName ) { return MM.buildAndPlayRandomGenreList( wGenre , wListName ); }

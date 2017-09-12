@@ -299,11 +299,12 @@ var FEED_MAN = {
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+var ALREADY_ACTIVE = false;
 var STAGED_FF_ACTION = null;
-function emitStagedFFTask() { wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION , { nextVideoTime: 180000 , playlist: CACHED_RESULTS } ); }
+function emitStagedFFTask() { wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION , { nextVideoTime: 180000 , playlist: CACHED_RESULTS } ); ALREADY_ACTIVE = true; }
 wEmitter.on( "FF_YT_Live_Background_Ready" , function() { emitStagedFFTask(); });
 async function startYTLiveBackgroundService() {
+	if ( ALREADY_ACTIVE ) { return; }
 	STAGED_FF_ACTION = "YTLiveBackground";
 	await LIVE_MAN.enumerateFollowers();
 	FF_OPEN( "http://localhost:6969/youtubeLiveBackground" );
@@ -311,6 +312,7 @@ async function startYTLiveBackgroundService() {
 }
 async function stopYTLiveBackgroundService() {
 	wEmitter.emit( "socketSendTask" , "shutdown" );
+	ALREADY_ACTIVE = false;
 	await wSleep( 3000 );
 	FF_CLOSE();
 }
