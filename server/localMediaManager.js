@@ -217,7 +217,7 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 	wEpisode = ( wEpisode - 1 );
 
 	var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + wSection + "/" + wName;
-	console.log( wPath );
+	//console.log( wPath );
 
 	// console.log( "Show POS = " + HD_REF[ wSection ][ wName ].pos.toString() );
 	// console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ] );
@@ -261,6 +261,7 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 // wSection , wName , wSeason , wEpisode
 async function updateLastPlayed( wTime ) {
 	if ( NOW_PLAYING_REF !== null ) {
+		if ( wTime === "completed" ) { wTime = NOW_PLAYING_DURATION; }
 		var wCompleted = ( wTime >= NOW_PLAYING_3PERCENT_LEFT ) ? true : false;
 		var wRemaining = ( NOW_PLAYING_DURATION - wTime );
 		var wOBJ = {
@@ -291,34 +292,37 @@ function wPlay( wConfig ) {
 
 		var LP_POS = wConfig.last_played.last_pos;
 		var TOTAL_SHOWS_IN_SECTION = ( Object.keys( HD_REF[ wConfig.type ] ).length - 1 ); // offset for array-indexing
+		console.log( "Total Shows In Section = " + TOTAL_SHOWS_IN_SECTION.toString() );
 		
 		// Testing ADDON-HACK
 		// ====================================================
 		// ====================================================
-		wConfig.last_played.always_advance_next_show = false;
+		//wConfig.last_played.always_advance_next_show = false;
 		// ====================================================
 		// ====================================================
 
 		// If using DEFAULT method of always showing "Next" in line TV Show
 		if ( wConfig.last_played.always_advance_next_show ) {
-			//console.log("STAGE_2 - Advance Next Show");
+			console.log("STAGE_2 - Advance Next Show");
 			var NEXT_POS = ( LP_POS + 1 );
 			if ( NEXT_POS > TOTAL_SHOWS_IN_SECTION ) { NEXT_POS = 0; }
 			var NEXT_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name;
-
+			console.log( "Next Pos = " + NEXT_POS.toString() );
+			console.log( "Next Show Name = " + NEXT_SHOW_NAME );
 			// If we have NEVER watched the "next" show
 			if ( !wConfig.last_played[ NEXT_SHOW_NAME ] ) {
-				return [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name , 1 , 1 ]; 
+				return [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name , 1 , 1 ]; 
 			}
 
-			var NEXT_SEASON = ( wConfig.last_played[ NEXT_SHOW_NAME ].rs_map[ 0 ] + 1 );
-			var NEXT_EPISODE = ( wConfig.last_played[ NEXT_SHOW_NAME ].rs_map[ 1 ] + 1 );
-			var NEXT_TOTAL_EPISODES = ( HD_REF[ wConfig.type ][ NEXT_SHOW_NAME ].items[ NEXT_SEASON ] - 1 ); // offset for arr-indx
-			var NEXT_TOTAL_SEASONS = HD_REF[ wConfig.type ][ NEXT_SHOW_NAME ].items.length;
-			if ( NEXT_EPISODE > NEXT_TOTAL_EPISODES ) { NEXT_EPISODE = 1; NEXT_SEASON = NEXT_SEASON + 1; }
-			if ( NEXT_SEASON > NEXT_TOTAL_SEASONS ) { NEXT_SEASON = 1; }
+			var CUR_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name;
+			var CUR_SEASON = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 0 ] ); // offset for array-indexing
+			var NEXT_EPISODE = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 1 ] + 1 );
+			var CUR_SEASON_TOTAL_EPISODES = ( HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items[ CUR_SEASON ] - 1 ); // offset for arr-indx
+			var CUR_SHOW_TOTAL_SEASONS = HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items.length;
+			if ( NEXT_EPISODE > CUR_SEASON_TOTAL_EPISODES ) { NEXT_EPISODE = 1; CUR_SEASON = CUR_SEASON + 1; }
+			if ( CUR_SEASON > CUR_SHOW_TOTAL_SEASONS ) { CUR_SEASON = 1; }
 
-			return [ wConfig.type , NEXT_SHOW_NAME , NEXT_SEASON , NEXT_EPISODE ];
+			return [ wConfig.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
 
 		}
 
@@ -334,7 +338,10 @@ function wPlay( wConfig ) {
 		return [ wConfig.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
 
  	}
- 
+ 	
+ 	if ( !wConfig ) {
+ 		wConfig = NP_CACHED_CONFIG;
+ 	}
  	NP_CACHED_CONFIG = wConfig;
  	var wNowPlayingARGArray = null;
  	
@@ -429,8 +436,14 @@ async function wPrevious() {
 
 function wOnNowPlayingOver( wResult ) {
 	wcl( "THE VIDEO WE STARTED IS OVER !!!!!" );
-	console.trace();
-	wNext();
+	ACTIVE = false;
+	NP_CACHED_CONFIG[ "last_played" ][ HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name ].current_time = 0;
+	NP_CACHED_CONFIG[ "last_played" ][ HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name ].remaining_time = 0;
+	NP_CACHED_CONFIG[ "last_played" ][ HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name ].completed = true;
+	updateLastPlayed( "completed" );
+	//wNext();
+	wPlay();
+
 }
 wEmitter.on( "MPlayerOVER" , wOnNowPlayingOver );
 // ====================================================================================================================================================

@@ -117,6 +117,7 @@ const STATE_ACTION_MAP = {
 };
 LAST_SS.CURRENT_ACTION = null;
 var FIRST_ACTION_FROM_BOOT = true;
+var RESTORE_VOIDED = false;
 var GLOBAL_PAUSED = false;
 var CACHED_START_PREVIOUS_ARGS = null;
 var CACHED_START_CURRENT_ARGS = null;
@@ -129,7 +130,8 @@ var CACHED_START_CURRENT_ARGS = null;
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 async function startCurrentAction( wArgArray ) {
 
-	USB_CEC_MAN.activate();
+	//USB_CEC_MAN.activate();
+	RESTORE_VOIDED = false;
 
 	if ( FIRST_ACTION_FROM_BOOT ) {
 		CACHED_START_PREVIOUS_ARGS = wArgArray;
@@ -146,6 +148,7 @@ function pauseCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { S
 function resumeCurrentAction( wArg ) { if ( LAST_SS.CURRENT_ACTION !== null ) { STATE_ACTION_MAP[ LAST_SS.CURRENT_ACTION ].resume( wArg ); GLOBAL_PAUSED = false; } }
 async function restorePreviousAction( wArg ) {
 	wcl("inside restore previous action");
+	if ( RESTORE_VOIDED ) { return; }
 	if ( LAST_SS.PREVIOUS_ACTION === LAST_SS.CURRENT_ACTION ) { return; }
 	await wSleep( 3000 );
 	wcl( LAST_SS.PREVIOUS_ACTION  + " = " + CACHED_START_PREVIOUS_ARGS );
@@ -206,7 +209,9 @@ function BUTTON_PRESS_3( wArgArray ) {
 	wArgArray = wArgArray || [ "exbc" ];
 	console.log( LAST_SS[ "Twitch" ][ "LIVE" ] );
 	if ( LAST_SS[ "Twitch" ][ "LIVE" ].length > 0 ) {
-		wArgArray = [ "twitch.tv/" + LAST_SS[ "Twitch" ][ "LIVE" ][0].name , "720p" ];
+		var x1 = LAST_SS[ "Twitch" ][ "LIVE" ][0].name;
+		console.log( x1 );
+		wArgArray = [ x1 , "best" ];
 	}
 	wcl( "PRESSED BUTTON 3" );
 	stopCurrentAction();
@@ -238,6 +243,7 @@ function BUTTON_PRESS_5( wArgArray ) {
 function BUTTON_PRESS_6( wArgArray ) {
 	// STOP Everything
 	wcl( "PRESSED BUTTON 6" );
+	RESTORE_VOIDED = true;
 	stopCurrentAction();
 }
 

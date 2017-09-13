@@ -66,6 +66,7 @@ $(document).ready( function() {
 		//YTIFrameManager.init();
 		console.log( data );
 		LIVE_USERS = data.liveUsers;
+		console.log( LIVE_USERS );
 		startPlayer();
 		//alert( "We are supposed to start twitch player now" );
 

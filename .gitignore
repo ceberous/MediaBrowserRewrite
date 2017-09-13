@@ -3,3 +3,4 @@ server/save_files/
 btn
 package-lock.json
 personal.js
+.gitignore
