@@ -1,4 +1,4 @@
-//var wEmitter = require('../main.js').wEmitter;
+var wEmitter = require('../main.js').wEmitter;
 var wPressButtonMaster = require("./clientManager.js").pressButtonMaster;
 var colors = require("colors");
 var fs = require("fs");
@@ -85,7 +85,7 @@ function cleanseButtonENV() {
 }
 
 
-//if ( !getUSBDeviceEventPath() ) { throw new Error( "[BUTTON_MAN] --> Cannot Find USB-Buttton Controller" ); }
+if ( !getUSBDeviceEventPath() ) { throw new Error( "[BUTTON_MAN] --> Cannot Find USB-Buttton Controller" ); }
 cleanseButtonENV();
 
 const buttonScript = path.join( __dirname , "py_scripts" , "buttonWatcher.py" );
@@ -97,6 +97,7 @@ var timeNow;
 var handleButtonInput = function(wInput) {
 
 	wInput = wInput.toString();
+	console.log(wInput);
 
 	timeNow = new Date().getTime();
 	if ( ( timeNow - lastPressed ) < 3000 ) { wcl("pressed too soon"); return; }

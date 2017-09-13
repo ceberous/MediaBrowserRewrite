@@ -33,7 +33,6 @@
     "socket.io": "^2.0.3",
     "string_decoder": "^1.0.3",
     "tmi.js": "^1.2.1",
-    "utils": "^0.3.1",
-    "vlc-rc-socket": "0.0.1"
+    "utils": "^0.3.1"
   }
 }

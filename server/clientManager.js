@@ -87,7 +87,7 @@ function xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( wProp , xProp , wOBJ_Key ,
 // =====================================================================
 var BTN_MAN 			= require( "./buttonManager.js" );
 var EMAIL_MAN 			= require( "./emailManager.js" );
-var USB_IR_MAN 			= require( "./usbIRManager.js" );
+var USB_CEC_MAN 		= require( "./utils/cecClientManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
 var MOPIDY_MAN 			= require( "./mopidyManager.js" );
 var LOCAL_VIDEO_MAN		= require( "./localMediaManager.js" );
@@ -127,7 +127,10 @@ var CACHED_START_CURRENT_ARGS = null;
 // STATE-CONTROLLERS
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function startCurrentAction( wArgArray ) {
+async function startCurrentAction( wArgArray ) {
+
+	USB_CEC_MAN.activate();
+
 	if ( FIRST_ACTION_FROM_BOOT ) {
 		CACHED_START_PREVIOUS_ARGS = wArgArray;
 		LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;

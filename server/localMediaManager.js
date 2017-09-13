@@ -69,7 +69,8 @@ async function INITIALIZE_HARD_DRIVE_STRUCT_FILE() {
 		"Movies": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
 		"Music": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
 		"Podcasts": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
-		"TVShows": { always_advance_next_show: true , last_pos: 0 , locked_show: null }
+		"TVShows": { always_advance_next_show: true , last_pos: 0 , locked_show: null } ,
+		"Odyssey": { always_advance_next_show: true , last_pos: 0 , locked_show: null } ,
 	};
 	NEED_TO_RESET_LP = true;
 	await WRITE_HARD_DRIVE_STRUCT_FILE(); 
@@ -125,7 +126,7 @@ function FIND_USB_STORAGE_PATH_FROM_UUID( wUUID ) {
 					if ( q1 === "" ) { console.log("Still Can't Mount HardDrive Despite all Efforts"); process.exit(1); }
 
 				}
-
+				q1 = q1 + "/";
 				resolve( q1 );
 			}
 
@@ -161,7 +162,7 @@ function BUILD_HD_REF() {
 function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() { 
 	return new Promise( async function( resolve , reject ) { 
 		try {
-			var wAcceptedFolders = [ "AudioBooks" , "DVDs" , "Movies" , "Music" , "Podcasts" , "TVShows" ];
+			var wAcceptedFolders = [ "AudioBooks" , "Odyssey" , "DVDs" , "Movies" , "Music" , "Podcasts" , "TVShows" ];
 			var wSTRUCT = await dirTree( HD_MOUNT_POINT );
 			var wTMP = {};
 			for ( var i = 0; i < wSTRUCT[ "children" ].length; ++i ) { for ( var j = 0; j < wAcceptedFolders.length; ++j ) {
@@ -216,7 +217,7 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 	wEpisode = ( wEpisode - 1 );
 
 	var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + wSection + "/" + wName;
-	//console.log( wPath );
+	console.log( wPath );
 
 	// console.log( "Show POS = " + HD_REF[ wSection ][ wName ].pos.toString() );
 	// console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ] );
@@ -444,7 +445,7 @@ wEmitter.on( "MPlayerOVER" , wOnNowPlayingOver );
 async function BEGIN_INITIALIZATION() {
 	
 	// PURPLE Laptop with Seagate USB Drive	
-	//HD_MOUNT_POINT = await FIND_USB_STORAGE_PATH_FROM_UUID( "2864E38A64E358D8" );
+	HD_MOUNT_POINT = await FIND_USB_STORAGE_PATH_FROM_UUID( "2864E38A64E358D8" );
 	
 	wcl( HD_MOUNT_POINT );
 	
