@@ -33,6 +33,10 @@ app.use(function(req, res, next) {
 app.get( "/" , function( req , res , next ) {
 	res.render( 'index.html' );
 });
+
+var specialRoutes = require( "./ROUTES/specialRTR.js" );
+app.use('/special/' , specialRoutes );
+
 var adminPanelRoutes = require( "./ROUTES/adminPanelRTR.js" );
 app.use('/admin/v1/' , adminPanelRoutes );
 app.get( "/admin" , function( req , res , next ) {

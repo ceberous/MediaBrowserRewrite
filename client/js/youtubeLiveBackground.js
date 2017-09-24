@@ -108,6 +108,7 @@ var YTIFrameManager = {
 			YTIFrameManager.wPlayer.setLoop(true);
 			if ( YTIFrameManager.muted ) { YTIFrameManager.wPlayer.mute(); }
 			socket.emit( "youtubeReadyForFullScreenGlitch" );
+			//$( ".ytp-fullscreen-button.ytp-button" ).click();
 		} , 1000 );
 	},
 

@@ -20,7 +20,7 @@ var FF_OPEN = require( "./firefoxManager.js" ).openURL;
 var FF_CLOSE = require( "./firefoxManager.js" ).terminateFF;
 
 var SEND_LSS_UPDATE = require( "./clientManager.js" ).update_Last_SS;
-const wTwitchKeys = require( "../personal.js" ).twitch;
+const wTwitchKeys = require( "../personal.js" ).twitch.public;
 
 var STREAM_LINK_MAN = require( "./utils/streamlinkManager.js" );
 // var IRC_MAN = require( "./utils/twitchIRCWrapper.js" );

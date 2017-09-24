@@ -1,36 +1,23 @@
+require('shelljs/global');
+const path = require("path");
 const notifier = require( "mail-notifier" );
-const sendEmail = require( "emailjs/email" );
 
 const wEmailCREDS = require( "../personal.js" ).emailServer;
 const wNotifyTwitchManViewerIsLive = require( "./twitchManager.js" ).followerIsNowLiveEmailUpdate;
 
-var sendEmailServer = null;
-function wConnectSendEmailServer() {
+const wPYSEmailScriptPath = path.join( __dirname , "py_scripts" , "sendEmail.py" );
+function wSendEmail( wMessageText , wSubject , wToEmailAddress ) {
   return new Promise( async function( resolve , reject ) {
     try {
-      sendEmailServer = await sendEmail.server.connect({
-        user:     wEmailCREDS.listenEmail , 
-        password: wEmailCREDS.listenEmailPass , 
-        host:     wEmailCREDS.listenEmailSMTP , 
-        ssl:      true
-      });
-      console.log( "Connected to SMTP !!!" );
-      resolve();
-    }
-    catch( error ) { console.log( error ); reject( error ); }
-  });
-}
-function wSendEmail( wToEmailAddress , wMessageText , wSubject ) {
-  return new Promise( async function( resolve , reject ) {
-    try {
-      wSubject = wSubject || "ALERT FROM: MediaBrowserServer !";
-      sendEmailServer.send({
-        text: wMessageText , from: wEmailCREDS.listenEmail , 
-        to: wToEmailAddress , subject: wSubject
-      } , function( err , message ) {
-        if ( err ) { reject( err ); }
-        resolve( message );
-      });
+      wSubject = wSubject || "MediaManager: Button Press";
+      wToEmailAddress = wToEmailAddress || wEmailCREDS.defaultSendAddress;
+      var wFS = "python " + wPYSEmailScriptPath + " " +  wEmailCREDS.listenEmail + " " + 
+      wEmailCREDS.listenEmailPass + " " + wToEmailAddress + " " + wSubject + " " + wMessageText;
+      console.log( wFS );
+      var wR = exec( wFS , { silent:true , async: false } );
+      if ( wR.stderr.length > 1 ) { reject(); }
+    	console.log( "sent email" );
+      resolve( wR.stdout.trim() );
     }
     catch( error ) { console.log( error ); reject( error ); }
   });
@@ -69,7 +56,6 @@ function parseEmail( wMail ) {
 }
 
 ( async ()=> {
-  await wConnectSendEmailServer();
   await wEmailNotifier.start();
   console.log("Email Server-Client Connected");
   wEmailNotifier.on( "end" , () => wEmailNotifier.start() );

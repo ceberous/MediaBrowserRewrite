@@ -1,7 +1,7 @@
 var fs			= require('fs');
 var path		= require("path");
 var colors		= require("colors");
-var jsonfile	= require("jsonfile");
+var jsonfile		= require("jsonfile");
 
 var wEmitter	= require("../main.js").wEmitter;
 var wSkypeNames = require("../personal.js").skypeNames;
@@ -101,6 +101,7 @@ var YOUTUBE_MAN			= require( "./youtubeManager.js" );
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 const STATE_ACTION_MAP = {
+	"YTLiveBackground": { start: YOUTUBE_MAN.startYTLiveBackground , stop: YOUTUBE_MAN.stopYTLiveBackground , resume: YOUTUBE_MAN.startYTLiveBackground } ,
 	"MopidyYTLiveBackground": { 
 		start: startMopidyYTLiveBackground , stop: stopMopidyYTLiveBackground , 
 		pause: MOPIDY_MAN.pause , resume: MOPIDY_MAN.resume ,
@@ -130,8 +131,7 @@ var CACHED_START_CURRENT_ARGS = null;
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 async function startCurrentAction( wArgArray ) {
 
-	//USB_CEC_MAN.activate();
-	RESTORE_VOIDED = false;
+	USB_CEC_MAN.activate();
 
 	if ( FIRST_ACTION_FROM_BOOT ) {
 		CACHED_START_PREVIOUS_ARGS = wArgArray;
@@ -169,6 +169,7 @@ function properShutdown() { stopCurrentAction(); MOPIDY_MAN.shutdown(); LAST_SS.
 wEmitter.on( "closeEverything" , function() { properShutdown(); });
 
 function startMopidyYTLiveBackground( wGenre ) {
+	RESTORE_VOIDED = false;
 	LAST_SS.Mopidy.activeTask = "buildAndPlayRandomGenreList";
 	LAST_SS.Mopidy.selectedGenre = wGenre;
 	LAST_SS.Mopidy.activeListName = "RandomGen1";
@@ -186,6 +187,14 @@ function stopMopidyYTLiveBackground() {
 // USER-CONTROL
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function BUTTON_PRESS_0( wArgArray ) {
+	wcl( "PRESSED BUTTON 0" );
+	wArgArray = wArgArray || [ "nothing" ];
+	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
+	LAST_SS.CURRENT_ACTION = "YTLiveBackground";
+	startCurrentAction( wArgArray );
+}
+
 function BUTTON_PRESS_1( wArgArray ) {
 	wArgArray = wArgArray || [ "classic" ];
 	wcl( "PRESSED BUTTON 1" );
@@ -206,6 +215,7 @@ function BUTTON_PRESS_2( wArgArray ) {
 
 function BUTTON_PRESS_3( wArgArray ) {
 	// YOUTUBE STANDARD / TWITCH LIVE 
+	RESTORE_VOIDED = false;
 	wArgArray = wArgArray || [ "exbc" ];
 	console.log( LAST_SS[ "Twitch" ][ "LIVE" ] );
 	if ( LAST_SS[ "Twitch" ][ "LIVE" ].length > 0 ) {
@@ -274,6 +284,7 @@ function BUTTON_PRESS_10( wArgArray ) {
 async function BUTTON_PRESS_11( wArgArray ) {
 	// LOCAL ODYSSEY
 	wcl( "PRESSED BUTTON 11" );
+	RESTORE_VOIDED = false;
 	stopCurrentAction();
 	await wSleep( 1000 );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
@@ -285,6 +296,7 @@ async function BUTTON_PRESS_11( wArgArray ) {
 async function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
 	wcl( "PRESSED BUTTON 12" );
+	RESTORE_VOIDED = false;
 	stopCurrentAction();
 	await wSleep( 1000 );
 	LAST_SS.PREVIOUS_ACTION = LAST_SS.CURRENT_ACTION;
@@ -292,7 +304,11 @@ async function BUTTON_PRESS_12( wArgArray ) {
 	startCurrentAction( [ { type: "TVShows" , last_played: LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "TVShows" ] } ] );
 }
 
-function wPressButtonMaster( wButtonNum , wArgArray ) { 
+function wPressButtonMaster( wButtonNum , wArgArray ) {
+	var x1 = "MB-Pressed--" + wButtonNum.toString();
+	var dNow = new Date();
+	var x2 = dNow.getMonth() + '-' + dNow.getDate() + '-' + dNow.getFullYear() + '--' + dNow.getHours() + '-' + dNow.getMinutes();
+	EMAIL_MAN.sendEmail( x2 , x1 );
 	switch( wButtonNum ) {
 		case 1:
 			BUTTON_PRESS_1( wArgArray );
@@ -336,3 +352,10 @@ function wPressButtonMaster( wButtonNum , wArgArray ) {
 }
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+var schedule = require('node-schedule');
+var wStartTime = "01 16 * * 1,2,3,4,5";
+var wStopTime = "01 18 * * 1,2,3,4,5";
+var j1 = schedule.scheduleJob( wStartTime , function() { BUTTON_PRESS_0(); });
+var j2 = schedule.scheduleJob( wStopTime , function(){ if ( CURRENT_ACTION === "YTLiveBackground" ) { BUTTON_PRESS_6(); } });

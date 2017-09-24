@@ -8,15 +8,12 @@ function getRandomArrayItem( wArray ) { return wArray[ Math.floor( Math.random()
 // ---------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------
 
+const wTwitchKeys = require( "../../personal.js" ).twitch.irc;
 //https://twitchapps.com/tmi
 var twitchIRCClient = new tmi.client({
-    // identity: {
-    //     username: "olahttneilc",
-    //     password: "oauth:xausprklc4jovhzxd41b7a3204eje2"
-    // },
     identity: {
-        username: "madalbreiht",
-        password: "oauth:xh6hehkvbg60bovzocuedq6wciu0i4"
+        username: wTwitchKeys.username ,
+        password: wTwitchKeys.oauth ,
     },    
     channels: ["#chessbrah"]
 });

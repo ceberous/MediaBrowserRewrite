@@ -29,7 +29,8 @@ function startPlayer() {
 	});
 	TWITCH_PLAYER.addEventListener( "play" , function () {
 		console.log( "Player PLAY !!!" );
-		if ( !FULL_SCREEN ) { socket.emit( "twitchReadyForFullScreenGlitch" ); FULL_SCREEN = true; }
+		//if ( !FULL_SCREEN ) { socket.emit( "twitchReadyForFullScreenGlitch" ); FULL_SCREEN = true; }
+		$( ".player-button.player-button--fullscreen.js-control-fullscreen" ).click();
 		socket.emit( "twitchLiveStatus" , "playing" );
 	});
 	TWITCH_PLAYER.addEventListener( "pause" , function () {
