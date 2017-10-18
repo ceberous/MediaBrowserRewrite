@@ -122,6 +122,8 @@ var RESTORE_VOIDED = false;
 var GLOBAL_PAUSED = false;
 var CACHED_START_PREVIOUS_ARGS = null;
 var CACHED_START_CURRENT_ARGS = null;
+var JOB_OVERRIDE_HALEY_IS_HOME = false;
+var HALEY_HOME_OVERRIDED_ALREADY = false;
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -291,6 +293,7 @@ async function BUTTON_PRESS_11( wArgArray ) {
 	LAST_SS.CURRENT_ACTION = "LocalMedia";
 	startCurrentAction( [ { type: "Odyssey" , last_played: LAST_SS[ "LocalMedia" ][ "LAST_PLAYED" ][ "Odyssey" ] } ] );
 	YOUTUBE_MAN.startYTLiveBackground();
+	if ( JOB_OVERRIDE_HALEY_IS_HOME ) { JOB_OVERRIDE_HALEY_IS_HOME = false; HALEY_HOME_OVERRIDED_ALREADY = true; }
 }
 
 async function BUTTON_PRESS_12( wArgArray ) {
@@ -309,7 +312,11 @@ function wPressButtonMaster( wButtonNum , wArgArray ) {
 	var dNow = new Date();
 	var x2 = dNow.getMonth() + '-' + dNow.getDate() + '-' + dNow.getFullYear() + '--' + dNow.getHours() + '-' + dNow.getMinutes();
 	EMAIL_MAN.sendEmail( x2 , x1 );
+	if ( !HALEY_HOME_OVERRIDED_ALREADY && dNow.getHours() === 15 && JOB_OVERRIDE_HALEY_IS_HOME == false ) { JOB_OVERRIDE_HALEY_IS_HOME = true; wButtonNum = 11; }
 	switch( wButtonNum ) {
+		case 0:
+			BUTTON_PRESS_0( wArgArray );
+			break;
 		case 1:
 			BUTTON_PRESS_1( wArgArray );
 			break;
@@ -357,5 +364,6 @@ function wPressButtonMaster( wButtonNum , wArgArray ) {
 var schedule = require('node-schedule');
 var wStartTime = "01 16 * * 1,2,3,4,5";
 var wStopTime = "01 18 * * 1,2,3,4,5";
-var j1 = schedule.scheduleJob( wStartTime , function() { BUTTON_PRESS_0(); });
-var j2 = schedule.scheduleJob( wStopTime , function(){ if ( CURRENT_ACTION === "YTLiveBackground" ) { BUTTON_PRESS_6(); } });
+var j1 = schedule.scheduleJob( wStartTime , function() { if ( !JOB_OVERRIDE_HALEY_IS_HOME ) { BUTTON_PRESS_11(); } });
+//var j2 = schedule.scheduleJob( wStopTime , function(){ if ( LAST_SS.CURRENT_ACTION === "YTLiveBackground" ) { BUTTON_PRESS_6(); } });
+var j2 = schedule.scheduleJob( wStopTime , function(){ BUTTON_PRESS_6(); YOUTUBE_MAN.stopYTLiveBackground(); HALEY_HOME_OVERRIDED_ALREADY = false; } );

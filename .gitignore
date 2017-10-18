@@ -1,6 +1,7 @@
 node_modules/
 server/save_files/
 btn
+followTwitchUser.sh
 package-lock.json
 personal.js
 .gitignore

@@ -2,6 +2,7 @@ var wPressButtonMaster = require('../../clientManager.js').pressButtonMaster;
 
 function sendJSONResponse( res , status , content ) { if ( status ) { res.status( status ); } res.json( content ); }
 
+module.exports.press0 = function( req , res ) { wPressButtonMaster( 0 ); sendJSONResponse( res , 200 , { buttonPress: "Play Youtube.Live Background Video" } ); };
 module.exports.press1 = function( req , res ) { wPressButtonMaster( 1 ); sendJSONResponse( res , 200 , { buttonPress: "Play Youtube.Live Background Video with A 'Classic' Style Mopidy Playlist" } ); };
 module.exports.press2 = function( req , res ) { wPressButtonMaster( 2 ); sendJSONResponse( res , 200 , { buttonPress: "Play Youtube.Live Background Video with A 'EDM/House' Style Mopidy Playlist" } ); };
 module.exports.press3 = function( req , res ) { wPressButtonMaster( 3 ); sendJSONResponse( res , 200 , { buttonPress: "if ( Twitch-Follower.isLive ) { Play Next Twitch.Live } else { Play Next 'Feed' Video from Youtube/Twitch Followers }" } ); };

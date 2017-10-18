@@ -3,6 +3,7 @@ var router = express.Router();
 
 var buttonsCTRL = require( "../CONTROLLERS/buttonsCTRL.js" );
 
+router.get( '/0/' , buttonsCTRL.press0 );
 router.get( '/1/' , buttonsCTRL.press1 );
 router.get( '/2/' , buttonsCTRL.press2 );
 router.get( '/3/' , buttonsCTRL.press3 );
