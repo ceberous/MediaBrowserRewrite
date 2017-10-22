@@ -19,7 +19,7 @@ var wEmitter = require( "../main.js" ).wEmitter;
 var FF_OPEN = require( "./firefoxManager.js" ).openURL;
 var FF_CLOSE = require( "./firefoxManager.js" ).terminateFF;
 
-var SEND_LSS_UPDATE = require( "./clientManager.js" ).update_Last_SS;
+var SEND_LSS_UPDATE = require( "./clientManager.js" ).edit_Last_SS;
 const wTwitchKeys = require( "../personal.js" ).twitch.public;
 
 var STREAM_LINK_MAN = require( "./utils/streamlinkManager.js" );
@@ -31,15 +31,12 @@ var STREAM_LINK_MAN = require( "./utils/streamlinkManager.js" );
 	// Database Stuff
 // =========================================================================================================================
 // =========================================================================================================================
-var TWITCH_SF = {};
-const TWITCH_SF_PATH = path.join( __dirname , "save_files" , "twitch.json" );
-function WRITE_TWITCH_SF() { jsonfile.writeFileSync( TWITCH_SF_PATH , TWITCH_SF ); wcl( "UPDATED Twitch SAVE_FILE" ); }
-try { YT_SF = jsonfile.readFileSync( TWITCH_SF_PATH ); }
-catch( error ) { 
-	TWITCH_SF[ "FOLLOWERS" ] = {};
-	wcl( "Twitch Save-File Not Found ... recreating" );
-	WRITE_TWITCH_SF();
-}
+var TWITCH_SF_Skeleton = { "FOLLOWERS": {} };
+var TWITCH_SF = require( "jsonfile-obj-db" );
+TWITCH_SF.open( { path: "./save_files/twitch" , skeleton: TWITCH_SF_Skeleton } );
+// =========================================================================================================================
+// =========================================================================================================================
+
 async function wFollowerIsNowLiveEmailEvent( wFollower ) {
 	wcl( "I guess we recieved email notice that " + wFollower + " is live." );
 	var wNL = await wConfirmLiveStatus();

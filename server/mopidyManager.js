@@ -1,5 +1,5 @@
 var wEmitter = require('../main.js').wEmitter;
-var wUpdate_Last_SS = require( "./clientManager.js" ).update_Last_SS;
+var wUpdate_Last_SS = require( "./clientManager.js" ).edit_Last_SS;
 
 // https://github.com/akatrevorjay/mopidy-extras
 

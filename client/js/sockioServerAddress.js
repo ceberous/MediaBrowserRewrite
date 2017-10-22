@@ -1,1 +1,1 @@
-var socketIOServerAddress = "http://192.168.0.29"; var socketIOPORT = "6969";
+var socketIOServerAddress = "http://192.168.0.71"; var socketIOPORT = "6969";

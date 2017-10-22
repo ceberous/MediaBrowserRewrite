@@ -30,9 +30,7 @@ function wGetDuration( wFP ) {
 }
 
 var wEmitter = require('../main.js').wEmitter;
-var wUpdate_Last_SS = require( "./clientManager.js" ).update_Last_SS;
-var wUpdate_Last_SS_OBJ_PROP = require( "./clientManager.js" ).update_Last_SS_OBJ_PROP;
-var wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP = require( "./clientManager.js" ).xUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP;
+var wUpdate_Last_SS = require( "./clientManager.js" ).edit_Last_SS;
 const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
 
 // DATABASISH
@@ -252,7 +250,7 @@ async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
 	//console.log( wName + "'s Position in HARD_DRIVE_STRUCT = " + NP_HD_S_POS.toString() + "\n" );
 	//console.log( HARD_DRIVE_STRUCT[ wSection ][ NP_HD_S_POS ] );
 
-	await wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( "LocalMedia" , "LAST_PLAYED" , wSection , "last_pos" , NP_HD_S_POS );
+	await wUpdate_Last_SS( "LocalMedia" , "LAST_PLAYED" , wSection , "last_pos" , NP_HD_S_POS );
 	await updateLastPlayed( 1 );
 	ACTIVE = true;
 
@@ -272,7 +270,7 @@ async function updateLastPlayed( wTime ) {
 			rs_map: [ NOW_PLAYING_REF[2] , NOW_PLAYING_REF[3] ]
 		};
 		NP_CACHED_CONFIG[ NOW_PLAYING_REF[1] ] = wOBJ;
-		await wUpdate_Last_SS_OBJ_PROP_SECONDARY_OBJ_PROP( "LocalMedia" , "LAST_PLAYED" , NOW_PLAYING_REF[0] , NOW_PLAYING_REF[1] , wOBJ );
+		await wUpdate_Last_SS( "LocalMedia" , "LAST_PLAYED" , NOW_PLAYING_REF[0] , NOW_PLAYING_REF[1] , wOBJ );
 	}
 }
 
