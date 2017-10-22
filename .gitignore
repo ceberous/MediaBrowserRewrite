@@ -1,9 +1,0 @@
-node_modules/
-server/save_files/
-btn
-dbTest1.js
-jsonfileRemovalPhase1.txt
-followTwitchUser.sh
-package-lock.json
-personal.js
-.gitignore
