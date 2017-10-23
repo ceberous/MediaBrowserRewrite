@@ -3,10 +3,10 @@ var wPressButtonMaster = require("./clientManager.js").pressButtonMaster;
 var colors = require("colors");
 var fs = require("fs");
 var path = require("path");
-var StringDecoder = require('string_decoder').StringDecoder;
+var StringDecoder = require("string_decoder").StringDecoder;
 var decoder = new StringDecoder('utf8');
-var spawn = require('child_process').spawn;
-require('shelljs/global');
+var spawn = require("child_process").spawn;
+require("shelljs/global");
 
 function wcl( wSTR ) { console.log( colors.yellow.bgBlack( "[BUTTON_MAN] --> " + wSTR ) ); }
 
@@ -85,11 +85,11 @@ function cleanseButtonENV() {
 }
 
 
-if ( !getUSBDeviceEventPath() ) { throw new Error( "[BUTTON_MAN] --> Cannot Find USB-Buttton Controller" ); }
+if ( !getUSBDeviceEventPath() ) { /*throw new Error( "[BUTTON_MAN] --> Cannot Find USB-Buttton Controller" );*/ return; }
 cleanseButtonENV();
 
 const buttonScript = path.join( __dirname , "py_scripts" , "buttonWatcher.py" );
-var ButtonManager = spawn( 'python' , [buttonScript] );
+var ButtonManager = spawn( "python" , [ buttonScript ] );
 wcl( "@@PID=" + ButtonManager.pid );
 
 var lastPressed = new Date().getTime();
@@ -110,10 +110,10 @@ var handleButtonInput = function(wInput) {
 	
 };
 
-ButtonManager.stdout.on( "data" , function(data) {
-	var message = decoder.write(data);
+ButtonManager.stdout.on( "data" , function( data ) {
+	var message = decoder.write( data );
 	message = message.trim();
-	handleButtonInput(message);
+	handleButtonInput( message );
 });
 
 
@@ -135,18 +135,3 @@ module.exports.stop = function() {
 module.exports.pressButton = function( wNum ) {
 	handleButtonInput( wNum );
 };
-
-
-// setTimeout( function() {
-// 	handleButtonInput( 1 );
-// } , 5000 );
-
-// setTimeout( function() {
-// 	handleButtonInput( 5 );
-// } , 45000 );
-
-/*
-setTimeout( function() {
-	wEmitter.emit( "button7Press" );
-} , 25000 );
-*/

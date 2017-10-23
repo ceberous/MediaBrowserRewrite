@@ -20,7 +20,7 @@ var FF_OPEN = require( "./firefoxManager.js" ).openURL;
 var FF_CLOSE = require( "./firefoxManager.js" ).terminateFF;
 
 var SEND_LSS_UPDATE = require( "./clientManager.js" ).edit_Last_SS;
-const wTwitchKeys = require( "../personal.js" ).twitch.public;
+const wTwitchKeys = require( "../personal.js" ).twitch;
 
 var STREAM_LINK_MAN = require( "./utils/streamlinkManager.js" );
 // var IRC_MAN = require( "./utils/twitchIRCWrapper.js" );
@@ -33,7 +33,7 @@ var STREAM_LINK_MAN = require( "./utils/streamlinkManager.js" );
 // =========================================================================================================================
 var TWITCH_SF_Skeleton = { "FOLLOWERS": {} };
 var TWITCH_SF = require( "jsonfile-obj-db" );
-TWITCH_SF.open( { path: "./save_files/twitch" , skeleton: TWITCH_SF_Skeleton } );
+TWITCH_SF.open( { path: path.join( __dirname , "save_files" , "twitch.json" ) , skeleton: TWITCH_SF_Skeleton } );
 // =========================================================================================================================
 // =========================================================================================================================
 
@@ -65,8 +65,9 @@ function wConfirmLiveStatus() {
 			var wURL = "https://api.twitch.tv/kraken/streams/followed?client_id=" +
 			wTwitchKeys.client_id + "&oauth_token=" + wTwitchKeys.oauth_token + "&on_site=1";
 			request( wURL , function ( err , response , body ) {
-		        if ( err ) { wcl( err ); reject( err ); return; }
+		        //if ( err ) { wcl( err ); reject( err ); return; }
 				xR = JSON.parse( body );
+				if ( xR[ "error" ] ) { if ( xR[ "error"] === "Bad Request" ) { console.log( xR ); resolve( xR ); } }
 				parseResults();
 			});
 		}

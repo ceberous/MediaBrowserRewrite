@@ -48,18 +48,21 @@ function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms )
 function getRandomPropertyKey( wOBJ ) { var keys = Object.keys( wOBJ ); return keys[ keys.length * Math.random() << 0 ]; }
 function getRandomArrayItem( wArray ) { return wArray[ Math.floor( Math.random() * wArray.length ) ]; }
 
-var HOUR = 3600000;
-var DAY = 86400000;
+const HOUR = 3600000;
+const DAY = 86400000;
 
 var mopidy = null;
-Mopidy.prototype._handleWebSocketError = function (error) { console.log( "Mopdiy WebSocket ERROR" ); this._cleanup(); };
-try {
-	mopidy = new Mopidy({ 
-		webSocketUrl: "ws://localhost:6690/mopidy/ws/",
-		autoConnect: true,
-		callingConvention: "by-position-or-by-name"
-	});
+Mopidy.prototype._handleWebSocketError = function ( error ) { wcl( "Mopdiy WebSocket ERROR" ); this._cleanup(); this.close(); mopidy.off(); mopidy = null;  return; };
+function tryToConnectMopidy() {
+	try {
+		mopidy = new Mopidy({ 
+			webSocketUrl: "ws://localhost:6690/mopidy/ws/",
+			autoConnect: true,
+			callingConvention: "by-position-or-by-name"
+		});
 	} catch( error ) { wcl( "ERROR --> Mopdiy Binary not Running !" ); }
+}
+tryToConnectMopidy();
 
 
 var LIB_CACHE = null;
@@ -409,7 +412,7 @@ var MM = {
 						resolve("success");
 					});
 				}
-				catch( error ) { console.log( error ); reject( error ); }
+				catch( error ) { /*console.log( error );*/ resolve( error ); }
 			});
 		},
 
@@ -592,11 +595,13 @@ module.exports.shutdown = function() { MM.shutdown(); };
 
 module.exports.startNewTask = MM.startNewTask;
 
-module.exports.pause = function() { MM.PLAYBACK.pause(); };
-module.exports.resume = function() { MM.PLAYBACK.resume(); };
-module.exports.stop = function() { MM.PLAYBACK.stop(); };
-module.exports.previous = function() { MM.PLAYBACK.previous(); };
-module.exports.next = function() { MM.PLAYBACK.next(); };
+module.exports.pause = MM.PLAYBACK.pause;
+module.exports.resume = MM.PLAYBACK.resume;
+module.exports.stop = MM.PLAYBACK.stop;
+module.exports.previous = MM.PLAYBACK.previous;
+module.exports.next = MM.PLAYBACK.next;
+
+module.exports.tryToConnectMopidy = tryToConnectMopidy;
 
 // process.on('SIGINT', function () {
 // 	wcl( "Shutting Down" );
