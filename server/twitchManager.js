@@ -97,6 +97,7 @@ async function wStopLiveTwitchStreamlink() {
 
 var STAGED_FF_ACTION = null;
 var STAGED_LIVE_USERS = null;
+var READY_FOR_FULLSCREEN = false;
 async function emitStagedFFTask() { 
 	wEmitter.emit( "socketSendTask" , STAGED_FF_ACTION , { liveUsers: [ STAGED_LIVE_USERS ] } );
 	await wsleep( 20000 );
@@ -106,6 +107,7 @@ wEmitter.on( "FF_Twitch_Live_Ready" , function() { emitStagedFFTask(); });
 function wOpenLiveTwitchFirefox( wUserName , wQuality ) {
 	STAGED_FF_ACTION = "StartLiveTwitch";
 	STAGED_LIVE_USERS = wUserName;
+	READY_FOR_FULLSCREEN = false;
 	FF_OPEN( "http://localhost:6969/twitchLive" );
 }
 async function wStopLiveTwitchFirefox() {
@@ -115,7 +117,9 @@ async function wStopLiveTwitchFirefox() {
 }
 
 wEmitter.on( "twitchLiveStatus" , function( wData ) {
-	console.log( wData );
+	wcl( "Live Status === " );
+	console.log(  wData );
+	if ( !READY_FOR_FULLSCREEN ) { if ( wData === "playing" ) { READY_FOR_FULLSCREEN = true; wEmitter.emit( "ffGlitchFullScreenTwitch" ); } }
 });
 
 
@@ -132,6 +136,7 @@ module.exports.playLive = wOpenLiveTwitchFirefox;
 module.exports.stopLive = wStopLiveTwitchFirefox;
 
 module.exports.followerIsNowLiveEmailUpdate = wFollowerIsNowLiveEmailEvent;
+module.exports.confirmLiveStatus = wConfirmLiveStatus;
 
 ( async ()=> {
 	var wLatestLiveFollowers = await wConfirmLiveStatus();

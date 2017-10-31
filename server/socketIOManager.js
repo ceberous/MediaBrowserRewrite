@@ -4,7 +4,7 @@ var clientManager = require("./clientManager.js");
 
 function wcl( wSTR ) { console.log( colors.black.bgBlue( "[SIO_SERV_MAN] --> " + wSTR ) ); }
 function wEmitFF_YT_Ready() { wEmitter.emit( "FF_YT_Live_Background_Ready" ); }
-//function wEmitFF_Twitch_Ready() { wEmitter.emit( "FF_Twitch_Live_Ready" ); }
+function wEmitFF_Twitch_Ready() { wEmitter.emit( "FF_Twitch_Live_Ready" ); }
 module.exports.wOC = function( socket ) {
 
 

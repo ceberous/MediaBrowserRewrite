@@ -1,1 +1,1 @@
-{"CURRENT_ACTION":null,"PREVIOUS_ACTION":null,"Twitch":{"LIVE":[]}}
+{"CURRENT_ACTION":"TwitchLive","PREVIOUS_ACTION":"TwitchLive","Twitch":{"LIVE":[{"name":"chessbrah","game":"Chess","_id":26615041936,"start_time":1509421093,"resolution":1080,"status":"live"},{"name":"jovian","game":"IRL","_id":26614915104,"start_time":1509419494,"resolution":720,"status":"live"}]}}

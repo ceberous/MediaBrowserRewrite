@@ -1,4 +1,6 @@
 var wEmitter = require('../main.js').wEmitter;
+//var wEmitter = new (require('events').EventEmitter);
+
 require('shelljs/global');
 var path = require("path");
 var colors = require("colors");
@@ -8,7 +10,8 @@ const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
 
 function wcl( wSTR ) { console.log( colors.black.bgRed( "[FIREFOX_MAN] --> " + wSTR ) ); }
 
-
+// about:config
+// browser.sessionstore.resume_from_crash = false
 var ffWrapper = {
 	
 	binaryOpen: false,
@@ -96,7 +99,7 @@ var ffWrapper = {
 	},	
 
 	openNewTab: function( w_URL ) {
-		const openNewTab = 'firefox -new-tab ' + w_URL;
+		var openNewTab = 'firefox -new-tab ' + w_URL;
 		var wResult = exec( openNewTab , { silent: true , async: false } );
 		ffWrapper.stagedLink = null;
 		if ( wResult.stderr != null && wResult.stderr.length > 1 ) { wcl( wResult.stderr ); return null; }

@@ -45,6 +45,29 @@ var YOUTUBE_MAN			= require( "./youtubeManager.js" );
 // =====================================================================
 
 
+// https://en.wikipedia.org/wiki/Finite-state_machine
+// http://www.robert-drummond.com/2015/04/21/event-driven-programming-finite-state-machines-and-nodejs/
+
+// https://github.com/steelbreeze/state.js
+// https://www.npmjs.com/package/node-state-machine
+// https://github.com/fschaefer/Stately.js
+
+// http://sam.js.org/
+
+// https://github.com/nickuraltsev/finity
+
+// http://statemachine.davestewart.io/html/examples/index.html
+// https://github.com/davestewart/javascript-state-machine/tree/master/docs
+
+// https://github.com/jakesgordon/javascript-state-machine/
+
+// http://machina-js.org/
+
+// the winner ???
+// https://github.com/steelbreeze/state
+// https://github.com/steelbreeze/state/blob/master/lib/node/state.js
+
+
 // STATE-DEFINITIONS
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +95,7 @@ var CACHED_START_PREVIOUS_ARGS = null;
 var CACHED_START_CURRENT_ARGS = null;
 var JOB_OVERRIDE_HALEY_IS_HOME = false;
 var HALEY_HOME_OVERRIDED_ALREADY = false;
+var TWITCH_LIVE_CHANNEL_INDEX = null;
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -163,16 +187,28 @@ function BUTTON_PRESS_2( wArgArray ) {
 	startCurrentAction( wArgArray );
 }
 
-function BUTTON_PRESS_3( wArgArray ) {
+async function BUTTON_PRESS_3( wArgArray ) {
 	// YOUTUBE STANDARD / TWITCH LIVE 
+	console.log("are we here ???");
 	RESTORE_VOIDED = false;
 	wArgArray = wArgArray || [ "exbc" ];
+	
+	LAST_SS.self[ "Twitch" ][ "LIVE" ] = await TWITCH_MAN.confirmLiveStatus();
 	console.log( LAST_SS.self[ "Twitch" ][ "LIVE" ] );
 	if ( LAST_SS.self[ "Twitch" ][ "LIVE" ].length > 0 ) {
-		var x1 = LAST_SS.self[ "Twitch" ][ "LIVE" ][0].name;
-		console.log( x1 );
-		wArgArray = [ x1 , "best" ];
+		if ( LAST_SS.self[ "Twitch" ][ "LIVE" ].length == 1 ) {
+			TWITCH_LIVE_CHANNEL_INDEX = 0;
+		}
+		else {
+			if ( TWITCH_LIVE_CHANNEL_INDEX !== null ) { TWITCH_LIVE_CHANNEL_INDEX += 1; }
+			else { TWITCH_LIVE_CHANNEL_INDEX = 0; }
+			if ( TWITCH_LIVE_CHANNEL_INDEX >= LAST_SS.self[ "Twitch" ][ "LIVE" ].length ) { TWITCH_LIVE_CHANNEL_INDEX = 0; }
+		}		
 	}
+	var x1 = LAST_SS.self[ "Twitch" ][ "LIVE" ][ TWITCH_LIVE_CHANNEL_INDEX ].name;
+	console.log( x1 );
+	wArgArray = [ x1 , "best" ];
+
 	wcl( "PRESSED BUTTON 3" );
 	stopCurrentAction();
 	LAST_SS.self.PREVIOUS_ACTION = LAST_SS.self.CURRENT_ACTION;
@@ -232,16 +268,20 @@ function BUTTON_PRESS_10( wArgArray ) {
 }
 
 async function BUTTON_PRESS_11( wArgArray ) {
+	
 	// LOCAL ODYSSEY
-	wcl( "PRESSED BUTTON 11" );
-	RESTORE_VOIDED = false;
-	stopCurrentAction();
-	await wSleep( 1000 );
-	LAST_SS.self.PREVIOUS_ACTION = LAST_SS.self.CURRENT_ACTION;
-	LAST_SS.self.CURRENT_ACTION = "LocalMedia";
-	startCurrentAction( [ { type: "Odyssey" , last_played: LAST_SS.self[ "LocalMedia" ][ "LAST_PLAYED" ][ "Odyssey" ] } ] );
-	YOUTUBE_MAN.startYTLiveBackground();
-	if ( JOB_OVERRIDE_HALEY_IS_HOME ) { JOB_OVERRIDE_HALEY_IS_HOME = false; HALEY_HOME_OVERRIDED_ALREADY = true; }
+	// wcl( "PRESSED BUTTON 11" );
+	// RESTORE_VOIDED = false;
+	// stopCurrentAction();
+	// await wSleep( 1000 );
+	// LAST_SS.self.PREVIOUS_ACTION = LAST_SS.self.CURRENT_ACTION;
+	// LAST_SS.self.CURRENT_ACTION = "LocalMedia";
+	// startCurrentAction( [ { type: "Odyssey" , last_played: LAST_SS.self[ "LocalMedia" ][ "LAST_PLAYED" ][ "Odyssey" ] } ] );
+	// YOUTUBE_MAN.startYTLiveBackground();
+	// if ( JOB_OVERRIDE_HALEY_IS_HOME ) { JOB_OVERRIDE_HALEY_IS_HOME = false; HALEY_HOME_OVERRIDED_ALREADY = true; }
+
+
+
 }
 
 async function BUTTON_PRESS_12( wArgArray ) {
