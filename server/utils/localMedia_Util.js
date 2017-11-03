@@ -1,7 +1,6 @@
 
-const FS = require("fs");
-const PATH = require("path");
-//const dirTree = require("./dirtreeutil.js");
+const FS = require( "fs" );
+const PATH = require( "path" );
 require( "shelljs/global" );
 
 function fixPathSpace( wFP ) {
@@ -89,11 +88,14 @@ var fr = {};
 function safeReadDirSync(r){var n={};try{n=FS.readdirSync(r)}catch(c){if("EACCES"==c.code)return null;throw c}return n}
 function directoryTree_Stage1(e,r,n){var t,i=PATH.basename(e),a={name:i};try{t=FS.statSync(e)}catch(u){return null}if(t.isFile()){PATH.extname(e).toLowerCase()}else{if(!t.isDirectory())return null;var l=safeReadDirSync(e);if(null===l)return null;a.children=l.map(function(t){return directoryTree_Stage1(PATH.join(e,t),r,n)}).filter(function(e){return!!e})}return a}
 function directoryTree_Stage2(){for(var e=0;e<sd.children.length;++e){fr[sd.children[e].name]={};for(var d=0;d<sd.children[e].children.length;++d)if(fr[sd.children[e].name][sd.children[e].children[d].name]=[],sd.children[e].children[d].children)for(var a=0;a<sd.children[e].children[d].children.length;++a){var r=[];if(sd.children[e].children[d].children[a].children)for(var n=0;n<sd.children[e].children[d].children[a].children.length;++n)r.push(sd.children[e].children[d].children[a].children[n].name);fr[sd.children[e].name][sd.children[e].children[d].name].push(r)}}}
+
+
 async function BUILD_HD_REF( wMountPoint ) {
 	sd = directoryTree_Stage1( wMountPoint );
 	directoryTree_Stage2();
 	return fr;
 }
+
 
 
 module.exports.fixPathSpace = fixPathSpace;

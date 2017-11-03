@@ -2,9 +2,15 @@ var fs			= require('fs');
 var path		= require("path");
 var colors		= require("colors");
 //var jsonfile	= require("jsonfile");
+var REDIS 		= require("redis");
+var redis = REDIS.createClient( "8443" , "localhost" );
+//redis.select( 3 , function() { console.log("selected table 3"); });
+module.exports.redis = redis;
+// https://www.sitepoint.com/caching-a-mongodb-database-with-redis/
 
 var wEmitter	= require("../main.js").wEmitter;
 var wSkypeNames = require("../personal.js").skypeNames;
+
 
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -15,6 +21,7 @@ function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms 
 const LAST_SS_SKELETON = { PREVIOUS_ACTION: null, CURRENT_ACTION: null, Firefox: {} ,  SkypeCall: {} , LocalMedia: {} , Mopidy: {} , YTLiveBackground: {} , YTFeed: {} , Twitch: {} };
 var LAST_SS = require( "jsonfile-obj-db" );
 LAST_SS.open( { path: "./server/save_files/lastSavedState" , skeleton: LAST_SS_SKELETON } );
+console.log( LAST_SS.self.LocalMedia.LAST_PLAYED );
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -23,7 +30,7 @@ LAST_SS.open( { path: "./server/save_files/lastSavedState" , skeleton: LAST_SS_S
 // ==========================================================================================================
 module.exports.edit_Last_SS = LAST_SS.edit;
 module.exports.get_Last_SS = function() { return LAST_SS.self; };
-module.exports.get_Last_SS_PROP = function( wProp ) { return LAST_SS[ wProp ]; };
+module.exports.get_Last_SS_PROP = function( wProp ) { return LAST_SS.self[ wProp ]; };
 module.exports.restorePreviousAction = restorePreviousAction;
 module.exports.pressButtonMaster = wPressButtonMaster;
 // ==========================================================================================================
@@ -38,34 +45,15 @@ var EMAIL_MAN 			= require( "./emailManager.js" );
 var USB_CEC_MAN 		= require( "./utils/cecClientManager.js" );
 var SKYPE_MAN 			= require( "./skypeManager.js" );
 var MOPIDY_MAN 			= require( "./mopidyManager.js" );
-var LOCAL_VIDEO_MAN		= require( "./localMediaManager.js" );
+//var LOCAL_VIDEO_MAN		= require( "./localMediaManager.js" );
+var LOCAL_VIDEO_MAN		= require( "./localMediaManagerRewrite.js" );
 var TWITCH_MAN			= require( "./twitchManager.js" );
 var YOUTUBE_MAN			= require( "./youtubeManager.js" );
+
+LAST_SS.save();
 // =====================================================================
 // =====================================================================
 
-
-// https://en.wikipedia.org/wiki/Finite-state_machine
-// http://www.robert-drummond.com/2015/04/21/event-driven-programming-finite-state-machines-and-nodejs/
-
-// https://github.com/steelbreeze/state.js
-// https://www.npmjs.com/package/node-state-machine
-// https://github.com/fschaefer/Stately.js
-
-// http://sam.js.org/
-
-// https://github.com/nickuraltsev/finity
-
-// http://statemachine.davestewart.io/html/examples/index.html
-// https://github.com/davestewart/javascript-state-machine/tree/master/docs
-
-// https://github.com/jakesgordon/javascript-state-machine/
-
-// http://machina-js.org/
-
-// the winner ???
-// https://github.com/steelbreeze/state
-// https://github.com/steelbreeze/state/blob/master/lib/node/state.js
 
 
 // STATE-DEFINITIONS
@@ -267,6 +255,7 @@ function BUTTON_PRESS_10( wArgArray ) {
 	wcl( "PRESSED BUTTON 10" );
 }
 
+const STATE_MAN = require( "./stateManager.js" );
 async function BUTTON_PRESS_11( wArgArray ) {
 	
 	// LOCAL ODYSSEY
@@ -280,9 +269,13 @@ async function BUTTON_PRESS_11( wArgArray ) {
 	// YOUTUBE_MAN.startYTLiveBackground();
 	// if ( JOB_OVERRIDE_HALEY_IS_HOME ) { JOB_OVERRIDE_HALEY_IS_HOME = false; HALEY_HOME_OVERRIDED_ALREADY = true; }
 
-
+	//console.log( LAST_SS.self.LocalMedia.LAST_PLAYED );
+	STATE_MAN.start( "./STATES/LocalMedia_Odyseey_Foreground.js" , LAST_SS.self.LocalMedia.LAST_PLAYED.Odyssey || null );
 
 }
+wEmitter.on( "forkedStateOver" , function( wEvent ) {
+	console.log( "forked state OVER !!!" );
+});
 
 async function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
