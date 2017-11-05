@@ -13,7 +13,8 @@ function fixPathSpace(wFP) {
 	return wFP;
 }
 //var wEmitter = require( "../../main.js" ).wEmitter;
-var wEmitter = new (require("events").EventEmitter);
+//var wEmitter = new (require("events").EventEmitter);
+var wEmitter = require( "../localMediaManagerRewrite.js" ).wEmitter;
 
 const mplayerWrapperScript_FP = path.join( __dirname , "mplayerWrapper.js" );
 var wPROC = null;
@@ -27,7 +28,7 @@ function cleanupChildPROC() {
 	clearInterval( wPROC_INT ); 
 	try{wPROC.unref();}
 	catch(e){}
-	if ( EMIT_OVER_EVENT ) { wEmitter.emit( "MPlayerOVER" ); }
+	if ( EMIT_OVER_EVENT ) { wEmitter.emit( "MPlayerOVER" , wPROC_TIME ); }
 	wcl( "Media is Over !!!" );
 }
 function wPlayFilePath( wFP ) {

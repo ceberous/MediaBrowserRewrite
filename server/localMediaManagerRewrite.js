@@ -6,7 +6,7 @@ var wEmitter = new (require("events").EventEmitter);
 module.exports.wEmitter = wEmitter;
 
 //var redis = require( "./clientManager.js" ).redis;
-var REDIS 		= require("redis");
+var REDIS = require("redis");
 var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );
 
@@ -15,9 +15,6 @@ const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 //const GEN_HD_REF = require( "./utils/localMedia_Util" ).buildHardDriveReference;
-
-// Logic Info and Doc Links
-// https://docs.google.com/document/d/1FH4fTbUnyNo4hFxcenGKhPUenl_CJgshhNVaFZUsM_s/edit?usp=sharing
 
 function fixPathSpace( wFP ) {
 	var fixSpace = new RegExp( " " , "g" );
@@ -39,6 +36,10 @@ function wGetDuration( wFP ) {
 	}
 	catch( error ) { console.log( error ); }
 }
+
+
+
+
 
 // Initialization 
 const h1 = "HARD_DRIVE.";
@@ -73,10 +74,30 @@ const h1 = "HARD_DRIVE.";
 		}
 	}
 
-	wPlay( "TVShows" );
+	wPlay({ genre: "TVShows" });
 
 })();
 
+
+
+
+
+// Logic Info and Doc Links
+// https://docs.google.com/document/d/1FH4fTbUnyNo4hFxcenGKhPUenl_CJgshhNVaFZUsM_s/edit?usp=sharing
+
+var G_NOW_PLAYING = null;
+var G_NP_R_KEY = null;
+var G_LS_R_KEY = null;
+function calculatePrevious( wLastPlayedInGenre ) {
+
+	console.log( "Previous LastPlayed = " );
+	console.log( wLastPlayedInGenre );
+	var NewPlaying = null;
+
+	console.log( "New Playing OBJ = " );
+	console.log( NewPlaying );
+
+}
 
 function calculateNext( wLastPlayedInGenre ) {
 
@@ -89,22 +110,18 @@ function calculateNext( wLastPlayedInGenre ) {
 
 }
 
-
 const lp1 = "LAST_SS.LOCAL_MEDIA.";
-var G_NOW_PLAYING = null;
-var G_NP_R_KEY = null;
-var G_LS_R_KEY = null;
-async function wPlay( wGenre ) {
+async function wPlay( wOptions ) {
 
-	var g1_KEY = lp1 + wGenre + ".NOW_PLAYING";
+	var g1_KEY = lp1 + wOptions.genre + ".NOW_PLAYING";
 	var MKEY_SET = await RU.getMultiKeys( redis , g1_KEY , h1 + "MOUNT_POINT" );
 	
 	var NowPlaying = {};
 	if ( MKEY_SET[ 0 ] === null ) { // Genre Fresh 
-		var wShowName = await RU.getFromSetByIndex( redis , h1 + wGenre + ".META.UNEQ" , 0 );
-		var wFirstEpisode = await RU.getFromSetByIndex( redis , h1 + wGenre + ".FP." + wShowName + ".0" , 0 ); // Get Season 0 , Episode 0
-		var FULL_Path = MKEY_SET[1] + "/" + wGenre + "/" + wShowName + "/01/" + wFirstEpisode; 
-		NowPlaying = { genre: wGenre , uneq_idx: 0 , show_name: wShowName , season_idx: 0 , episode_idx: 0 , fp: FULL_Path , completed: false , cur_time: 0 , remaining_time: 0 , three_percent: 0 , duration: 0 };
+		var wShowName = await RU.getFromSetByIndex( redis , h1 + wOptions.genre + ".META.UNEQ" , 0 );
+		var wFirstEpisode = await RU.getFromSetByIndex( redis , h1 + wOptions.genre + ".FP." + wShowName + ".0" , 0 ); // Get Season 0 , Episode 0
+		var FULL_Path = MKEY_SET[1] + "/" + wOptions.genre + "/" + wShowName + "/01/" + wFirstEpisode; 
+		NowPlaying = { genre: wOptions.genre , uneq_idx: 0 , show_name: wShowName , season_idx: 0 , episode_idx: 0 , fp: FULL_Path , completed: false , cur_time: 0 , remaining_time: 0 , three_percent: 0 , duration: 0 };
 		redis.set( g1_KEY , JSON.stringify( NowPlaying ) );
 	}
 	else {
@@ -131,17 +148,27 @@ async function wPlay( wGenre ) {
 	MPLAYER_MAN.playFilePath( NowPlaying.fp );
 	if ( NowPlaying.cur_time > 1 ) {
 		await wSleep( 1000 );
-		console.log( "Seeking TO --> " + NowPlaying.cur_time.toString() );
 		MPLAYER_MAN.seekSeconds( NowPlaying.cur_time );
 	}
 
 }
 
 wEmitter.on( "MPlayerOVER" , async function( wResults ) {
-	console.log( wResults );
+	
 	G_NOW_PLAYING.cur_time = wResults;
+	G_NOW_PLAYING.remaining_time = ( G_NOW_PLAYING.duration - G_NOW_PLAYING.cur_time );
+	if ( G_NOW_PLAYING.cur_time >= G_NOW_PLAYING.three_percent ) { G_NOW_PLAYING.completed = true; }
 	var x1 = JSON.stringify( G_NOW_PLAYING );
 	await RU.setMulti( redis , [ [ "set" , G_NP_R_KEY , x1 ] ,  [ "set" , G_LS_R_KEY , x1 ] ]);
+
+	var wAS = await RU.getMultiKeys( redis , "LAST_SS.ACTIVE_STATE" , "LAST_SS.ACTIVE_STATE.META" );
+	if ( wAS[0] === "LOCAL_MEDIA" ) {
+		wPlay( JSON.parse( wAS[1] ) );
+	}
+	else {
+		console.log( "WE WERE TOLD TO QUIT" );
+	}
+
 });
 
 function wPause() {}
