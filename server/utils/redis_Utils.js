@@ -32,6 +32,13 @@ function REDIS_GET_MULTI_KEY( rInstance , ...args ) {
 	});
 }
 
+function REDIS_SET_KEY( rInstance , wKey , wVal ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.set( wKey , wVal , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function REDIS_SET_MULTI( rInstance , wArgs ) {
 	console.log( wArgs );
 	return new Promise( function( resolve , reject ) {
@@ -45,6 +52,7 @@ module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
 module.exports.getMultiKeys= REDIS_GET_MULTI_KEY;
+module.exports.setKey= REDIS_SET_KEY;
 module.exports.setMulti= REDIS_SET_MULTI;
 
 

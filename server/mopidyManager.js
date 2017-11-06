@@ -29,6 +29,17 @@ var wUpdate_Last_SS = require( "./clientManager.js" ).edit_Last_SS;
 // 							--> TO
 //									self.android_id = "VALID_DEVICE_ID"
 
+
+
+// =========================================================================
+// USE THIS AS A GUIDE TO REWRITE THIS WHOLE BLOODY FUCKING "MODULE"
+// https://github.com/zamnuts/nodejs-fork-example
+// THIS CURRENTLY IS TRAILER-TRASH BULL SHIT
+// HOW THE DUCK IS THIS A "CLASS" ?
+// PLEASE KILL YOURSEFL YOU GOD DAMN FUCKING RETARD
+// =========================================================================
+
+
 var colors = require("colors");
 var path = require("path");
 var jsonfile = require("jsonfile");
