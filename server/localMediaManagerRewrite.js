@@ -84,9 +84,9 @@ const h1 = "HARD_DRIVE.";
 	await RU.setMulti( redis , [
 		[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 		[ "set" , R_LM_Config_Genre , "TVShows" ] ,
-		[ "set" , R_LM_Config_AdvanceShow , false ] ,
-		[ "set" , R_LM_Config_SpecificShow , false ] ,
-		[ "set" , R_LM_Config_SpecificEpisode , false ] ,
+		[ "set" , R_LM_Config_AdvanceShow , "false" ] ,
+		[ "set" , R_LM_Config_SpecificShow , "false" ] ,
+		[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
 	]);
 
 	wPlay();
@@ -123,13 +123,13 @@ function calculateNext( lastPlayed , config ) {
 			var F_RemainingTime , F_CurrentTime , F_ThreePercent , F_Duration = 0;
 			var nextEpisode = 0;
 
-			if ( config[ 3 ] !== null ) { // IF Specific-Episode
+			if ( config[ 3 ] === "true" ) { // IF Specific-Episode
 				
 			}
-			else if ( config[ 2 ] !== null ) { // IF Specific-Show
+			else if ( config[ 2 ] === "true" ) { // IF Specific-Show
 
 			}
-			else if ( config[ 1 ] ) { // IF Advance-Next-Show is Enabled
+			else if ( config[ 1 ] === "true" ) { // IF Advance-Next-Show is Enabled
 				
 			}
 			else { // Just continue then to +1-episode based on lastPlayed
@@ -138,6 +138,7 @@ function calculateNext( lastPlayed , config ) {
 				F_Episode_IDX = nextEpisode;
 				const R_Next_EP = R_N_BASE + "FP." + lastPlayed.show_name + "." + lastPlayed.season_idx;
 				nextEpisode = await RU.getFromSetByIndex( redis , R_Next_EP , nextEpisode );
+				console.log( "next episode === " + nextEpisode );
 
 				if ( nextEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
 					console.log( "inside episode reset" );
@@ -153,13 +154,15 @@ function calculateNext( lastPlayed , config ) {
 					}
 					else { F_FP = intermediaryNext_Episode; }
 				}
+				else { F_FP = nextEpisode; }
 
 			}
 
 			// Adjust Final-Full-File-Path from Redis "set" language
-			var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + lastPlayed.genre + "/" + F_ShowName;
-			if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + ( F_Season_IDX + 1 ).toString() + "/" + F_FP; }
-			else { F_FP = xb1 + "/" + ( F_Season_IDX + 1 ).toString() + "/" + F_FP; }
+			var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
+			var xb2 = ( F_Season_IDX + 1 ).toString();
+			if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
+			else { F_FP = xb1 + "/" + xb2 + "/" + F_FP; }
 			
 			resolve({
 				genre: lastPlayed.genre ,
@@ -263,7 +266,7 @@ wEmitter.on( "MPlayerOVER" , async function( wResults ) {
 
 	// Continue if Config Says were Still Active
 	var wAS = await RU.getMultiKeys( redis , "LAST_SS.ACTIVE_STATE" , "LAST_SS.ACTIVE_STATE.META" );
-	if ( wAS[0] === "LOCAL_MEDIA" ) { wPlayRewrite(); }
+	if ( wAS[0] === "LOCAL_MEDIA" ) { wPlay(); }
 	else { console.log( "WE WERE TOLD TO QUIT" ); }
 
 });
