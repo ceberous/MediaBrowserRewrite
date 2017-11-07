@@ -84,7 +84,7 @@ const h1 = "HARD_DRIVE.";
 	await RU.setMulti( redis , [
 		[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 		[ "set" , R_LM_Config_Genre , "TVShows" ] ,
-		[ "set" , R_LM_Config_AdvanceShow , "true" ] ,
+		[ "set" , R_LM_Config_AdvanceShow , "false" ] ,
 		[ "set" , R_LM_Config_SpecificShow , "false" ] ,
 		[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
 	]);
@@ -117,6 +117,7 @@ function calculateNext( lastPlayed , config ) {
 			var F_Episode_IDX = lastPlayed.episode_idx;
 			var F_Season_IDX = lastPlayed.season_idx;
 			var F_FP = "";
+			var F_FP_Already_Set = false;
 			var F_RemainingTime = F_CurrentTime = F_ThreePercent = F_Duration = nextEpisode = 0;
 
 			if ( config[ 3 ] === "true" ) { // IF Specific-Episode
@@ -142,14 +143,17 @@ function calculateNext( lastPlayed , config ) {
 				var previouslyWatched = await RU.getKey( redis , R_PreviouslyWatched );
 				if ( previouslyWatched !== null ) {
 					lastPlayed = JSON.parse( previouslyWatched );
-					lastPlayed.completed = true;
+					F_FP_Already_Set = true;
+					F_FP = lastPlayed.fp;
+					F_RemainingTime = lastPlayed.remaining_time;
+					F_Duration = lastPlayed.duration;
+					F_ThreePercent = lastPlayed.three_percent;
+					F_CurrentTime = lastPlayed.cur_time;
 					F_Episode_IDX = lastPlayed.episode_idx;
-					F_Season_IDX = lastPlayed.season_idx
+					F_Season_IDX = lastPlayed.season_idx;
 				}
-				else { F_Episode_IDX = -1; F_Season_IDX = 0; } // 
+				else { F_Episode_IDX = -1; F_Season_IDX = 0; await callNextGen1Build(); }
 				
-				await callNextGen1Build();
-
 			}
 			else { await callNextGen1Build(); } // Just continue then to +1-episode based on lastPlayed
 
@@ -183,11 +187,13 @@ function calculateNext( lastPlayed , config ) {
 				});
 			}
 
-			// Adjust Final-Full-File-Path from Redis "set" language
-			var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
-			var xb2 = ( F_Season_IDX + 1 ).toString();
-			if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
-			else { F_FP = xb1 + "/" + xb2 + "/" + F_FP; }
+			if ( !F_FP_Already_Set ) {
+				// Adjust Final-Full-File-Path from Redis "set" language
+				var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
+				var xb2 = ( F_Season_IDX + 1 ).toString();
+				if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
+				else { F_FP = xb1 + "/" + xb2 + "/" + F_FP; }
+			}
 
 			resolve({
 				genre: lastPlayed.genre ,
@@ -343,7 +349,7 @@ function wStop() {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-function wNext() { wPlay( true ); }
+async function wNext() { await wStop(); wPlay( true ); }
 function wPrevious() {}
 
 
@@ -357,10 +363,15 @@ module.exports.stop 			= wStop;
 module.exports.next 			= wNext;
 module.exports.previous			= wPrevious;
 
-
+// setTimeout( ()=> {
+// 	setInterval( ()=> {
+// 		wNext();
+// 	} , 10000 );
+// } , 10000 );
 
 process.on( "SIGINT" , async function () {
 	await wStop();
+	await wSleep( 1000 );
 	redis.quit();
 });
 
