@@ -6,6 +6,8 @@ function REDIS_GET_KEYS_FROM_PATTERN( rInstance , wPattern ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+// This Needs ReWritten. It fails when a large **unknown actual amount** ok keys need deleted
+// Possibly limit to 10-20 at a time
 function REDIS_DEL_KEYS( rInstance , wKeys ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.del.apply( rInstance , wKeys , function( err , results ){ if ( err ) { console.log( err ); } else { console.log( results ) } });  }
