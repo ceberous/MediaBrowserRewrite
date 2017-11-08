@@ -64,6 +64,18 @@ function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+function REDIS_GET_FULL_LIST( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.lrange( wKey , 0 , -1 , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+function REDIS_GET_FULL_SET( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.smembers( wKey , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
 
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
@@ -72,6 +84,8 @@ module.exports.getKey = REDIS_GET_KEY;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
 module.exports.getMultiKeys= REDIS_GET_MULTI_KEY;
+module.exports.getFullList= REDIS_GET_FULL_LIST;
+module.exports.getFullSet= REDIS_GET_FULL_SET;
 module.exports.setKey= REDIS_SET_KEY;
 module.exports.setMulti= REDIS_SET_MULTI;
 module.exports.setListFromArray= REDIS_SET_LIST_FROM_ARRAY;
