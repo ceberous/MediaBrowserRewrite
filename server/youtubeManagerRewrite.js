@@ -50,6 +50,8 @@ const Default_Standard_Blacklist = [];
 	// 	console.log( "done cleansing instance" );
 	// }
 	// await wSleep( 5000 );
+	
+	// Repopulate Redis Structure if Nothing Exists
 	if ( ek.length < 1 ) {
 		var R_YT_LIVE_FOLLOWER_KEYS = Default_Live_Followers.map( x => [ "set" , R_YT_LIVE_FOLLOWERS + x , "null" ] );
 		var R_YT_STANDARD_FOLLOWER_KEYS = Default_Standard_Followers.map( x => [ "set" , R_YT_STANDARD_FOLLOWERS + x , "null" ] );
@@ -60,7 +62,7 @@ const Default_Standard_Blacklist = [];
 		console.log( "done building YOU_TUBE REF" );
 	}
 
-	await enumerateLiveFollowers();	
+	//await enumerateLiveFollowers();	
 	await enumerateStandardFollowers();
 
 })();
@@ -113,12 +115,13 @@ function enumerateLiveFollowers() {
 	}
 	return new Promise( async function( resolve , reject ) {
 		try {
+			await RU.delKey( redis , R_YT_LIVE_LATEST_VIDEOS );
 			current_followers = await RU.getKeysFromPattern( redis , R_YT_LIVE_FOLLOWERS + "*" );
 			current_blacklist = await RU.getFullSet( redis , R_YT_LIVE_BLACKLIST );
 			const follower_ids = current_followers.map( x => x.split( R_YT_LIVE_FOLLOWERS )[1] );
 			var live_videos = await map( follower_ids , userId => searchFollower( userId ) );
 			live_videos = [].concat.apply( [] , live_videos );
-			await RU.setListFromArray( redis , R_YT_LIVE_LATEST_VIDEOS , live_videos );
+			await RU.setSetFromArray( redis , R_YT_LIVE_LATEST_VIDEOS , live_videos );
 			resolve( live_videos );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -171,8 +174,6 @@ function enumerateStandardFollowers() {
 							};
 						}
 					}
-					console.log( "done" );
-					console.log( final_results );
 					resolve();
 				}
 			}
@@ -194,12 +195,21 @@ function enumerateStandardFollowers() {
 	}	
 	return new Promise( async function( resolve , reject ) {
 		try {
+
+			// Gather Data
 			current_followers = await RU.getKeysFromPattern( redis , R_YT_STANDARD_FOLLOWERS + "*" );
 			current_blacklist = await RU.getFullSet( redis , R_YT_STANDARD_BLACKLIST );
 			const follower_ids = current_followers.map( x => x.split( R_YT_STANDARD_FOLLOWERS )[1] );
+			console.log( follower_ids );
 			await map( follower_ids , userId => fetchFollowerXML( userId ) );
 			filterOldVideos( wMonth );
 
+			// Build and Store Redis Structure
+			// https://redis.io/commands#hash
+			// https://github.com/lykmapipo/redis-hashes <<--- ReWriting this would be great....
+			// Nevermind ... https://github.com/tj/rediskit
+			// https://github.com/tj/rediskit/blob/master/lib/objects/hash.js
+			// It doesn't really seem to support the hmset though. so... 
 			var wMultis = [];
 			for ( var follower in final_results ) {
 				var wR_Key_Base = R_YT_STANDARD_FOLLOWERS + follower + ".";
@@ -207,8 +217,7 @@ function enumerateStandardFollowers() {
 					var wR_VID = wR_Key_Base + video_id;
 					var wHashArray = [ "hmset" , wR_VID ];
 					for ( var iprop in final_results[ follower ][ video_id ] ) {
-						wHashArray.push( iprop );
-						wHashArray.push( final_results[ follower ][ video_id ][ iprop ] );
+						wHashArray.push( iprop , final_results[ follower ][ video_id ][ iprop ] );
 					}
 					wMultis.push( wHashArray );
 				}

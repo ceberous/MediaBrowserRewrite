@@ -26,6 +26,12 @@ function REDIS_DEL_KEYS( rInstance , wKeys ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+function REDIS_DELETE_KEY( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.del( wKey , function( err , keys ) { resolve( keys ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 function REDIS_GET_KEY( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.get( wKey , function( err , key ) { resolve( key ); }); }
@@ -81,6 +87,7 @@ function REDIS_GET_FULL_SET( rInstance , wKey ) {
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
+module.exports.delKey = REDIS_DELETE_KEY;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
 module.exports.getMultiKeys= REDIS_GET_MULTI_KEY;
