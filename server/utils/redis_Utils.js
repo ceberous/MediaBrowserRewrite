@@ -6,6 +6,18 @@ function REDIS_GET_KEYS_FROM_PATTERN( rInstance , wPattern ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+function REDIS_SET_LIST_FROM_ARRAY( rInstance , wKey , wArray ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.rpush.apply( rInstance , [ wKey ].concat( wArray ).concat( function( err , keys ){ resolve( keys ); })); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+function REDIS_SET_SET_FROM_ARRAY( rInstance , wKey , wArray ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.sadd.apply( rInstance , [ wKey ].concat( wArray ).concat( function( err , keys ){ resolve( keys ); })); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 // This Needs ReWritten. It fails when a large **unknown actual amount** ok keys need deleted
 // Possibly limit to 10-20 at a time
 function REDIS_DEL_KEYS( rInstance , wKeys ) {
@@ -62,3 +74,5 @@ module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
 module.exports.getMultiKeys= REDIS_GET_MULTI_KEY;
 module.exports.setKey= REDIS_SET_KEY;
 module.exports.setMulti= REDIS_SET_MULTI;
+module.exports.setListFromArray= REDIS_SET_LIST_FROM_ARRAY;
+module.exports.setSetFromArray= REDIS_SET_SET_FROM_ARRAY;
