@@ -94,15 +94,68 @@ const h1 = "HARD_DRIVE.";
 })();
 
 
-function calculatePrevious( wLastPlayedInGenre ) {
+function calculatePrevious( lastPlayed , config ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const R_N_BASE = "HARD_DRIVE." + lastPlayed.genre + ".";
 
-	console.log( "Previous LastPlayed = " );
-	console.log( wLastPlayedInGenre );
-	var NewPlaying = null;
+			var F_UNEQ_IDX = lastPlayed.uneq_idx;
+			var F_ShowName = lastPlayed.show_name;
+			var F_Episode_IDX = lastPlayed.episode_idx;
+			var F_Season_IDX = lastPlayed.season_idx;
+			var F_FP = "";
+			var F_FP_Already_Set = false;
+			var F_RemainingTime = F_CurrentTime = F_ThreePercent = F_Duration = previousEpisode = 0;
 
-	console.log( "New Playing OBJ = " );
-	console.log( NewPlaying );
+			previousEpisode = ( F_Episode_IDX - 1 );
+			F_Episode_IDX = previousEpisode;
+			const R_Previous_Base = R_N_BASE + "FP." + F_ShowName;
+			const R_Previous_EP = R_Previous_Base + "." + F_Season_IDX;
+			previousEpisode = await RU.getFromSetByIndex( redis , R_Previous_EP , previousEpisode );
+			console.log( "next episode === " + previousEpisode );
 
+			if ( previousEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
+				
+				console.log( "inside episode reset" );
+				F_Season_IDX = ( F_Season_IDX - 1 );
+				if ( F_Season_IDX === -1 ) { // We Precceded Past Season '0' , and we need to set to last season , last episode
+					F_Season_IDX = await RU.getKeysFromPattern( redis , R_Previous_Base + ".*" );
+					F_Season_IDX = ( F_Season_IDX.length - 1 );
+				}
+				const R_Previous_Season = R_Previous_Base + "." + F_Season_IDX;
+				F_Episode_IDX = await RU.getListLength( redis , R_Previous_Season );
+				F_Episode_IDX = ( F_Episode_IDX - 1 );
+
+				F_FP = await RU.getFromSetByIndex( redis , R_Previous_Season , F_Episode_IDX );
+
+			}
+			else { F_FP = previousEpisode; }
+
+			// Adjust Final-Full-File-Path from Redis "set" language
+			if ( !F_FP_Already_Set ) {
+				var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
+				var xb2 = ( F_Season_IDX + 1 ).toString();
+				if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
+				else { F_FP = xb1 + "/" + xb2 + "/" + F_FP; }
+			}
+
+			resolve({
+				genre: lastPlayed.genre ,
+				uneq_idx: F_UNEQ_IDX ,
+				show_name: F_ShowName ,
+				season_idx: F_Season_IDX ,
+				episode_idx: F_Episode_IDX ,
+				fp: F_FP ,
+				completed: false ,
+				remaining_time: F_RemainingTime ,
+				three_percent: F_ThreePercent ,
+				duration: F_Duration ,
+				cur_time: F_CurrentTime
+			});
+
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
 const R_GET_LOCAL_MEDIA_CONFIG = "CONFIG.LOCAL_MEDIA.LIVE";
@@ -187,8 +240,8 @@ function calculateNext( lastPlayed , config ) {
 				});
 			}
 
+			// Adjust Final-Full-File-Path from Redis "set" language
 			if ( !F_FP_Already_Set ) {
-				// Adjust Final-Full-File-Path from Redis "set" language
 				var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
 				var xb2 = ( F_Season_IDX + 1 ).toString();
 				if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
@@ -262,7 +315,7 @@ function getLiveConfig() {
 	});
 }
 
-async function wPlay( skipping ) {
+async function wPlay( skipping , previous ) {
 
 	var FinalNowPlaying = {};
 
@@ -274,7 +327,8 @@ async function wPlay( skipping ) {
 	console.log( liveConfig );
 	console.log("");
 
-	if ( skipping ) { console.log("inside skipping case"); FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
+	if ( previous ) { console.log("inside previous case"); FinalNowPlaying = await calculatePrevious( liveLastPlayed , liveConfig ); }
+	else if ( skipping ) { console.log("inside skipping case"); FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
 
 	else if ( liveLastPlayed === null ) { // IF - Nothing ever watched in Genre
 		console.log( "genre is FRESH !!" );
@@ -350,7 +404,7 @@ function wStop() {
 	});
 }
 async function wNext() { await wStop(); wPlay( true ); }
-function wPrevious() {}
+async function wPrevious() { await wStop(); wPlay( false , true ); }
 
 
 module.exports.play 			= wPlay;
@@ -365,13 +419,13 @@ module.exports.previous			= wPrevious;
 
 // setTimeout( ()=> {
 // 	setInterval( ()=> {
-// 		wNext();
-// 	} , 10000 );
+// 		wPause();
+// 	} , 3000 );
 // } , 10000 );
 
 process.on( "SIGINT" , async function () {
 	await wStop();
-	await wSleep( 1000 );
+	await wSleep( 3000 );
 	redis.quit();
 });
 

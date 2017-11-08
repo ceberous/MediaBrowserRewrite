@@ -33,7 +33,6 @@ function REDIS_GET_MULTI_KEY( rInstance , ...args ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-
 function REDIS_SET_KEY( rInstance , wKey , wVal ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.set( wKey , wVal , function( err , values ) { resolve( values ); }); }
@@ -42,16 +41,23 @@ function REDIS_SET_KEY( rInstance , wKey , wVal ) {
 }
 
 function REDIS_SET_MULTI( rInstance , wArgs ) {
-	console.log( wArgs );
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.multi( wArgs ).exec( function( err , results ) { console.log( err ); resolve( results ); }); }
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.llen( wKey , function( err , key ) { resolve( key ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
+module.exports.getListLength = REDIS_GET_LIST_LENGTH;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
 module.exports.getMultiKeys= REDIS_GET_MULTI_KEY;
 module.exports.setKey= REDIS_SET_KEY;
