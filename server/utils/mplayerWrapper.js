@@ -2,7 +2,7 @@ var process = require("process");
 
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
-var MPlayer = require('mplayer');
+var MPlayer = require("mplayer");
 
 var player = new MPlayer();;
 player.setOptions({
@@ -22,15 +22,16 @@ player.on( "time" , function( wTime ) {
 	process.send( { time: wTime } );
 });
 
+var BECAUSE_OF_PAUSE_COMMAND = false;
 player.on( "stop" ,  function( wTime ) {
 	triggerQuit();
 });
 
 async function triggerQuit() {
     // player.player.cmd('quit');
-    process.send( { ended: "UNREF_ME" , time: LPT } );
-    await sleep( 2000 );
-    process.exit(0);
+	process.send( { ended: "UNREF_ME" , time: LPT } );
+	await sleep( 2000 );
+	process.exit(0);
 }
 
 process.on( "message" , function( wData ) {
@@ -59,6 +60,8 @@ process.on( "message" , function( wData ) {
 			break;
 		case "fullscreen":
 			player.fullscreen();
-			break;									
+			break;
+		default:
+			break;						
 	}
 });

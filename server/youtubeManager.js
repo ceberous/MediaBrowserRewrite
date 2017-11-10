@@ -20,7 +20,6 @@ const RU = require( "./utils/redis_Utils.js" );
 function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
-
 // Initialization
 const R_YT_Base = "YOU_TUBE.";
 
@@ -28,7 +27,7 @@ const R_YT_LIVE_LATEST_VIDEOS = R_YT_Base + "LIVE.LATEST";
 const R_YT_LIVE_FOLLOWERS = R_YT_Base + "LIVE.FOLLOWERS.";
 const Default_Live_Followers = [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ];
 const R_YT_LIVE_BLACKLIST = R_YT_Base + "LIVE.BLACKLIST";
-const Default_Live_Blacklist = [ "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , "nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ];
+const Default_Live_Blacklist = [ "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , "nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ];
 
 const R_YT_STANDARD_FOLLOWERS = R_YT_Base + "STANDARD.FOLLOWERS.";
 const R_YT_STANDARD_FOLLOWERS_UNEQ = R_YT_STANDARD_FOLLOWERS + "UNEQ";

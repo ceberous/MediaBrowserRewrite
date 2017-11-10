@@ -18,14 +18,12 @@ var wEmitter = require( "../../main.js" ).wEmitter;
 
 const mplayerWrapperScript_FP = path.join( __dirname , "mplayerWrapper.js" );
 var wPROC = null;
-var wPROC_INT = null;
 var wPROC_STATUS = null;
 var wPROC_DURATION = null;
 var wPROC_TIME = null;
 
 var EMIT_OVER_EVENT = true;
-function cleanupChildPROC() { 
-	clearInterval( wPROC_INT ); 
+function cleanupChildPROC() {
 	try{wPROC.unref();}
 	catch(e){}
 	if ( EMIT_OVER_EVENT ) { wEmitter.emit( "MPlayerOVER" , wPROC_TIME ); }
@@ -80,7 +78,7 @@ function wGetDuration() { return wPROC_DURATION; }
 module.exports.playFilePath = wPlayFilePath;
 module.exports.quit = wQuit;
 module.exports.pause = wPause;
-module.exports.stop = wStop;
+//module.exports.stop = wStop;
 module.exports.silentStop = wSilentStop;
 module.exports.seekSeconds = wSeekSeconds;
 module.exports.seekPercent = wSeekPercent;

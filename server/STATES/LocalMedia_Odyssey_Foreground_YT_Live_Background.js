@@ -28,14 +28,59 @@ function wStart() {
 	});
 }
 
-function wPause() {
-
+function wPause() { 
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../localMediaManager.js" ).pause(); 
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+function wResume() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../localMediaManager.js" ).resume();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
 function wStop() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../localMediaManager.js" ).stop();
+			await require( "./YT_Live_Background.js" ).stop();			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
+function wNext() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../localMediaManager.js" ).next();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function wPrevious() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../localMediaManager.js" ).previous();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
 module.exports.start = wStart;
 module.exports.pause = wPause;
+module.exports.resume = wResume;
 module.exports.stop = wStop;
+module.exports.next = wNext;
+module.exports.previous = wPrevious;

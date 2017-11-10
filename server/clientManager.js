@@ -3,7 +3,8 @@ const path	= require( "path" );
 const colors	= require( "colors" );
 
 const BTN_MAN 	= require( "./buttonManager.js" );
-const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" );
+// Currently Importing This here ONLY for its Initialization Block
+const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" ); 
 
 const wEmitter	= require("../main.js").wEmitter;
 const wSkypeNames = require("../personal.js").skypeNames;
@@ -23,30 +24,35 @@ async function MASTER_STATE_STOP() {
 async function BUTTON_PRESS_0( wArgArray ) {
 	wcl( "PRESSED BUTTON 0" );
 	wcl( "Youtube Live Background" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	CURRENT_STATE = require( "./STATES/YT_Live_Background.js" );
 	await CURRENT_STATE.start();
 }
 
-function BUTTON_PRESS_1( wArgArray ) {
+async function BUTTON_PRESS_1( wArgArray ) {
 	wArgArray = wArgArray || [ "classic" ];
 	wcl( "PRESSED BUTTON 1" );
 	// MopidyManager.js Needs Rewritten to Use REDIS
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 }
 
-function BUTTON_PRESS_2( wArgArray ) {
+async function BUTTON_PRESS_2( wArgArray ) {
 	wcl( "PRESSED BUTTON 2" );
 	// MopidyManager.js Needs Rewritten to Use REDIS
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 }
 
-function BUTTON_PRESS_3( wArgArray ) {
+async function BUTTON_PRESS_3( wArgArray ) {
 	// YOUTUBE STANDARD / TWITCH LIVE
 	// TwitchManager.js Needs Rewritten to Use REDIS
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 }
 
 async function BUTTON_PRESS_4( wArgArray ) {
 	// SKYPE One
 	wcl( "PRESSED BUTTON 4" );
 	wcl( "Skype Call To: " + wSkypeNames.one );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	// Special Case , Need to Remmeber Current State So We Can Resume Once Call is Over
 	CURRENT_STATE = require( "./STATES/Skype_Foreground.js" );
 	await CURRENT_STATE.start();
@@ -56,6 +62,7 @@ async function BUTTON_PRESS_5( wArgArray ) {
 	// SKYPE Two
 	wcl( "PRESSED BUTTON 5" );
 	wcl( "Skype Call To: " + wSkypeNames.two );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	// Special Case , Need to Remmeber Current State So We Can Resume Once Call is Over
 	CURRENT_STATE = require( "./STATES/Skype_Foreground.js" );
 	await CURRENT_STATE.start();
@@ -64,31 +71,36 @@ async function BUTTON_PRESS_5( wArgArray ) {
 function BUTTON_PRESS_6( wArgArray ) {
 	// STOP Everything
 	wcl( "PRESSED BUTTON 6" );
+	wcl( "STOP" );
 	MASTER_STATE_STOP();
 }
 
 async function BUTTON_PRESS_7( wArgArray ) {
 	// PAUSE EVERYTHING
 	wcl( "PRESSED BUTTON 7" );
-	await CURRENT_STATE.pause();
+	wcl( "PAUSE" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.pause(); }
 }
 
 async function BUTTON_PRESS_8( wArgArray ) {
 	// PREVIOUS MEDIA
 	wcl( "PRESSED BUTTON 8" );
-	await CURRENT_STATE.previous();
+	wcl( "PREVIOUS" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.previous(); }
 }
 
 async function BUTTON_PRESS_9( wArgArray ) {
 	// NEXT MEDIA
 	wcl( "PRESSED BUTTON 9" );
-	await CURRENT_STATE.next();
+	wcl( "NEXT" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.next(); }
 }
 
 async function BUTTON_PRESS_10( wArgArray ) {
 	// LOCAL MOVIE
 	wcl( "PRESSED BUTTON 10" );
 	wcl( "Local-Media Movie" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	CURRENT_STATE = require( "./STATES/LocalMedia_Movie_Foreground.js" );
 	await CURRENT_STATE.start();
 }
@@ -96,6 +108,7 @@ async function BUTTON_PRESS_10( wArgArray ) {
 async function BUTTON_PRESS_11( wArgArray ) { // http://odysseyscoop.com/episodes/Episodes_free.htm
 	wcl( "PRESSED BUTTON 11" );
 	wcl( "Local-Media Odyssey" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	CURRENT_STATE = require( "./STATES/LocalMedia_Odyssey_Foreground_YT_Live_Background.js" );
 	await CURRENT_STATE.start();
 }
@@ -104,6 +117,7 @@ async function BUTTON_PRESS_12( wArgArray ) {
 	// LOCAL TV SHOW
 	wcl( "PRESSED BUTTON 12" );
 	wcl( "Local-Media TV Show" );
+	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	CURRENT_STATE = require( "./STATES/LocalMedia_TV_Foreground.js" );
 	await CURRENT_STATE.start();
 }
@@ -113,8 +127,7 @@ const BP_MAP = [
 	BUTTON_PRESS_0 , BUTTON_PRESS_1 , BUTTON_PRESS_2 , BUTTON_PRESS_3 , BUTTON_PRESS_4 , BUTTON_PRESS_5 ,
 	BUTTON_PRESS_6 , BUTTON_PRESS_7 , BUTTON_PRESS_8 , BUTTON_PRESS_9 , BUTTON_PRESS_10 , BUTTON_PRESS_11 , BUTTON_PRESS_12	
 ];
-async function wPressButtonMaster( wButtonNum , wArgArray ) {
-	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
+function wPressButtonMaster( wButtonNum , wArgArray ) {
 	var x1 = "MB-Pressed--" + wButtonNum.toString();
 	var dNow = new Date();
 	var x2 = dNow.getMonth() + '-' + dNow.getDate() + '-' + dNow.getFullYear() + '--' + dNow.getHours() + '-' + dNow.getMinutes();

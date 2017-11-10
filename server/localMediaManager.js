@@ -45,10 +45,7 @@ var G_NOW_PLAYING = G_R_Live_Genre_NP = G_R_NP_ShowName_Backup = null;
 // Initialization 
 const h1 = "HARD_DRIVE.";
 ( async ()=> {
-	
-	console.log( "" );
-	console.log( "INSIDE LOCAL_MEDIA Initialization BLOCK" );
-	console.log( "" );
+
 	var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
 
 	var FORCED_RESET = false;
@@ -283,10 +280,10 @@ function updateLastPlayedTime( wTime ) {
 				G_NOW_PLAYING.cur_time = wTime;
 				G_NOW_PLAYING.remaining_time = ( G_NOW_PLAYING.duration - G_NOW_PLAYING.cur_time );
 				if ( G_NOW_PLAYING.cur_time >= G_NOW_PLAYING.three_percent ) { G_NOW_PLAYING.completed = true; }
+				var x1 = JSON.stringify( G_NOW_PLAYING );
+				await RU.setMulti( redis , [ [ "set" , G_R_Live_Genre_NP , x1 ] ,  [ "set" , G_R_NP_ShowName_Backup , x1 ] ]);
 			}
-			else { console.log( "no wTIME !!!!" ); G_NOW_PLAYING.completed = true; } // Just assuming something **bad** happened , and mark as completed anyways
-			var x1 = JSON.stringify( G_NOW_PLAYING );
-			await RU.setMulti( redis , [ [ "set" , G_R_Live_Genre_NP , x1 ] ,  [ "set" , G_R_NP_ShowName_Backup , x1 ] ]);
+			//else { console.log( "no wTIME !!!!" ); G_NOW_PLAYING.completed = true; } // Just assuming something **bad** happened , and mark as completed anyways
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -425,25 +422,8 @@ module.exports.stop 			= wStop;
 module.exports.next 			= wNext;
 module.exports.previous			= wPrevious;
 
-// setTimeout( ()=> {
-// 	setInterval( ()=> {
-// 		wPause();
-// 	} , 3000 );
-// } , 10000 );
-
 process.on( "SIGINT" , async function () {
 	await wStop();
 	await wSleep( 3000 );
 	redis.quit();
 });
-
-// process.on( "unhandledRejection" , function( reason , p ) {
-//     console.error( reason, "Unhandled Rejection at Promise" , p );
-//     console.trace();
-//     //wEmitter.emit( "closeEverything" );
-// });
-// process.on( "uncaughtException" , function( err ) {
-//     console.error( err , "Uncaught Exception thrown" );
-//     console.trace();
-//     //wEmitter.emit( "closeEverything" );
-// });

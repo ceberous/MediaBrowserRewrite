@@ -22,7 +22,7 @@ async function wStart() {
 }
 
 function wPause() {
-
+	
 }
 
 function wStop() { require( "../firefoxManager.js" ).terminateFF(); }
