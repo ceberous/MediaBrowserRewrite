@@ -12,9 +12,9 @@ function fixPathSpace(wFP) {
 	wFP = wFP.replace( "'" , String.fromCharCode(92) + "'" );
 	return wFP;
 }
-//var wEmitter = require( "../../main.js" ).wEmitter;
+var wEmitter = require( "../../main.js" ).wEmitter;
 //var wEmitter = new (require("events").EventEmitter);
-var wEmitter = require( "../localMediaManagerRewrite.js" ).wEmitter;
+//var wEmitter = require( "../localMediaManagerRewrite.js" ).wEmitter;
 
 const mplayerWrapperScript_FP = path.join( __dirname , "mplayerWrapper.js" );
 var wPROC = null;

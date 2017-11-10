@@ -31,12 +31,12 @@ function sendWebSocketMessage() {
 wss.on( "connection" ,  function( socket , req ) {
 	const ip = req.connection.remoteAddress;
 	socket.isAlive = true;
-	console.log( "New Client Connected @@@ " + ip );
+	wcl( "New WebSocket Client Connected @@@ " + ip );
 	sendWebSocketMessage();
 	socket.on( "message" , function( message ) {
 		switch( message ) {
 			case "pong":
-				console.log( "inside pong()" );
+				//console.log( "inside pong()" );
 				this.isAlive = true;
 				break;
 			case "youtubeReadyForFullScreenGlitch":
@@ -45,7 +45,6 @@ wss.on( "connection" ,  function( socket , req ) {
 			default:
 				break;
 		}
-		console.log( message );
 	});
 });
 // May not be necessary , because clients seem to be automatically deleteed in simple testing

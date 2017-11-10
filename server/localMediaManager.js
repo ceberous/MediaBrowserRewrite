@@ -5,7 +5,7 @@ var wEmitter	= require("../main.js").wEmitter;
 //var wEmitter = new (require("events").EventEmitter);
 //module.exports.wEmitter = wEmitter;
 
-var redis = require( "./clientManager.js" ).redis;
+var redis = require( "../main.js" ).redis;
 //var REDIS = require("redis");
 //var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );
@@ -36,7 +36,6 @@ function wGetDuration( wFP ) {
 }
 
 
-
 // Logic Info and Doc Links
 // https://docs.google.com/document/d/1FH4fTbUnyNo4hFxcenGKhPUenl_CJgshhNVaFZUsM_s/edit?usp=sharing
 
@@ -46,12 +45,18 @@ var G_NOW_PLAYING = G_R_Live_Genre_NP = G_R_NP_ShowName_Backup = null;
 // Initialization 
 const h1 = "HARD_DRIVE.";
 ( async ()=> {
-		
+	
+	console.log( "" );
+	console.log( "INSIDE LOCAL_MEDIA Initialization BLOCK" );
+	console.log( "" );
 	var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
-	// FORCED-CLEANSING
+
+	var FORCED_RESET = false;
+	//FORCED-CLEANSING
 	// if ( ek.length > 0 ) {
 	// 	ek = ek.map( x => [ "del" , x  ] );
 	// 	await RU.setMulti( redis , ek );
+	// 	FORCED_RESET = true;
 	// 	console.log( "done cleansing instance" );
 	// }
 
@@ -60,7 +65,7 @@ const h1 = "HARD_DRIVE.";
 	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
 	GLOBAL_INSTANCE_MOUNT_POINT = mp;
 
-	if ( ek.length < 1 ) { 
+	if ( FORCED_RESET || ek.length < 1 ) { 
 		var x1 = await require( "./utils/localMedia_Util" ).buildHardDriveReference( mp ); // we alll know this is cancer. but fml
 		for ( var wGenre in x1 ) {
 			var x1Shows = Object.keys( x1[ wGenre ] );
@@ -426,11 +431,11 @@ module.exports.previous			= wPrevious;
 // 	} , 3000 );
 // } , 10000 );
 
-// process.on( "SIGINT" , async function () {
-// 	await wStop();
-// 	await wSleep( 3000 );
-// 	redis.quit();
-// });
+process.on( "SIGINT" , async function () {
+	await wStop();
+	await wSleep( 3000 );
+	redis.quit();
+});
 
 // process.on( "unhandledRejection" , function( reason , p ) {
 //     console.error( reason, "Unhandled Rejection at Promise" , p );

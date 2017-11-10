@@ -9,14 +9,12 @@ const R_STATE_NAME = "YOUTUBE_LIVE_BACKGROUND";
 async function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			console.log( "are we inside wStart() ???" );
 			var current_state = await RU.getKey( redis , R_STATE );
 			var live_vids = await require( "../youtubeManager.js" ).updateLive();
-			console.log( live_vids );
+			//console.log( live_vids );
 			require( "../../main.js" ).setStagedFFClientTask( { message: "YTLiveBackground" , playlist: live_vids , nextVideoTime: 30000 } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeLiveBackground" );
 			await RU.setMulti( redis , [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
-			console.log( "is it over  ???" );			
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

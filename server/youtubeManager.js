@@ -20,6 +20,7 @@ const RU = require( "./utils/redis_Utils.js" );
 function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+
 // Initialization
 const R_YT_Base = "YOU_TUBE.";
 
@@ -85,12 +86,10 @@ function enumerateLiveFollowers() {
 				var wURL = null;
 				if ( wChannelID.substring( 0 , 2 ) === "UC" ) { wURL = "https://www.youtube.com/channel/" + wChannelID + "/videos?view=2&live_view=501&flow=grid"; }
 				else { wURL = "https://www.youtube.com/user/" + wChannelID + "/videos?view=2&live_view=501&flow=grid"; }
-				console.log( wURL );
+				wcl( wURL );
 
 				var wResults = [];
-				var wFR = [];
 				request( wURL , function ( err , response , body ) {
-			
 					if ( err ) { console.log( err ); reject( err ); return; }
 					try { var $ = cheerio.load( body ); }
 					catch(err) { reject( "cheerio load failed" ); return; }
@@ -100,22 +99,7 @@ function enumerateLiveFollowers() {
 						//wResults.push( { title: $( this ).text() , id: wID } );
 						wResults.push( wID );
 					});
-
-					if ( current_blacklist.length < 1 ) { resolve( wResults ); }
-
-					for ( var i = 0; i < wResults.length; ++i ) {
-
-						var wBL = false;
-						// Check VideoID against Blacklist File 
-						//for ( var j = 0; j < current_blacklist.length; ++j ) { if ( current_blacklist[j] === wResults[i][ "id" ] ) { wBL = true; } }
-						for ( var j = 0; j < current_blacklist.length; ++j ) { if ( current_blacklist[j] === wResults[i] ) { wBL = true; } }
-						
-						// If Not In Blacklist , add to Results
-						if ( wBL === false ) { wFR.push( wResults[i] ); }
-
-					}
-					//for ( var i = 0; i < wResults.length; ++i ) { console.log( wChannelID + " --> " + wResults[ i ][ "id" ] ); }
-					resolve( wFR );
+					resolve( wResults );
 				});
 
 			}
@@ -128,13 +112,18 @@ function enumerateLiveFollowers() {
 
 			current_followers = await RU.getKeysFromPattern( redis , R_YT_LIVE_FOLLOWERS + "*" );
 			current_blacklist = await RU.getFullSet( redis , R_YT_LIVE_BLACKLIST );
-			const follower_ids = current_followers.map( x => x.split( R_YT_LIVE_FOLLOWERS )[1] );
+			const follower_ids = current_followers.map( x => x.split( R_YT_LIVE_FOLLOWERS )[1] );			
 			
 			var live_videos = await map( follower_ids , userId => searchFollower( userId ) );
 			live_videos = [].concat.apply( [] , live_videos );
+
+			// console.log( "current_blacklist = " );
+			// console.log( current_blacklist );
+			live_videos = live_videos.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; });
+			// console.log( "filtered results = " );
+			// console.log( live_videos );			
 			
 			await RU.setSetFromArray( redis , R_YT_LIVE_LATEST_VIDEOS , live_videos );
-			
 			resolve( live_videos );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -161,7 +150,7 @@ function enumerateStandardFollowers() {
 
 				var wResults = [];
 				var wFeedURL = ytXML_Base + channelID;
-				console.log( wFeedURL );
+				wcl( wFeedURL );
 				var req = request( wFeedURL );
 				req.on( "error" , function ( error ) { console.log(error); } );
 				req.on( "response" , function ( res ) {
@@ -268,17 +257,3 @@ function enumerateStandardFollowers() {
 
 module.exports.updateLive = enumerateLiveFollowers;
 module.exports.updateStandard = enumerateStandardFollowers;
-
-// process.on( "SIGINT" , async function () {
-// 	redis.quit();
-// 	await wSleep( 3000 );
-// });
-
-// process.on( "unhandledRejection" , function( reason , p ) {
-//     console.error( reason, "Unhandled Rejection at Promise" , p );
-//     console.trace();
-// });
-// process.on( "uncaughtException" , function( err ) {
-//     console.error( err , "Uncaught Exception thrown" );
-//     console.trace();
-// });
