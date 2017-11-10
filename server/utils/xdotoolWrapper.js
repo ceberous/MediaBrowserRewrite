@@ -6,12 +6,15 @@ function wcl( wSTR ) { console.log( colors.blue.bgRed( "[XDO_TOOL_MAN] --> " + w
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 function wGetWindowIDFromName( wName ) {
-	var findName = 'xdotool search --name "' + wName + '"';
-	var wWindowID = exec( findName , { silent: true , async: false } );
-	if ( wWindowID.stderr.length > 1 ) { wcl( "ERROR --> Could not Wrap FF Window" ); return null; }
-	var wF = wWindowID.stdout.trim();
-	wcl( "WindowID = " + wF );
-	return wF;
+	try {
+		var findName = 'xdotool search --name "' + wName + '"';
+		var wWindowID = exec( findName , { silent: true , async: false } );
+		if ( wWindowID.stderr.length > 1 ) { wcl( "ERROR --> Could not Wrap FF Window" ); return null; }
+		var wF = wWindowID.stdout.trim();
+		wcl( "WindowID = " + wF );
+		return wF;
+	}
+	catch( error ) { return false; }
 }
 
 function  wEnsureWindowNameIsReady( wName ) {

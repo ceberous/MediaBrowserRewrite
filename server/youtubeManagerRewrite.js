@@ -8,13 +8,13 @@ var path = require("path");
 // https://github.com/toniov/p-iteration
 const { map } = require( "p-iteration" );
 
-// var wEmitter	= require("../main.js").wEmitter;
-var wEmitter = new (require("events").EventEmitter);
-module.exports.wEmitter = wEmitter;
+var wEmitter	= require("../main.js").wEmitter;
+//var wEmitter = new (require("events").EventEmitter);
+//module.exports.wEmitter = wEmitter;
 
-//var redis = require( "./clientManager.js" ).redis;
-var REDIS = require("redis");
-var redis = REDIS.createClient( "8443" , "localhost" );
+var redis = require( "./clientManager.js" ).redis;
+//var REDIS = require("redis");
+//var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );
 
 
@@ -34,6 +34,7 @@ const R_YT_LIVE_BLACKLIST = R_YT_Base + "LIVE.BLACKLIST";
 const Default_Live_Blacklist = [ "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , "nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ];
 
 const R_YT_STANDARD_FOLLOWERS = R_YT_Base + "STANDARD.FOLLOWERS.";
+const R_YT_STANDARD_FOLLOWERS_UNEQ = R_YT_STANDARD_FOLLOWERS + "UNEQ";
 const Default_Standard_Followers = [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ];
 const R_YT_STANDARD_BLACKLIST = R_YT_Base + "STANDARD.BLACKLIST";
 const Default_Standard_Blacklist = [];
@@ -48,22 +49,34 @@ const Default_Standard_Blacklist = [];
 	// 	console.log( ek );
 	// 	await RU.setMulti( redis , ek );
 	// 	console.log( "done cleansing instance" );
+	// 	ek = [];
+	// 	await wSleep( 1000 ); // because remote ?? if not here , causes isues
 	// }
-	// await wSleep( 5000 );
 	
 	// Repopulate Redis Structure if Nothing Exists
+	// build up everything into the 1st array 
+	// please ignore naming , it is a storgae container
 	if ( ek.length < 1 ) {
+		
 		var R_YT_LIVE_FOLLOWER_KEYS = Default_Live_Followers.map( x => [ "set" , R_YT_LIVE_FOLLOWERS + x , "null" ] );
 		var R_YT_STANDARD_FOLLOWER_KEYS = Default_Standard_Followers.map( x => [ "set" , R_YT_STANDARD_FOLLOWERS + x , "null" ] );
+		var x1_uneq = Default_Standard_Followers.map( x => [ "sadd" , R_YT_STANDARD_FOLLOWERS_UNEQ , x ] );
+		var x1_black = Default_Live_Blacklist.map( x => [ "sadd" , R_YT_LIVE_BLACKLIST , x ] );
+		var x1_stand = Default_Standard_Blacklist.map( x => [ "sadd" , R_YT_STANDARD_BLACKLIST , x ] );
+
 		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , R_YT_STANDARD_FOLLOWER_KEYS );
+		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_uneq );
+		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_black );
+		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_stand );
+		R_YT_LIVE_FOLLOWER_KEYS = R_YT_LIVE_FOLLOWER_KEYS.filter( x => x.length > 0 );
+		console.log( R_YT_LIVE_FOLLOWER_KEYS );
+	
 		await RU.setMulti( redis , R_YT_LIVE_FOLLOWER_KEYS );
-		await RU.setSetFromArray( redis , R_YT_LIVE_BLACKLIST , Default_Live_Blacklist );
-		await RU.setSetFromArray( redis , R_YT_STANDARD_BLACKLIST , Default_Standard_Blacklist );
 		console.log( "done building YOU_TUBE REF" );
 	}
 
-	//await enumerateLiveFollowers();	
-	await enumerateStandardFollowers();
+	//await enumerateLiveFollowers();
+	//await enumerateStandardFollowers();
 
 })();
 
@@ -116,12 +129,16 @@ function enumerateLiveFollowers() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await RU.delKey( redis , R_YT_LIVE_LATEST_VIDEOS );
+
 			current_followers = await RU.getKeysFromPattern( redis , R_YT_LIVE_FOLLOWERS + "*" );
 			current_blacklist = await RU.getFullSet( redis , R_YT_LIVE_BLACKLIST );
 			const follower_ids = current_followers.map( x => x.split( R_YT_LIVE_FOLLOWERS )[1] );
+			
 			var live_videos = await map( follower_ids , userId => searchFollower( userId ) );
 			live_videos = [].concat.apply( [] , live_videos );
+			
 			await RU.setSetFromArray( redis , R_YT_LIVE_LATEST_VIDEOS , live_videos );
+			
 			resolve( live_videos );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -131,6 +148,7 @@ function enumerateLiveFollowers() {
 const wMonth = 2629800;
 const wWeek = 604800;
 const wDay = 86400;
+const ytXML_Base = "https://www.youtube.com/feeds/videos.xml?channel_id=";
 function enumerateStandardFollowers() {
 	var current_followers = current_blacklist = [];
 	var final_results = {};
@@ -146,7 +164,7 @@ function enumerateStandardFollowers() {
 				var feedparser = new FeedParser( [ wFP_Options ] );
 
 				var wResults = [];
-				var wFeedURL = "https://www.youtube.com/feeds/videos.xml?channel_id=" + channelID;
+				var wFeedURL = ytXML_Base + channelID;
 				console.log( wFeedURL );
 				var req = request( wFeedURL );
 				req.on( "error" , function ( error ) { console.log(error); } );
@@ -197,11 +215,9 @@ function enumerateStandardFollowers() {
 		try {
 
 			// Gather Data
-			current_followers = await RU.getKeysFromPattern( redis , R_YT_STANDARD_FOLLOWERS + "*" );
+			current_followers = await RU.getFullSet( redis , R_YT_STANDARD_FOLLOWERS_UNEQ );
 			current_blacklist = await RU.getFullSet( redis , R_YT_STANDARD_BLACKLIST );
-			const follower_ids = current_followers.map( x => x.split( R_YT_STANDARD_FOLLOWERS )[1] );
-			console.log( follower_ids );
-			await map( follower_ids , userId => fetchFollowerXML( userId ) );
+			await map( current_followers , userId => fetchFollowerXML( userId ) );
 			filterOldVideos( wMonth );
 
 			// Build and Store Redis Structure
@@ -211,10 +227,14 @@ function enumerateStandardFollowers() {
 			// https://github.com/tj/rediskit/blob/master/lib/objects/hash.js
 			// It doesn't really seem to support the hmset though. so... 
 			var wMultis = [];
+			//var wVidKeys = {}; // <-- for sunionstore
 			for ( var follower in final_results ) {
-				var wR_Key_Base = R_YT_STANDARD_FOLLOWERS + follower + ".";
+				var wR_Key_B0 = R_YT_STANDARD_FOLLOWERS + follower;
+				var wR_Key_Base = wR_Key_B0 + ".VIDEO.";
+				//if ( !wVidKeys[ follower ] ) { wVidKeys[ follower ] = []; } // <--- for sunionstore
 				for ( var video_id in final_results[ follower ] ) {
 					var wR_VID = wR_Key_Base + video_id;
+					//wVidKeys[ follower ].push( wR_VID ); // <-- for sunionstore
 					var wHashArray = [ "hmset" , wR_VID ];
 					for ( var iprop in final_results[ follower ][ video_id ] ) {
 						wHashArray.push( iprop , final_results[ follower ][ video_id ][ iprop ] );
@@ -222,23 +242,47 @@ function enumerateStandardFollowers() {
 					wMultis.push( wHashArray );
 				}
 			}
+			
+			console.log( wMultis );
 			await RU.setMulti( redis , wMultis );
+
+			// ============================================================================================================================
+			// This is from experimentation with sunionstore , 
+			// where the fuck is hunionstore ???
+			// *****Leaving here as an example for sunionstore*****
+			// ============================================================================================================================
+			// await wSleep( 1000 );
+			// var final_vid_keys = [];
+			// for ( follower in wVidKeys ) {
+			// 	var wR_Key_B0 = R_YT_STANDARD_FOLLOWERS + follower + ".UNEQ";
+			// 	final_vid_keys.push( [ "SUNIONSTORE" , wR_Key_B0 ] );
+			// 	final_vid_keys[ final_vid_keys.length - 1 ] = final_vid_keys[ final_vid_keys.length - 1 ].concat( wVidKeys[ follower ] );
+			// }
+			// console.log( final_vid_keys );
+			// Array.prototype.push.apply( wMultis , final_vid_keys );
+			// await RU.setMulti( redis , final_vid_keys );
+			// ============================================================================================================================
+
 			resolve( final_results );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 
-process.on( "SIGINT" , async function () {
-	redis.quit();
-	await wSleep( 3000 );
-});
 
-process.on( "unhandledRejection" , function( reason , p ) {
-    console.error( reason, "Unhandled Rejection at Promise" , p );
-    console.trace();
-});
-process.on( "uncaughtException" , function( err ) {
-    console.error( err , "Uncaught Exception thrown" );
-    console.trace();
-});
+module.exports.updateLive = enumerateLiveFollowers;
+module.exports.updateStandard = enumerateStandardFollowers;
+
+// process.on( "SIGINT" , async function () {
+// 	redis.quit();
+// 	await wSleep( 3000 );
+// });
+
+// process.on( "unhandledRejection" , function( reason , p ) {
+//     console.error( reason, "Unhandled Rejection at Promise" , p );
+//     console.trace();
+// });
+// process.on( "uncaughtException" , function( err ) {
+//     console.error( err , "Uncaught Exception thrown" );
+//     console.trace();
+// });

@@ -1,18 +1,19 @@
-var wEmitter = require('../main.js').wEmitter;
+const wEmitter = require('../main.js').wEmitter;
 //var wEmitter = new (require('events').EventEmitter);
 
-require('shelljs/global');
-var path = require("path");
-var colors = require("colors");
+require( "shelljs/global" );
+const path = require("path");
+const colors = require("colors");
 
-const launchFFPath = path.join( __dirname , "./utils/ffLauncher.js"  );
+const launchFFPath = path.join( __dirname , "./utils/ffLauncher.js" );
 const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
 
 function wcl( wSTR ) { console.log( colors.black.bgRed( "[FIREFOX_MAN] --> " + wSTR ) ); }
+function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 // about:config
 // browser.sessionstore.resume_from_crash = false
-var ffWrapper = {
+const ffWrapper = {
 	
 	binaryOpen: false,
 	clientActive: false,
@@ -62,6 +63,12 @@ var ffWrapper = {
 
 	},
 
+	launchFF_Rewrite: function() {
+		var wEX1 = exec( "node " + launchFFPath , { silent:true , async: false });
+		if ( wEX1.stderr.length > 1 ) { wcl( "ERROR --> Could not Launch FF Binary" ); return null; }
+		wcl( "Launched Firefox" );
+	},
+
 	launchFF: async function( wEnsureOpen ) {
 
 		if ( !wEnsureOpen ) {
@@ -106,42 +113,66 @@ var ffWrapper = {
 	},
 
 	youtubeFullScreen: function() {
-
-		xdoWrapper.windowRaise( ffWrapper.windowID );
-		xdoWrapper.restoreFullScreen( ffWrapper.windowID );
-		xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
-		setTimeout( function() { xdoWrapper.mouseLeftClick(); } , 500 );
-		setTimeout( function() { xdoWrapper.pressKeyboardKey( "f" ); } , 1000 );
-
+		return new Promise( async function( resolve , reject ) {
+			try {
+				xdoWrapper.windowRaise( ffWrapper.windowID );
+				xdoWrapper.restoreFullScreen( ffWrapper.windowID );
+				xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
+				await wsleep( 500 );
+				xdoWrapper.mouseLeftClick();
+				await wsleep( 1000 );
+				xdoWrapper.pressKeyboardKey( "f" );
+				resolve();
+			}
+			catch( error ) { console.log( error ); reject( error ); }
+		});
 	},
 
 	twitchFullScreen: function() {
-		xdoWrapper.windowRaise( ffWrapper.windowID );
-		xdoWrapper.restoreFullScreen( ffWrapper.windowID );
-		xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
-		setTimeout( function() { xdoWrapper.mouseDoubleClick(); } , 1000 );
-		//setTimeout( function() { xdoWrapper.mouseLeftClick( ffWrapper.windowID ); } , 500 );
+		return new Promise( async function( resolve , reject ) {
+			try {
+				xdoWrapper.windowRaise( ffWrapper.windowID );
+				xdoWrapper.restoreFullScreen( ffWrapper.windowID );
+				xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
+				await wsleep( 1000 );
+				xdoWrapper.mouseDoubleClick();
+				resolve();
+			}
+			catch( error ) { console.log( error ); reject( error ); }
+		});
 	},
 
 };
 
-ffWrapper.isFFOpen();
 
-
-wEmitter.on( "ffGlitchFullScreenYoutube" , function() { ffWrapper.youtubeFullScreen(); });
+wEmitter.on( "youtubeReadyForFullScreenGlitch" , function() { ffWrapper.youtubeFullScreen(); });
 wEmitter.on( "ffGlitchFullScreenTwitch" , function() { ffWrapper.twitchFullScreen(); });
 
+module.exports.youtubeFullScreen = ffWrapper.youtubeFullScreen;
+module.exports.twitchFullScreen = ffWrapper.twitchFullScreen;
 
 module.exports.terminateFF = function() {
 	ffWrapper.terminateFF();
 };
 
 module.exports.openURL = function( wURL ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			
+			if ( ffWrapper.isFFOpen() ) { ffWrapper.terminateFF(); await wsleep( 3000 ); }
+			
+			ffWrapper.launchFF_Rewrite();
 
-	if ( ffWrapper.binaryOpen ) { ffWrapper.terminateFF(); }
-	ffWrapper.stagedLink = wURL;
-	setTimeout( function() { ffWrapper.launchFF( false ); } , 3000 );
+			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );			
+			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );
 
+			await wsleep( 500 );
+			ffWrapper.openNewTab( wURL );
+			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 };
 
 module.exports.openLocalHost = function() {

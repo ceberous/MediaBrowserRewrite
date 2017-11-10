@@ -7,7 +7,7 @@ var YTIFrameManager = {
 	"muted": true,
 
 	init: function() {
-
+		console.log( "inside init()" );
 		YTIFrameManager.playlist = YTIFrameManager.buildPlaylistArray( true );
 		if ( YTIFrameManager.playlist.length > 1 ) { YTIFrameManager.usingPlaylist = true; }
 		YTIFrameManager.showVideo();
@@ -28,14 +28,8 @@ var YTIFrameManager = {
 		  	}
 			return wArr;
 		}
-
 		var wPlaylist = [];
-		for ( var i = 0; i < youtubePlaylist.length; ++i ) {
-			for( var j = 0; j < youtubePlaylist[ i ].length; ++j ) {
-				wPlaylist.push( youtubePlaylist[ i ][ j ].id );
-			}
-		}
-		if ( extraRandom === true ) { wPlaylist = extraShuffle( wPlaylist ); wPlaylist = extraShuffle( wPlaylist ); }
+		if ( extraRandom === true ) { wPlaylist = extraShuffle( YTIFrameManager.playlist ); wPlaylist = extraShuffle( YTIFrameManager.playlist ); }
 		return wPlaylist;
 
 	},
@@ -73,19 +67,19 @@ var YTIFrameManager = {
 		switch ( event.data ) {
 			case -1:
 				console.log(" video is unstarted ");
-				//socket.emit( "youtubeLiveStatus" , { status: "unstarted" , id: wID } );
+				//socket.send( "youtubeLiveStatus" , { status: "unstarted" , id: wID } );
 				break;
 			case 0:
 				console.log(" video is over ");
-				socket.emit( "youtubeLiveStatus" , { status: "over" , id: wID } );
+				//socket.send( "youtubeLiveStatus" , { status: "over" , id: wID } );
 				break;
 			case 1:
 				console.log(" video is now playing ");
-				socket.emit( "youtubeLiveStatus" , { status: "playing" , id: wID } );
+				//socket.send( "youtubeLiveStatus" , { status: "playing" , id: wID } );
 				break;
 			case 2:
 				console.log(" video is paused ");
-				socket.emit( "youtubeLiveStatus" , { status: "paused" , id: wID } );
+				socket.send( "youtubeLiveStatus" , { status: "paused" , id: wID } );
 				break;
 			case 3:
 				console.log(" video is buffering ");
@@ -107,7 +101,7 @@ var YTIFrameManager = {
 			YTIFrameManager.wPlayer.setShuffle( true );
 			YTIFrameManager.wPlayer.setLoop(true);
 			if ( YTIFrameManager.muted ) { YTIFrameManager.wPlayer.mute(); }
-			socket.emit( "youtubeReadyForFullScreenGlitch" );
+			socket.send( "youtubeReadyForFullScreenGlitch" );
 			//$( ".ytp-fullscreen-button.ytp-button" ).click();
 		} , 1000 );
 	},
@@ -122,34 +116,51 @@ var YTIFrameManager = {
 };
 
 var socket = null;
-var sockIOConnectionString = socketIOServerAddress + ":" + socketIOPORT;
-var youtubePlaylist = null;
+var webSocketConnectionString = "ws://" + socketServerAddress + ":" + socketPORT;
 var nextVideoTime = null;
-var twitchPlaylist = null
-function wSocketSend( wTaskName ) { socket.emit( wTaskName ); console.log("we told server we are ready"); }
+function waitForYoutubeReady( x1 ) {
+	function readyYoutube(){
+		if( ( typeof YT !== "undefined" ) && YT && YT.Player ) {
+			nextVideoTime = x1.nextVideoTime;
+			YTIFrameManager.playlist = x1.playlist;;
+			YTIFrameManager.init();
+		}
+		else{ setTimeout( readyYoutube , 100 ); }
+	}
+	readyYoutube();
+}
 $(document).ready( function() {
 
 	$("#addPlayerHere").append( "<div id='player'></div>" );
 
-	socket = io.connect( sockIOConnectionString );
-	
-	socket.on( 'newConnection' , function ( data ) {
-		console.log(socket.id);
-		console.log(data.message);
+	socket = new WebSocket( webSocketConnectionString );
+
+	socket.onopen = function () {
+		console.log( socket.id );
 		$("#wPlaceHolder").hide();
-		setTimeout( function(){ wSocketSend( "youtubeLiveBackgroundReady" ); } , 500 );
-	});
+		socket.send( "pong" );
+	};
 
-	socket.on( 'YTLiveBackground' , function( data ) {
-		console.log( data );
-		nextVideoTime = data.nextVideoTime;
-		youtubePlaylist = data.playlist;
-		YTIFrameManager.playlist = youtubePlaylist;
-		YTIFrameManager.init();
-	});
+	socket.onmessage = function ( message ) {
+		var x1 = JSON.parse( message.data );
+		console.log( x1 );
+		switch( x1.message ) {
+			case "ping":
+				socket.send( "pong" );
+				break;
+			case "YTLiveBackground":
+				waitForYoutubeReady( x1 );
+				break;
+			case "shutdown":
+				YTIFrameManager.wPlayer.destroy();
+				break;
+			default:
+				break;
+		}
+	};
 
-	socket.on( "shutdown" , function( data ) {
-		YTIFrameManager.wPlayer.destroy();
-	});
+	socket.onerror = function (error) {
+		console.log( "WebSocket error: " + error);
+	};	
 
 });

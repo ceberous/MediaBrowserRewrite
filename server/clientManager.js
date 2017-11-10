@@ -151,10 +151,11 @@ function stopMopidyYTLiveBackground() {
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function BUTTON_PRESS_0( wArgArray ) {
 	wcl( "PRESSED BUTTON 0" );
-	wArgArray = wArgArray || [ "nothing" ];
-	LAST_SS.self.PREVIOUS_ACTION = LAST_SS.self.CURRENT_ACTION;
-	LAST_SS.self.CURRENT_ACTION = "YTLiveBackground";
-	startCurrentAction( wArgArray );
+	// wArgArray = wArgArray || [ "nothing" ];
+	// LAST_SS.self.PREVIOUS_ACTION = LAST_SS.self.CURRENT_ACTION;
+	// LAST_SS.self.CURRENT_ACTION = "YTLiveBackground";
+	// startCurrentAction( wArgArray );
+	require( "./STATES/YT_Live_Background.js" ).start();
 }
 
 function BUTTON_PRESS_1( wArgArray ) {

@@ -1,13 +1,13 @@
 require( "shelljs/global" );
 const path = require("path");
 
-// var wEmitter	= require("../main.js").wEmitter;
-var wEmitter = new (require("events").EventEmitter);
-module.exports.wEmitter = wEmitter;
+var wEmitter	= require("../main.js").wEmitter;
+//var wEmitter = new (require("events").EventEmitter);
+//module.exports.wEmitter = wEmitter;
 
-//var redis = require( "./clientManager.js" ).redis;
-var REDIS = require("redis");
-var redis = REDIS.createClient( "8443" , "localhost" );
+var redis = require( "./clientManager.js" ).redis;
+//var REDIS = require("redis");
+//var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );
 
 const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
@@ -426,19 +426,19 @@ module.exports.previous			= wPrevious;
 // 	} , 3000 );
 // } , 10000 );
 
-process.on( "SIGINT" , async function () {
-	await wStop();
-	await wSleep( 3000 );
-	redis.quit();
-});
+// process.on( "SIGINT" , async function () {
+// 	await wStop();
+// 	await wSleep( 3000 );
+// 	redis.quit();
+// });
 
-process.on( "unhandledRejection" , function( reason , p ) {
-    console.error( reason, "Unhandled Rejection at Promise" , p );
-    console.trace();
-    //wEmitter.emit( "closeEverything" );
-});
-process.on( "uncaughtException" , function( err ) {
-    console.error( err , "Uncaught Exception thrown" );
-    console.trace();
-    //wEmitter.emit( "closeEverything" );
-});
+// process.on( "unhandledRejection" , function( reason , p ) {
+//     console.error( reason, "Unhandled Rejection at Promise" , p );
+//     console.trace();
+//     //wEmitter.emit( "closeEverything" );
+// });
+// process.on( "uncaughtException" , function( err ) {
+//     console.error( err , "Uncaught Exception thrown" );
+//     console.trace();
+//     //wEmitter.emit( "closeEverything" );
+// });

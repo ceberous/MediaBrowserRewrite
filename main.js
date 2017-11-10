@@ -1,24 +1,61 @@
 require("shelljs/global");
-var fs = require('fs');
-var path = require("path");
-var colors = require("colors");
+const fs = require('fs');
+const path = require("path");
+const colors = require("colors");
 var wEmitter = new (require('events').EventEmitter);
 module.exports.wEmitter = wEmitter;
 
 function wcl( wSTR ) { console.log( colors.green.bgBlack( "[MAIN] --> " + wSTR ) ); }
 
-var port = process.env.PORT || 6969;
-var ip = require("ip");
-var localIP = ip.address();
-var wSIP = 'var socketIOServerAddress = "http://' + localIP + '"; var socketIOPORT = "' + port + '";';
-fs.writeFileSync( path.join( __dirname , "client" , "js" , "sockioServerAddress.js" ) , wSIP );
-var app = require("./server/EXPRESS/expressAPP.js");
-var server = require("http").createServer(app);
+const port = process.env.PORT || 6969;
+const ip = require("ip");
+const localIP = ip.address();
+const wSIP = 'var socketServerAddress = "' + localIP + '"; var socketPORT = "' + port + '";';
+fs.writeFileSync( path.join( __dirname , "client" , "js" , "webSocketServerAddress.js" ) , wSIP );
+const app = require( "./server/EXPRESS/expressAPP.js" );
+const server = require( "http" ).createServer( app );
 
-var io = require('socket.io')(server);
-var sockIOServerManager = require("./server/socketIOManager.js");
-io.sockets.setMaxListeners(0);
-io.on( "connection" , sockIOServerManager.wOC );
+const WebSocket = require( "ws" );
+const wss = new WebSocket.Server({ server });
+const webSocketManager = require( "./server/webSocketManager.js" );
+var STAGED_FF_CLIENT_TASK = null;
+module.exports.setStagedFFClientTask = function( wOptions ) { STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions ); }
+function sendWebSocketMessage() {
+	wss.clients.forEach( function each( ws ) {
+		ws.send( STAGED_FF_CLIENT_TASK );
+	});
+}
+wss.on( "connection" ,  function( socket , req ) {
+	const ip = req.connection.remoteAddress;
+	socket.isAlive = true;
+	console.log( "New Client Connected @@@ " + ip );
+	sendWebSocketMessage();
+	socket.on( "message" , function( message ) {
+		switch( message ) {
+			case "pong":
+				console.log( "inside pong()" );
+				this.isAlive = true;
+				break;
+			case "youtubeReadyForFullScreenGlitch":
+				wEmitter.emit( "youtubeReadyForFullScreenGlitch" );
+				break;
+			default:
+				break;
+		}
+		console.log( message );
+	});
+});
+// May not be necessary , because clients seem to be automatically deleteed in simple testing
+const wss_interval = setInterval( function ping() {
+	wss.clients.forEach( function each( ws ) {
+		if ( ws.isAlive === false ) { console.log( "terminating client" ); return ws.terminate(); }
+		ws.isAlive = false;
+		ws.send( JSON.stringify( { message: "ping" } ) );
+	});
+} , 30000 );
+
+
+const clientManager = require("./server/clientManager.js");
 
 
 server.listen( port , function() {
@@ -32,8 +69,9 @@ process.on('SIGINT', function () {
 	wEmitter.emit( "closeEverything" );
 	setTimeout( ()=> {
 		exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
+		exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );
 		process.exit(1);
-	} , 5000 );
+	} , 2000 );
 });
 
 process.on( "unhandledRejection" , function( reason , p ) {
