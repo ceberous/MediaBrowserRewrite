@@ -1,13 +1,19 @@
-require('shelljs/global');
+require( "shelljs/global" );
 const path = require("path");
-const colors = require("colors");
-const jsonfile = require("jsonfile");
-const dirTree = require("./utils/dirtreeutil.js");
-//const Filehound = require("filehound");
-//const mime = require('mime');
 
-function wcl( wSTR ) { console.log( colors.black.bgGreen( "[LOCAL_VIDEO_MAN] --> " + wSTR ) ); }
+var wEmitter	= require("../main.js").wEmitter;
+//var wEmitter = new (require("events").EventEmitter);
+//module.exports.wEmitter = wEmitter;
+
+var redis = require( "./clientManager.js" ).redis;
+//var REDIS = require("redis");
+//var redis = REDIS.createClient( "8443" , "localhost" );
+const RU = require( "./utils/redis_Utils.js" );
+
+const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
+
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
 function fixPathSpace( wFP ) {
 	var fixSpace = new RegExp( " " , "g" );
 	wFP = wFP.replace( fixSpace , String.fromCharCode(92) + " " );
@@ -29,453 +35,410 @@ function wGetDuration( wFP ) {
 	catch( error ) { console.log( error ); }
 }
 
-var wEmitter = require('../main.js').wEmitter;
-var wUpdate_Last_SS = require( "./clientManager.js" ).edit_Last_SS;
-const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
-
-// DATABASISH
-// ====================================================================================================================================================
-// ====================================================================================================================================================
-var NeedToUpdateHDStruct = true;
-var HD_MOUNT_POINT = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH/";
-var HARD_DRIVE_STRUCT = {};
-var HD_REF = {};
-var LAST_PLAYED = {};
-var NEED_TO_RESET_LP = false;
-const HARD_DRIVE_STRUCT_FP = path.join( __dirname , "save_files" , "hdFolderStructure.json" );
-
-try { HARD_DRIVE_STRUCT = jsonfile.readFileSync( HARD_DRIVE_STRUCT_FP ); LAST_PLAYED = HARD_DRIVE_STRUCT[ "LAST_PLAYED" ]; BEGIN_INITIALIZATION(); }
-catch ( error ){ INITIALIZE_HARD_DRIVE_STRUCT_FILE(); }
-
-function WRITE_HARD_DRIVE_STRUCT_FILE() { 
-	return new Promise( function( resolve , reject ) {
-		try {
-			jsonfile.writeFile( HARD_DRIVE_STRUCT_FP , HARD_DRIVE_STRUCT , function( err ) {
-				if ( err ) { console.log( err ); reject(err); }
-				resolve();
-			}); 
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
-async function INITIALIZE_HARD_DRIVE_STRUCT_FILE() {
-	wcl( "hdFolderStructure.json NOT FOUND !!!" ); 
-	NeedToUpdateHDStruct = true;
-	LAST_PLAYED = { 
-		"AudioBooks": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
-		"DVDs": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
-		"Movies": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
-		"Music": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
-		"Podcasts": { always_advance_next_show: true , last_pos: 0 , locked_show: null },
-		"TVShows": { always_advance_next_show: true , last_pos: 0 , locked_show: null } ,
-		"Odyssey": { always_advance_next_show: true , last_pos: 0 , locked_show: null } ,
-	};
-	NEED_TO_RESET_LP = true;
-	await WRITE_HARD_DRIVE_STRUCT_FILE(); 
-	BEGIN_INITIALIZATION();
-}
-
-function FIND_USB_STORAGE_PATH_FROM_UUID( wUUID ) {
-	function getPath() {
-		var findMountPointCMD = "findmnt -rn -S UUID=" + wUUID + " -o TARGET";
-		var findMountPoint = exec( findMountPointCMD , { silent:true , async: false } );
-		if ( findMountPoint.stderr ) { console.log("error finding USB Hard Drive"); process.exit(1); }
-		return findMountPoint.stdout.trim();
-	}
-	return new Promise( function( resolve , reject ) {
-		try {
-			
-			var findEventPathCMD = exec( "sudo blkid" , { silent: true , async: false } );
-			if ( findEventPathCMD.stderr ) { wcl("error finding USB Hard Drive"); process.exit(1); }
-
-			var wOUT = findEventPathCMD.stdout.split("\n");
-			for ( var i = 0; i < wOUT.length; ++i ) {
-				
-				var xSplit = wOUT[i].split(" ");
-				var x1 = xSplit[1];
-				if ( x1 === undefined ) { continue; }
-				var x2 = x1.split( "UUID=" )[1];
-				if ( !x2 ) { x2 = xSplit[2].split("UUID=")[1];  }
-				x2 = x2.substring( 1 , ( x2.length - 1 ) );
-				if ( x2 !== wUUID ) { continue; }
-
-				var q1 = getPath();
-				
-				if ( q1 === "" ) {
-
-					console.log( "USB Drive Plugged IN , but unmounted" );
-					console.log( "Mounting ...." );
-
-					var wUSER = exec( "whoami" , { silent:true , async: false } );
-					if ( wUSER.stderr ) { console.log("error finding USB Hard Drive"); process.exit(1); }
-					wUSER = wUSER.stdout.trim();
-
-					var wPath = path.join( "/" , "media" , wUSER , wUUID )
-
-					var wMKDIR = exec( "sudo mkdir -p " + wPath , { silent: true , async: false } );
-					if ( wMKDIR.stderr ) { console.log("error creating USB Hard Drive Media Path"); process.exit(1); }
-
-					var mountCMD = "sudo mount -U " + wUUID +" --target " + wPath;
-					console.log(mountCMD);
-					var wMount = exec( mountCMD , { silent: true , async: false } );
-					if ( wMount.stderr ) { console.log("error Mounting USB Hard Drive"); process.exit(1); }
-
-					q1 = getPath();
-					if ( q1 === "" ) { console.log("Still Can't Mount HardDrive Despite all Efforts"); process.exit(1); }
-
-				}
-				q1 = q1 + "/";
-				resolve( q1 );
-			}
-
-			
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
-
-function BUILD_HD_REF() {
-	var media_struct = {};
-	for ( var section in HARD_DRIVE_STRUCT ) {
-		if ( section === "BASE_PATH" ) { continue; }
-		media_struct[ section ] = {};
-		for ( var x1 = 0; x1 < HARD_DRIVE_STRUCT[ section ].length; ++x1 ) {
-			if ( !HARD_DRIVE_STRUCT[ section ][ x1 ][ "children" ] ) { media_struct[ section ][ HARD_DRIVE_STRUCT[ section ][ x1 ].name ] = x1; continue; }			
-			media_struct[ section ][ HARD_DRIVE_STRUCT[ section ][ x1 ].name ] = { pos: x1 , items: [] };
-			for ( var j1 = 0; j1 < HARD_DRIVE_STRUCT[ section ][ x1 ][ "children" ].length; ++j1 ) {				
-				if ( !HARD_DRIVE_STRUCT[ section ][ x1 ][ "children" ][ j1 ][ "children" ] ) { 
-					media_struct[ section ][ HARD_DRIVE_STRUCT[ section ][ x1 ].name ] = { pos: x1 , items: Object.keys( HARD_DRIVE_STRUCT[ section ][ x1 ][ "children" ] ).length }; 
-				}
-				else {
-					media_struct[ section ][ HARD_DRIVE_STRUCT[ section ][ x1 ].name ][ "items" ].push( HARD_DRIVE_STRUCT[ section ][ x1 ][ "children" ][ j1 ][ "children" ].length );
-				}
-			}
-		}
-	}
-	HD_REF = media_struct;
-	HARD_DRIVE_STRUCT[ "REFERENCE" ] = HD_REF;
-	if ( NEED_TO_RESET_LP ) { HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] = LAST_PLAYED; }
-}
-
-function UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE() { 
-	return new Promise( async function( resolve , reject ) { 
-		try {
-			var wAcceptedFolders = [ "AudioBooks" , "Odyssey" , "DVDs" , "Movies" , "Music" , "Podcasts" , "TVShows" ];
-			var wSTRUCT = await dirTree( HD_MOUNT_POINT );
-			var wTMP = {};
-			for ( var i = 0; i < wSTRUCT[ "children" ].length; ++i ) { for ( var j = 0; j < wAcceptedFolders.length; ++j ) {
-				if ( wAcceptedFolders[ j ] === wSTRUCT[ "children" ][ i ].name ) {
-					wTMP[ wAcceptedFolders[ j ] ] = wSTRUCT[ "children" ][ i ][ "children" ];
-					wAcceptedFolders.splice( j , 1 );
-				}
-			} }
-			wTMP[ "BASE_PATH" ] = HD_MOUNT_POINT;
-			HARD_DRIVE_STRUCT = wTMP;
-			BUILD_HD_REF();
-			WRITE_HARD_DRIVE_STRUCT_FILE();
-			resolve();
- 		} 
- 		catch( error ) { console.log( error ); reject( error ); } 
- 	});
-}
-// ====================================================================================================================================================
-// ====================================================================================================================================================
 
 
-// STATE-DEFINITIONS
-// ===============================================
-// ===============================================
-var ACTIVE = false;
-var NOW_PLAYING_REF = null;
-var NOW_PLAYING_DURATION = null;
-var NOW_PLAYING_3PERCENT_LEFT = null;
-var NP_CACHED_CONFIG = null;
-var CONTINUOUS_PLAYING = true;
-// ===============================================
-// ===============================================
+// Logic Info and Doc Links
+// https://docs.google.com/document/d/1FH4fTbUnyNo4hFxcenGKhPUenl_CJgshhNVaFZUsM_s/edit?usp=sharing
 
-// STATE-CONTROLLERS
-// ====================================================================================================================================================
-// ====================================================================================================================================================
-async function PLAY_FROM_REFERENCE_STRUCT( wArgArray ) {
-	
-	wcl( "WE WERE SENT AN ARG ARRAY FROM ABOVE !!!!" );
-	wcl( wArgArray );
 
-	var wSection = wArgArray[0] || null;
-	var wName = wArgArray[1] || null;
-	var wSeason = wArgArray[2];
-	var wEpisode = wArgArray[3]; 
-	var wSeek = wArgArray[4];
-	if ( wSeek === -1  ) { wSeek = null; }
-
-	NOW_PLAYING_REF = [ wSection , wName , wSeason , wEpisode ];
-
-	wSeason = ( wSeason - 1 );
-	wEpisode = ( wEpisode - 1 );
-
-	var wPath = HARD_DRIVE_STRUCT[ "BASE_PATH" ] + wSection + "/" + wName;
-	//console.log( wPath );
-
-	// console.log( "Show POS = " + HD_REF[ wSection ][ wName ].pos.toString() );
-	// console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ] );
-	// console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "children" ][ wEpisode ] );
-	// console.log( "Show Season = " + wSeason.toString() );
-	// console.log( HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ]["children"][ wSeason ].name );
-
-	if ( wSeason === 0 || wSeason ) {
-		wPath = wPath + "/" + HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "name" ];
-		wPath = wPath + "/" + HARD_DRIVE_STRUCT[ wSection ][ HD_REF[ wSection ][ wName ].pos ][ "children" ][ wSeason ][ "children" ][ wEpisode ].name;
-	}
-
-	wcl( "STARTING --> MPLAYER" );
-	//console.log( wPath );
-	
-	MPLAYER_MAN.playFilePath( wPath );
-	if ( wSeek ) {
-		if ( wSeek >= 1 ) {
-			await wSleep( 1000 );
-			MPLAYER_MAN.seekSeconds( wSeek );
-		}
-	}
-	
-	NOW_PLAYING_DURATION = wGetDuration( wPath );
-	NOW_PLAYING_3PERCENT_LEFT = Math.floor( ( NOW_PLAYING_DURATION - ( NOW_PLAYING_DURATION * 0.025 ) ) );
-
-	wcl( "NOW_PLAYING_DURATION = " + NOW_PLAYING_DURATION.toString() );
-	wcl( "NOW_PLAYING_3PERCENT_LEFT = " + NOW_PLAYING_3PERCENT_LEFT.toString() );
-	wcl( "DIFFERENCE = " + Math.floor( ( NOW_PLAYING_DURATION * 0.025 ) ).toString() );
-
-	var NP_HD_S_POS = HD_REF[ wSection ][ wName ].pos;
-	//console.log( wName + "'s Position in HARD_DRIVE_STRUCT = " + NP_HD_S_POS.toString() + "\n" );
-	//console.log( HARD_DRIVE_STRUCT[ wSection ][ NP_HD_S_POS ] );
-
-	await wUpdate_Last_SS( "LocalMedia" , "LAST_PLAYED" , wSection , "last_pos" , NP_HD_S_POS );
-	await updateLastPlayed( 1 );
-	ACTIVE = true;
-
-}
-
-// wSection , wName , wSeason , wEpisode
-async function updateLastPlayed( wTime ) {
-	if ( NOW_PLAYING_REF !== null ) {
-		if ( wTime === "completed" ) { wTime = NOW_PLAYING_DURATION; }
-		var wCompleted = ( wTime >= NOW_PLAYING_3PERCENT_LEFT ) ? true : false;
-		var wRemaining = ( NOW_PLAYING_DURATION - wTime );
-		var wOBJ = {
-			current_time: wTime ,
-			remaining_time: wRemaining,
-			duration: NOW_PLAYING_DURATION ,
-			completed: wCompleted,
-			rs_map: [ NOW_PLAYING_REF[2] , NOW_PLAYING_REF[3] ]
-		};
-		NP_CACHED_CONFIG[ NOW_PLAYING_REF[1] ] = wOBJ;
-		await wUpdate_Last_SS( "LocalMedia" , "LAST_PLAYED" , NOW_PLAYING_REF[0] , NOW_PLAYING_REF[1] , wOBJ );
-	}
-}
-
-function wPlay( wConfig ) {
-
- 	function build_Next_Arg_Array() {
-
-	 	console.log("");
-	 	// Last Played Name *Show* Name
-	 	var LP_Name = HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name;
-
-	 	// If we have an un-finished show still
-	 	if ( !wConfig.last_played[ HARD_DRIVE_STRUCT[ wConfig.type ][ wConfig.last_played.last_pos ].name ].completed ) {
-	 		//console.log("STAGE_1");
-	 		return [ wConfig.type , LP_Name , wConfig.last_played[ LP_Name ].rs_map[ 0 ] , wConfig.last_played[ LP_Name ].rs_map[ 1 ] , wConfig.last_played[ LP_Name ].current_time ]; 
-	 	}
-
-		var LP_POS = wConfig.last_played.last_pos;
-		var TOTAL_SHOWS_IN_SECTION = ( Object.keys( HD_REF[ wConfig.type ] ).length - 1 ); // offset for array-indexing
-		console.log( "Total Shows In Section = " + TOTAL_SHOWS_IN_SECTION.toString() );
+var GLOBAL_INSTANCE_MOUNT_POINT = "";
+var G_NOW_PLAYING = G_R_Live_Genre_NP = G_R_NP_ShowName_Backup = null;
+// Initialization 
+const h1 = "HARD_DRIVE.";
+( async ()=> {
 		
-		// Testing ADDON-HACK
-		// ====================================================
-		// ====================================================
-		//wConfig.last_played.always_advance_next_show = false;
-		// ====================================================
-		// ====================================================
+	var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
+	// FORCED-CLEANSING
+	// if ( ek.length > 0 ) {
+	// 	ek = ek.map( x => [ "del" , x  ] );
+	// 	await RU.setMulti( redis , ek );
+	// 	console.log( "done cleansing instance" );
+	// }
 
-		// If using DEFAULT method of always showing "Next" in line TV Show
-		if ( wConfig.last_played.always_advance_next_show ) {
-			console.log("STAGE_2 - Advance Next Show");
-			var NEXT_POS = ( LP_POS + 1 );
-			if ( NEXT_POS > TOTAL_SHOWS_IN_SECTION ) { NEXT_POS = 0; }
-			var NEXT_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name;
-			console.log( "Next Pos = " + NEXT_POS.toString() );
-			console.log( "Next Show Name = " + NEXT_SHOW_NAME );
-			// If we have NEVER watched the "next" show
-			if ( !wConfig.last_played[ NEXT_SHOW_NAME ] ) {
-				return [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name , 1 , 1 ]; 
+	//var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( "2864E38A64E358D8" );
+	var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
+	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
+	GLOBAL_INSTANCE_MOUNT_POINT = mp;
+
+	if ( ek.length < 1 ) { 
+		var x1 = await require( "./utils/localMedia_Util" ).buildHardDriveReference( mp ); // we alll know this is cancer. but fml
+		for ( var wGenre in x1 ) {
+			var x1Shows = Object.keys( x1[ wGenre ] );
+			if ( x1Shows.length < 1 ) { continue; }
+			var LSS_SK_B = h1 + wGenre + ".META.";
+			var LSS_SK_U = LSS_SK_B + "UNEQ";
+			var LSS_SK_T = LSS_SK_B + "TOTAL";
+			var LSS_SK_C = LSS_SK_B + "CURRENT_INDEX";
+			await RU.setMulti( redis , [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
+			redis.rpush.apply( redis , [ LSS_SK_U ].concat( x1Shows ) );
+			for ( var wShow in x1[ wGenre ] ) { // Each Show in Genre
+				var wShow_R_KEY = h1 + wGenre + ".FP." + wShow;
+				for ( var j = 0; j < x1[ wGenre ][ wShow ].length; ++j ) {
+					var wSeason_R_KEY = wShow_R_KEY + "." + j.toString();
+					if ( x1[ wGenre ][ wShow ][ j ].length > 0 ) { // <-- Has Episodes Stored in Season Folders
+						redis.rpush.apply( redis , [ wSeason_R_KEY ].concat( x1[ wGenre ][ wShow ][ j ] ) );
+					}
+				}
+			}
+		}
+		console.log( "done building HD_REF" );
+	}
+
+	// await RU.setMulti( redis , [
+	// 	[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
+	// 	[ "set" , R_LM_Config_Genre , "TVShows" ] ,
+	// 	[ "set" , R_LM_Config_AdvanceShow , "false" ] ,
+	// 	[ "set" , R_LM_Config_SpecificShow , "false" ] ,
+	// 	[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
+	// ]);
+
+	// wPlay();
+
+})();
+
+
+function calculatePrevious( lastPlayed , config ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const R_N_BASE = "HARD_DRIVE." + lastPlayed.genre + ".";
+
+			var F_UNEQ_IDX = lastPlayed.uneq_idx;
+			var F_ShowName = lastPlayed.show_name;
+			var F_Episode_IDX = lastPlayed.episode_idx;
+			var F_Season_IDX = lastPlayed.season_idx;
+			var F_FP = "";
+			var F_FP_Already_Set = false;
+			var F_RemainingTime = F_CurrentTime = F_ThreePercent = F_Duration = previousEpisode = 0;
+
+			previousEpisode = ( F_Episode_IDX - 1 );
+			F_Episode_IDX = previousEpisode;
+			const R_Previous_Base = R_N_BASE + "FP." + F_ShowName;
+			const R_Previous_EP = R_Previous_Base + "." + F_Season_IDX;
+			previousEpisode = await RU.getFromSetByIndex( redis , R_Previous_EP , previousEpisode );
+			console.log( "next episode === " + previousEpisode );
+
+			if ( previousEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
+				
+				console.log( "inside episode reset" );
+				F_Season_IDX = ( F_Season_IDX - 1 );
+				if ( F_Season_IDX === -1 ) { // We Precceded Past Season '0' , and we need to set to last season , last episode
+					F_Season_IDX = await RU.getKeysFromPattern( redis , R_Previous_Base + ".*" );
+					F_Season_IDX = ( F_Season_IDX.length - 1 );
+				}
+				const R_Previous_Season = R_Previous_Base + "." + F_Season_IDX;
+				F_Episode_IDX = await RU.getListLength( redis , R_Previous_Season );
+				F_Episode_IDX = ( F_Episode_IDX - 1 );
+
+				F_FP = await RU.getFromSetByIndex( redis , R_Previous_Season , F_Episode_IDX );
+
+			}
+			else { F_FP = previousEpisode; }
+
+			// Adjust Final-Full-File-Path from Redis "set" language
+			if ( !F_FP_Already_Set ) {
+				var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
+				var xb2 = ( F_Season_IDX + 1 ).toString();
+				if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
+				else { F_FP = xb1 + "/" + xb2 + "/" + F_FP; }
 			}
 
-			var CUR_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ NEXT_POS ].name;
-			var CUR_SEASON = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 0 ] ); // offset for array-indexing
-			var NEXT_EPISODE = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 1 ] + 1 );
-			var CUR_SEASON_TOTAL_EPISODES = ( HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items[ CUR_SEASON ] - 1 ); // offset for arr-indx
-			var CUR_SHOW_TOTAL_SEASONS = HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items.length;
-			if ( NEXT_EPISODE > CUR_SEASON_TOTAL_EPISODES ) { NEXT_EPISODE = 1; CUR_SEASON = CUR_SEASON + 1; }
-			if ( CUR_SEASON > CUR_SHOW_TOTAL_SEASONS ) { CUR_SEASON = 1; }
-
-			return [ wConfig.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
+			resolve({
+				genre: lastPlayed.genre ,
+				uneq_idx: F_UNEQ_IDX ,
+				show_name: F_ShowName ,
+				season_idx: F_Season_IDX ,
+				episode_idx: F_Episode_IDX ,
+				fp: F_FP ,
+				completed: false ,
+				remaining_time: F_RemainingTime ,
+				three_percent: F_ThreePercent ,
+				duration: F_Duration ,
+				cur_time: F_CurrentTime
+			});
 
 		}
-
-		//console.log("STAGE_3 - Get Next Episode");
-		var CUR_SHOW_NAME = HARD_DRIVE_STRUCT[ wConfig.type ][ LP_POS ].name;
-		var CUR_SEASON = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 0 ] ); // offset for array-indexing
-		var NEXT_EPISODE = ( wConfig.last_played[ CUR_SHOW_NAME ].rs_map[ 1 ] + 1 );
-		var CUR_SEASON_TOTAL_EPISODES = ( HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items[ CUR_SEASON ] - 1 ); // offset for arr-indx
-		var CUR_SHOW_TOTAL_SEASONS = HD_REF[ wConfig.type ][ CUR_SHOW_NAME ].items.length;
-		if ( NEXT_EPISODE > CUR_SEASON_TOTAL_EPISODES ) { NEXT_EPISODE = 1; CUR_SEASON = CUR_SEASON + 1; }
-		if ( CUR_SEASON > CUR_SHOW_TOTAL_SEASONS ) { CUR_SEASON = 1; }
-
-		return [ wConfig.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
-
- 	}
- 	
- 	if ( !wConfig ) {
- 		wConfig = NP_CACHED_CONFIG;
- 	}
- 	NP_CACHED_CONFIG = wConfig;
- 	var wNowPlayingARGArray = null;
- 	
- 	// If We Have Never Watched Anything Before
-	if ( Object.keys( wConfig.last_played ).length === 3 ) { wNowPlayingARGArray = [ wConfig.type , HARD_DRIVE_STRUCT[ wConfig.type ][ 0 ].name , 1 , 1 ]; }
- 	else { wNowPlayingARGArray = build_Next_Arg_Array(); }
-
- 	PLAY_FROM_REFERENCE_STRUCT( wNowPlayingARGArray );
-
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
+const R_GET_LOCAL_MEDIA_CONFIG = "CONFIG.LOCAL_MEDIA.LIVE";
+function calculateNext( lastPlayed , config ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
 
-function wStop( wSilentStop ) {
-	if ( ACTIVE ) {
-		var wLastTime = MPLAYER_MAN.silentStop();
-		ACTIVE = false;
-		wcl( "LAST TIME = " + wLastTime );
-		updateLastPlayed( wLastTime );
+			const R_N_BASE = "HARD_DRIVE." + lastPlayed.genre + ".";
+
+			var F_UNEQ_IDX = lastPlayed.uneq_idx;
+			var F_ShowName = lastPlayed.show_name;
+			var F_Episode_IDX = lastPlayed.episode_idx;
+			var F_Season_IDX = lastPlayed.season_idx;
+			var F_FP = "";
+			var F_FP_Already_Set = false;
+			var F_RemainingTime = F_CurrentTime = F_ThreePercent = F_Duration = nextEpisode = 0;
+
+			if ( config[ 3 ] === "true" ) { // IF Specific-Episode
+				
+			}
+			else if ( config[ 2 ] === "true" ) { // IF Specific-Show
+
+			}
+			else if ( config[ 1 ] === "true" ) { // IF Advance-Next-Show is Enabled
+				console.log( "inside Advance-Next-Show" );
+				F_UNEQ_IDX = ( F_UNEQ_IDX + 1 );
+				const R_NextShow = R_N_BASE + "META.UNEQ";
+				F_ShowName = await RU.getFromSetByIndex( redis , R_NextShow , F_UNEQ_IDX );
+				if ( F_ShowName === null ) { //  IF Advanced Past Total-UNEQ-aka-Unique Shows in Genre
+					console.log( "inside show-in-genre reset" );
+					F_UNEQ_IDX = 0;
+					F_ShowName = await RU.getFromSetByIndex( redis , R_NextShow , F_UNEQ_IDX );
+				}
+
+				// Check if Show Already Has a Previous Position
+				// This is the only point of double saving the **nowPlaying** obj into G_R_NP_ShowName_Backup
+				const R_PreviouslyWatched = "LAST_SS.LOCAL_MEDIA." + lastPlayed.genre + "." + F_ShowName;
+				var previouslyWatched = await RU.getKey( redis , R_PreviouslyWatched );
+				if ( previouslyWatched !== null ) {
+					lastPlayed = JSON.parse( previouslyWatched );
+					F_FP_Already_Set = true;
+					F_FP = lastPlayed.fp;
+					F_RemainingTime = lastPlayed.remaining_time;
+					F_Duration = lastPlayed.duration;
+					F_ThreePercent = lastPlayed.three_percent;
+					F_CurrentTime = lastPlayed.cur_time;
+					F_Episode_IDX = lastPlayed.episode_idx;
+					F_Season_IDX = lastPlayed.season_idx;
+				}
+				else { F_Episode_IDX = -1; F_Season_IDX = 0; await callNextGen1Build(); }
+				
+			}
+			else { await callNextGen1Build(); } // Just continue then to +1-episode based on lastPlayed
+
+			function callNextGen1Build() {
+				return new Promise( async function( resolve , reject ) {
+					try {
+						nextEpisode = ( F_Episode_IDX + 1 );
+						F_Episode_IDX = nextEpisode;
+						const R_Next_EP = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
+						nextEpisode = await RU.getFromSetByIndex( redis , R_Next_EP , nextEpisode );
+						console.log( "next episode === " + nextEpisode );
+
+						if ( nextEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
+							console.log( "inside episode reset" );
+							F_Episode_IDX = 0;
+							F_Season_IDX = ( F_Season_IDX + 1 );
+							var R_Next_Season = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
+							var intermediaryNext_Episode = await RU.getFromSetByIndex( redis , R_Next_Season , 0 );
+							if ( intermediaryNext_Episode === null ) { // IF Advanced Past Total-Seasons in Show Boundry
+								console.log( "inside season reset" );
+								F_Season_IDX = 0;
+								R_Next_Season = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
+								F_FP = await RU.getFromSetByIndex( redis , R_Next_Season , 0 );
+							}
+							else { F_FP = intermediaryNext_Episode; }
+						}
+						else { F_FP = nextEpisode; }
+						resolve();
+					}
+					catch( error ) { console.log( error ); reject( error ); }
+				});
+			}
+
+			// Adjust Final-Full-File-Path from Redis "set" language
+			if ( !F_FP_Already_Set ) {
+				var xb1 = GLOBAL_INSTANCE_MOUNT_POINT + "/" + lastPlayed.genre + "/" + F_ShowName;
+				var xb2 = ( F_Season_IDX + 1 ).toString();
+				if ( F_Season_IDX < 10 ) { F_FP = xb1 + "/0" + xb2 + "/" + F_FP; }
+				else { F_FP = xb1 + "/" + xb2 + "/" + F_FP; }
+			}
+
+			resolve({
+				genre: lastPlayed.genre ,
+				uneq_idx: F_UNEQ_IDX ,
+				show_name: F_ShowName ,
+				season_idx: F_Season_IDX ,
+				episode_idx: F_Episode_IDX ,
+				fp: F_FP ,
+				completed: false ,
+				remaining_time: F_RemainingTime ,
+				three_percent: F_ThreePercent ,
+				duration: F_Duration ,
+				cur_time: F_CurrentTime
+			});
+
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function updateLastPlayedTime( wTime ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			if ( wTime ) { 
+				console.log( "wTime === " + wTime.toString() );
+				G_NOW_PLAYING.cur_time = wTime;
+				G_NOW_PLAYING.remaining_time = ( G_NOW_PLAYING.duration - G_NOW_PLAYING.cur_time );
+				if ( G_NOW_PLAYING.cur_time >= G_NOW_PLAYING.three_percent ) { G_NOW_PLAYING.completed = true; }
+			}
+			else { console.log( "no wTIME !!!!" ); G_NOW_PLAYING.completed = true; } // Just assuming something **bad** happened , and mark as completed anyways
+			var x1 = JSON.stringify( G_NOW_PLAYING );
+			await RU.setMulti( redis , [ [ "set" , G_R_Live_Genre_NP , x1 ] ,  [ "set" , G_R_NP_ShowName_Backup , x1 ] ]);
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+wEmitter.on( "MPlayerOVER" , async function( wResults ) {
+	
+	await updateLastPlayedTime( wResults );
+
+	// Continue if Config Says were Still Active
+	var wAS = await RU.getMultiKeys( redis , "LAST_SS.ACTIVE_STATE" , "LAST_SS.ACTIVE_STATE.META" );
+	if ( wAS[0] === "LOCAL_MEDIA" ) { wPlay(); }
+	else { console.log( "WE WERE TOLD TO QUIT" ); }
+
+});
+
+const R_LocalMedia_Base = "LAST_SS.LOCAL_MEDIA.";
+const R_LM_Config_Base = "CONFIG.LOCAL_MEDIA.LIVE.";
+const R_LM_Config_Genre = R_LM_Config_Base + "GENRE";
+const R_LM_Config_AdvanceShow = R_LM_Config_Base + "ADVANCE_SHOW";
+const R_LM_Config_SpecificShow = R_LM_Config_Base + "SPECIFIC_SHOW";
+const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
+function getLiveConfig() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var liveConfig = await RU.getMultiKeys( redis , R_LM_Config_Genre , R_LM_Config_AdvanceShow , R_LM_Config_SpecificShow , R_LM_Config_SpecificEpisode );
+			const R_Live_Genre_Base = R_LocalMedia_Base + liveConfig[ 0 ];
+			const R_Live_Genre_NP = R_Live_Genre_Base + ".NOW_PLAYING";
+			var liveLastPlayed = await RU.getKey( redis , R_Live_Genre_NP );
+			resolve( [ liveLastPlayed , liveConfig ] );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+async function wPlay( skipping , previous ) {
+
+	var FinalNowPlaying = {};
+
+	var lc = await getLiveConfig();
+	var liveLastPlayed = JSON.parse( lc[ 0 ] );
+	var liveConfig = lc[ 1 ];
+	console.log("");
+	console.log( liveLastPlayed );
+	console.log( liveConfig );
+	console.log("");
+
+	if ( previous ) { console.log("inside previous case"); FinalNowPlaying = await calculatePrevious( liveLastPlayed , liveConfig ); }
+	else if ( skipping ) { console.log("inside skipping case"); FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
+
+	else if ( liveLastPlayed === null ) { // IF - Nothing ever watched in Genre
+		console.log( "genre is FRESH !!" );
+		const R_FirstShow = h1 + liveConfig[ 0 ] + ".META.UNEQ";
+		const showName = await RU.getFromSetByIndex( redis , R_FirstShow , 0 );
+		const R_FirstEpisodeFP = h1 + liveConfig[ 0 ] + ".FP." + showName + ".0";
+		const firstEpisode = await RU.getFromSetByIndex( redis , R_FirstEpisodeFP , 0 );
+		const firstEpFullPath = GLOBAL_INSTANCE_MOUNT_POINT + "/" + liveConfig[ 0 ] + "/" + showName + "/01/" + firstEpisode;
+		FinalNowPlaying = { 
+			genre: liveConfig[ 0 ] , uneq_idx: 0 , show_name: showName ,
+			season_idx: 0 , episode_idx: 0 , fp: firstEpFullPath ,
+			completed: false , cur_time: 0 , remaining_time: 0 ,
+			three_percent: 0 , duration: 0
+		};
 	}
+	else { // NOT Genre Fresh ---- NORMAL Case , aka just episode +1			
+		console.log( "not genre fresh !!" );
+
+		// If Previously Last-Played OBJ is NOT fully watched , restart then and seek to where was left off
+		if ( !liveLastPlayed.completed ) { FinalNowPlaying = liveLastPlayed; console.log( "not completed" ); console.log( FinalNowPlaying ); }
+		// ELSE , calculate the **Next** playing-obj
+		else { FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); } 
+	}
+
+	// Populate Duration and Three-Percent Values
+	if ( FinalNowPlaying.three_percent === 0 ) {
+		FinalNowPlaying.duration = wGetDuration( FinalNowPlaying.fp );
+		FinalNowPlaying.three_percent = Math.floor( ( FinalNowPlaying.duration - ( FinalNowPlaying.duration * 0.025 ) ) );
+		console.log( "Duration === " + FinalNowPlaying.duration.toString() );
+		console.log( "Three Percent === " + FinalNowPlaying.three_percent.toString() );
+	}
+
+	console.log( FinalNowPlaying );
+
+	const x1 = JSON.stringify( FinalNowPlaying );
+	const R_NP_ShowName_BackupKey = R_LocalMedia_Base + liveConfig[ 0 ] + "." + FinalNowPlaying.show_name;
+	const R_Live_Genre_NP = R_LocalMedia_Base + liveConfig[ 0 ] + "." + "NOW_PLAYING";
+	await RU.setMulti( redis , [ [ "set" , R_Live_Genre_NP , x1 ] ,  [ "set" , R_NP_ShowName_BackupKey , x1 ] ]);
+
+
+	G_NOW_PLAYING = FinalNowPlaying;
+	G_R_Live_Genre_NP = R_Live_Genre_NP;
+	G_R_NP_ShowName_Backup = R_NP_ShowName_BackupKey;
+
+
+	console.log( "STARTING --> MPLAYER" );	
+	MPLAYER_MAN.playFilePath( FinalNowPlaying.fp );
+	if ( FinalNowPlaying.cur_time > 1 ) {
+		await wSleep( 1000 );
+		MPLAYER_MAN.seekSeconds( FinalNowPlaying.cur_time );
+	}
+
 }
 
 function wPause() {
-	wcl( NOW_PLAYING_REF );
-	var wLastTime = MPLAYER_MAN.pause();
-	wcl( "LAST TIME = " + wLastTime );
-	updateLastPlayed( wLastTime );
-}
-
-async function wNext( wConfig ) {
-	if ( NP_CACHED_CONFIG !== null ) {
-		wcl( "wNext() --> Get Next Episode" );
-		var LP_POS = NP_CACHED_CONFIG.last_played.last_pos;
-		var TOTAL_SHOWS_IN_SECTION = ( Object.keys( HD_REF[ NP_CACHED_CONFIG.type ] ).length - 1 );
-		var CUR_SHOW_NAME = HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ LP_POS ].name;
-
-		// console.log( NP_CACHED_CONFIG.last_played[ CUR_SHOW_NAME ] );
-		// console.log("");
-		// console.log( HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ LP_POS ] );
-		// console.log("");
-		
-		var CUR_SEASON = NP_CACHED_CONFIG.last_played[ CUR_SHOW_NAME ].rs_map[ 0 ]; // offset for array-indexing
-		var NEXT_EPISODE = ( NP_CACHED_CONFIG.last_played[ CUR_SHOW_NAME ].rs_map[ 1 ] + 1 );
-		var CUR_SEASON_TOTAL_EPISODES = HD_REF[ NP_CACHED_CONFIG.type ][ CUR_SHOW_NAME ].items[ CUR_SEASON - 1 ];
-		// console.log( "OUR CACHED TYPE === " + NP_CACHED_CONFIG.type );
-		// console.log( "OUR CUR_SHOW_NAME === " + CUR_SHOW_NAME );
-		// console.log( "CUR_SEASON === " + CUR_SEASON.toString() );
-		// console.log( "AT THIS TIME NEXT_EPISODE === " + NEXT_EPISODE.toString() );
-		// console.log( "We think CUR_SEASON_TOTAL_EPISODES === " + CUR_SEASON_TOTAL_EPISODES.toString() + " for some reason" );
-		var CUR_SHOW_TOTAL_SEASONS = HD_REF[ NP_CACHED_CONFIG.type ][ CUR_SHOW_NAME ].items.length;
-		if ( NEXT_EPISODE > CUR_SEASON_TOTAL_EPISODES ) { NEXT_EPISODE = 1; CUR_SEASON = CUR_SEASON + 1; }
-		if ( CUR_SEASON > CUR_SHOW_TOTAL_SEASONS ) { CUR_SEASON = 1; }
-		// console.log( "AT THIS TIME NEXT_EPISODE === " + NEXT_EPISODE.toString() );
-		// console.log( "CUR_SEASON === " + CUR_SEASON.toString() );
-		var x1 = [ NP_CACHED_CONFIG.type , CUR_SHOW_NAME , CUR_SEASON , NEXT_EPISODE ];
-		
-		NP_CACHED_CONFIG.last_played[ CUR_SHOW_NAME ].rs_map[ 0 ] = CUR_SEASON;
-		NP_CACHED_CONFIG.last_played[ CUR_SHOW_NAME ].rs_map[ 1 ] = NEXT_EPISODE;
-
-		wStop( true );
-		await wSleep( 2000 );
-		PLAY_FROM_REFERENCE_STRUCT( x1 );
-	} 
-}
-async function wPrevious() {
-	if ( NP_CACHED_CONFIG !== null ) {
-
-		wcl( "wPrevious() --> Get Previous Episode" );
-
-	 	var LP_Name = HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name;
-	 	var LP_POS = NP_CACHED_CONFIG.last_played.last_pos;
-		var TOTAL_SHOWS_IN_SECTION = ( Object.keys( HD_REF[ NP_CACHED_CONFIG.type ] ).length - 1 ); // offset for array-indexing
-
-		var CUR_SHOW_TOTAL_SEASONS = HD_REF[ NP_CACHED_CONFIG.type ][ LP_Name ].items.length;
-		var CUR_SEASON = NP_CACHED_CONFIG.last_played[ LP_Name ].rs_map[ 0 ];
-		var PREV_EPISODE = ( NP_CACHED_CONFIG.last_played[ LP_Name ].rs_map[ 1 ] - 1 );
-		if ( PREV_EPISODE === 0 ) {
-			//console.log( "PREV_EPISODE === 0" );
-			CUR_SEASON = CUR_SHOW_TOTAL_SEASONS; 
-			PREV_EPISODE = HD_REF[ NP_CACHED_CONFIG.type ][ LP_Name ].items[ CUR_SEASON - 1 ];
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var cur_time = MPLAYER_MAN.pause();
+			await updateLastPlayedTime( cur_time );
+			resolve();
 		}
-
-		var x1 = [ NP_CACHED_CONFIG.type , LP_Name , CUR_SEASON , PREV_EPISODE ];
-		NP_CACHED_CONFIG.last_played[ LP_Name ].rs_map[ 0 ] = CUR_SEASON;
-		NP_CACHED_CONFIG.last_played[ LP_Name ].rs_map[ 1 ] = PREV_EPISODE;
-
-		wStop( true );
-		await wSleep( 1000 );
-		PLAY_FROM_REFERENCE_STRUCT( x1 );
-
-	}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
-
-function wOnNowPlayingOver( wResult ) {
-	wcl( "THE VIDEO WE STARTED IS OVER !!!!!" );
-	ACTIVE = false;
-	NP_CACHED_CONFIG[ "last_played" ][ HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name ].current_time = 0;
-	NP_CACHED_CONFIG[ "last_played" ][ HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name ].remaining_time = 0;
-	NP_CACHED_CONFIG[ "last_played" ][ HARD_DRIVE_STRUCT[ NP_CACHED_CONFIG.type ][ NP_CACHED_CONFIG.last_played.last_pos ].name ].completed = true;
-	updateLastPlayed( "completed" );
-	//wNext();
-	wPlay();
-
+function wStop() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var cur_time = MPLAYER_MAN.silentStop();
+			await updateLastPlayedTime( cur_time );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
-wEmitter.on( "MPlayerOVER" , wOnNowPlayingOver );
-// ====================================================================================================================================================
-// ====================================================================================================================================================
+async function wNext() { await wStop(); wPlay( true ); }
+async function wPrevious() { await wStop(); wPlay( false , true ); }
 
 
-
-
-
-
-// Initialization
-async function BEGIN_INITIALIZATION() {
-	
-	// PURPLE Laptop with Seagate USB Drive	
-	HD_MOUNT_POINT = await FIND_USB_STORAGE_PATH_FROM_UUID( "2864E38A64E358D8" );
-	
-	wcl( HD_MOUNT_POINT );
-	
-	if ( NeedToUpdateHDStruct ) { 
-		await UPDATE_HARD_DRIVE_FOLDER_STRUCT_SAVE_FILE(); 
-		await wUpdate_Last_SS( "LocalMedia" , "REFERENCE" , HD_REF );
-		console.log( HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] );
-		if ( NEED_TO_RESET_LP ) { await wUpdate_Last_SS( "LocalMedia" , "LAST_PLAYED" , HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] ); }
-		//await wUpdate_Last_SS( "LAST_PLAYED" , HARD_DRIVE_STRUCT[ "LAST_PLAYED" ] );
-	}
-
-}
-
-module.exports.getAvailableMedia = ()=> { return HD_REF; }
-
-module.exports.getCurrentTime 	= MPLAYER_MAN.getCurrentTime
 module.exports.play 			= wPlay;
+
+//module.exports.getAvailableMedia = ()=> { return HD_REF; }
+//module.exports.getCurrentTime 	= MPLAYER_MAN.getCurrentTime
 module.exports.pause 			= wPause;
 module.exports.resume 			= wPause;
 module.exports.stop 			= wStop;
 module.exports.next 			= wNext;
 module.exports.previous			= wPrevious;
+
+// setTimeout( ()=> {
+// 	setInterval( ()=> {
+// 		wPause();
+// 	} , 3000 );
+// } , 10000 );
+
+// process.on( "SIGINT" , async function () {
+// 	await wStop();
+// 	await wSleep( 3000 );
+// 	redis.quit();
+// });
+
+// process.on( "unhandledRejection" , function( reason , p ) {
+//     console.error( reason, "Unhandled Rejection at Promise" , p );
+//     console.trace();
+//     //wEmitter.emit( "closeEverything" );
+// });
+// process.on( "uncaughtException" , function( err ) {
+//     console.error( err , "Uncaught Exception thrown" );
+//     console.trace();
+//     //wEmitter.emit( "closeEverything" );
+// });

@@ -1,7 +1,7 @@
 var colors = require("colors");
 
 var wEmitter = require('../../../main.js').wEmitter;
-var wGet_Last_SS = require( "../../clientManager.js" ).get_Last_SS;
+//var wGet_Last_SS = require( "../../clientManager.js" ).get_Last_SS;
 
 var wMopidyGetCachedPlaylists 	= require( "../../mopidyManager.js" ).getCachedPlaylists;
 var wMopidyPause 				= require( "../../mopidyManager.js" ).pause;
@@ -21,6 +21,7 @@ function sendJSONResponse( res , status , content ) {
 }
 
 module.exports.getStatus = function( req , res ) {
+	//var wOBJ = wGet_Last_SS();
 	var wOBJ = wGet_Last_SS();
 	wcl( "we are in getStatus" );
 	console.log( wOBJ );

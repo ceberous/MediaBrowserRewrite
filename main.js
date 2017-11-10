@@ -5,6 +5,10 @@ const colors = require("colors");
 var wEmitter = new (require('events').EventEmitter);
 module.exports.wEmitter = wEmitter;
 
+const REDIS = require("redis");
+const redis = REDIS.createClient( "8443" , "localhost" );
+module.exports.redis = redis;
+
 function wcl( wSTR ) { console.log( colors.green.bgBlack( "[MAIN] --> " + wSTR ) ); }
 
 const port = process.env.PORT || 6969;
@@ -17,7 +21,6 @@ const server = require( "http" ).createServer( app );
 
 const WebSocket = require( "ws" );
 const wss = new WebSocket.Server({ server });
-const webSocketManager = require( "./server/webSocketManager.js" );
 var STAGED_FF_CLIENT_TASK = null;
 module.exports.setStagedFFClientTask = function( wOptions ) { STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions ); }
 function sendWebSocketMessage() {

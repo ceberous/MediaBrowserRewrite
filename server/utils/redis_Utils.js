@@ -35,7 +35,7 @@ function REDIS_DELETE_KEY( rInstance , wKey ) {
 function REDIS_GET_KEY( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.get( wKey , function( err , key ) { resolve( key ); }); }
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve( "null" ); }
 	});
 }
 function REDIS_GET_FROM_SET_BY_INDEX( rInstance , wKey , wIndex ) {
@@ -54,14 +54,14 @@ function REDIS_GET_MULTI_KEY( rInstance , ...args ) {
 function REDIS_SET_KEY( rInstance , wKey , wVal ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.set( wKey , wVal , function( err , values ) { resolve( values ); }); }
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve( "error" ); }
 	});
 }
 
 function REDIS_SET_MULTI( rInstance , wArgs ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.multi( wArgs ).exec( function( err , results ) { console.log( err ); resolve( results ); }); }
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve( "error" ); }
 	});
 }
 function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
