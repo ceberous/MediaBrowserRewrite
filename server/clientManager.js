@@ -9,9 +9,9 @@ const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" );
 const wEmitter	= require("../main.js").wEmitter;
 const wSkypeNames = require("../personal.js").skypeNames;
 
-
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
 
 var CURRENT_STATE = null;
 
@@ -134,6 +134,6 @@ function wPressButtonMaster( wButtonNum , wArgArray ) {
 	wcl( x2 + " " + x1 );
 	//EMAIL_MAN.sendEmail( x2 , x1 );
 	//if ( !HALEY_HOME_OVERRIDED_ALREADY && dNow.getHours() === 15 && JOB_OVERRIDE_HALEY_IS_HOME == false ) { JOB_OVERRIDE_HALEY_IS_HOME = true; wButtonNum = 11; }
-	BP_MAP[ wButtonNum ]( wArgArray );																													
+	BP_MAP[ wButtonNum ]( wArgArray );
 }
 module.exports.pressButtonMaster = wPressButtonMaster;

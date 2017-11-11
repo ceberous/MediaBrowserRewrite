@@ -10,6 +10,7 @@ const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
 function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			
 			await RU.setMulti( redis , [
 				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 				[ "set" , R_LM_Config_Genre , "Odyssey" ] ,
@@ -17,9 +18,8 @@ function wStart() {
 				[ "set" , R_LM_Config_SpecificShow , "false" ] ,
 				[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
 			]);
-			console.log( "loaded config for local-media-man" );
+			
 			require( "../localMediaManager.js" ).play();
-
 			await require( "./YT_Live_Background.js" ).start();
 
 			resolve();
@@ -51,7 +51,7 @@ function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await require( "../localMediaManager.js" ).stop();
-			await require( "./YT_Live_Background.js" ).stop();			
+			await require( "./YT_Live_Background.js" ).stop();		
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

@@ -1,4 +1,4 @@
-const wEmitter = require('../main.js').wEmitter;
+const wEmitter = require("../main.js").wEmitter;
 //var wEmitter = new (require('events').EventEmitter);
 
 require( "shelljs/global" );
@@ -97,7 +97,9 @@ const ffWrapper = {
 		}
 		
 	},
-
+	terminateFFAbsolute: function() {
+		exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
+	},
 	terminateFF: function() {
 		if ( !ffWrapper.binaryOpen ) { return; }
 		var wEX2 = exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
@@ -154,6 +156,19 @@ module.exports.twitchFullScreen = ffWrapper.twitchFullScreen;
 module.exports.terminateFF = function() {
 	ffWrapper.terminateFF();
 };
+
+module.exports.terminateFFWithClient = function() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			wEmitter.emit( "sendFFClientMessage" , "shutdown" );
+			await wsleep( 2000 );
+			ffWrapper.terminateFFAbsolute();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+};
+
 
 module.exports.openURL = function( wURL ) {
 	return new Promise( async function( resolve , reject ) {

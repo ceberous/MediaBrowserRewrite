@@ -23,6 +23,9 @@ const WebSocket = require( "ws" );
 const wss = new WebSocket.Server({ server });
 var STAGED_FF_CLIENT_TASK = null;
 module.exports.setStagedFFClientTask = function( wOptions ) { STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions ); }
+wEmitter.on( "sendFFClientMessage" , function( wMessage ) {
+	wss.clients.forEach( function each( ws ) { ws.send( JSON.stringify( { message: wMessage } ) ); });
+});
 function sendWebSocketMessage() {
 	wss.clients.forEach( function each( ws ) {
 		ws.send( STAGED_FF_CLIENT_TASK );

@@ -25,7 +25,15 @@ function wPause() {
 	
 }
 
-function wStop() { require( "../firefoxManager.js" ).terminateFF(); }
+function wStop() { 
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../firefoxManager.js" ).terminateFFWithClient(); 
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
 
 module.exports.start = wStart;
