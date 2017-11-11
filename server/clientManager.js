@@ -2,15 +2,16 @@ const fs	= require( "fs" );
 const path	= require( "path" );
 const colors	= require( "colors" );
 
+const wEmitter	= require("../main.js").wEmitter;
+function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
+function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
+
+const wSkypeNames = require("../personal.js").skypeNames;
 const BTN_MAN 	= require( "./buttonManager.js" );
 // Currently Importing This here ONLY for its Initialization Block
 const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" ); 
 
-const wEmitter	= require("../main.js").wEmitter;
-const wSkypeNames = require("../personal.js").skypeNames;
-
-function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
-function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 
 var CURRENT_STATE = null;
@@ -54,8 +55,8 @@ async function BUTTON_PRESS_4( wArgArray ) {
 	wcl( "Skype Call To: " + wSkypeNames.one );
 	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	// Special Case , Need to Remmeber Current State So We Can Resume Once Call is Over
-	CURRENT_STATE = require( "./STATES/Skype_Foreground.js" );
-	await CURRENT_STATE.start();
+	CURRENT_STATE = await require( "./STATES/Skype_Foreground.js" );
+	await CURRENT_STATE.start( wSkypeNames.one );
 }
 
 async function BUTTON_PRESS_5( wArgArray ) {
@@ -64,8 +65,8 @@ async function BUTTON_PRESS_5( wArgArray ) {
 	wcl( "Skype Call To: " + wSkypeNames.two );
 	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	// Special Case , Need to Remmeber Current State So We Can Resume Once Call is Over
-	CURRENT_STATE = require( "./STATES/Skype_Foreground.js" );
-	await CURRENT_STATE.start();
+	CURRENT_STATE = await require( "./STATES/Skype_Foreground.js" );
+	await CURRENT_STATE.start( wSkypeNames.two );
 }
 
 function BUTTON_PRESS_6( wArgArray ) {

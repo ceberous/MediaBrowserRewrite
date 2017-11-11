@@ -69,13 +69,18 @@ def OnCall(call, status):
 
     elif ( wText == "Sorry, call failed!" ):
         #call.Finish()
-        print("CallFailed")
-        sys.stdout.flush()
-        #sys.exit(1)
-        CallStatus = Skype4Py.clsFinished
-        sys.exit(1)
-        raise SystemExit
-        return
+        if ( retryCount < 3 ):
+            retryCount = retryCount + 1
+            time.sleep(2)
+            makeCall()
+        else:
+            print("CallFailed")
+            sys.stdout.flush()
+            #sys.exit(1)
+            CallStatus = Skype4Py.clsFinished
+            sys.exit(1)
+            raise SystemExit
+            return
 
     elif ( wText == "Cancelled" ):
     	if ( retryCount < 3 ):

@@ -51,7 +51,7 @@ function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await require( "../localMediaManager.js" ).stop();
-			await require( "./YT_Live_Background.js" ).stop();		
+			await require( "./YT_Live_Background.js" ).stop();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

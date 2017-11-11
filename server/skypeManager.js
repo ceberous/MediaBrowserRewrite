@@ -1,11 +1,11 @@
-var wEmitter = require('../main.js').wEmitter;
-var wRestorePreviousAction = require( "./clientManager.js" ).restorePreviousAction;
+var wEmitter = require("../main.js").wEmitter;
+//var wRestorePreviousAction = require( "./clientManager.js" ).restorePreviousAction;
 
 var path = require("path");
-var StringDecoder = require('string_decoder').StringDecoder;
+var StringDecoder = require("string_decoder").StringDecoder;
 var decoder = new StringDecoder('utf8');
-var spawn = require('child_process').spawn;
-require('shelljs/global');
+var spawn = require("child_process").spawn;
+require("shelljs/global");
 var colors = require("colors");
 
 const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
@@ -14,12 +14,37 @@ function wcl( wSTR ) { console.log( colors.white.bgBlue( "[SKYPE_MAN] --> " + wS
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 
+const FIND_SKYPE = "ps aux | grep skype";
+function ensureSkypeBinaryIsOpen() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var OPEN = false;
+			var findSkype = exec( FIND_SKYPE , { silent: true , async: false } );
+			if ( findSkype.stderr.length > 1 ) { wcl( "ERROR --> Could not Run 'ps' command to find Skype" ); return null; }
+			var wF = findSkype.stdout.trim().split( "\n" );
+			for ( var i = 0; i < wF.length; ++i ) {
+				var last = wF[ i ].replace( / /g , "@@" );
+				last = last.split( "@@" );
+				if ( last[ last.length - 2 ] !== "grep" && last[ last.length - 1 ] === "skype" ) { OPEN = true; }
+			}
+			if ( !OPEN ) {
+				wcl( "Skype Binary NOT Open , Launching Now" );
+				exec( "/usr/bin/skype" , { silent: true , async: false } );
+				await wSleep( 3000 );
+			}
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 const VIDEO_CALL_SCRIPT = path.join( __dirname , "py_scripts" , "callFriend.py" );
 //const VIDEO_CALL_SCRIPT = path.join( __dirname , "py_scripts" , "testLongRunning.py" );
 
 function xRestorePreviousAction() {
 	if ( NEED_TO_RESTORE_SERVICE ) {
-		wRestorePreviousAction();
+		//wRestorePreviousAction();
+		wcl( "THIS IS WHERE WE WOULD RESTORE THE PREVIOUS ACTION" );
 		NEED_TO_RESTORE_SERVICE = false;
 	}
 }
@@ -93,24 +118,31 @@ var CACHED_USER_NAME = null;
 var NEED_TO_RESTORE_SERVICE = false;
 var ACTUALLY_A_LIVE_CALL = false;
 function wVideoCallUserName( wUserName ) {
-	if ( ACTUALLY_A_LIVE_CALL ) { return; }
-	ACTUALLY_A_LIVE_CALL = false;
-	NEED_TO_RESTORE_SERVICE = true;
-	CACHED_USER_NAME = wUserName;
-	VIDEO_CALL_SCRIPT_PROC = spawn( 'python' , [ VIDEO_CALL_SCRIPT , CACHED_USER_NAME ] , { detatched: false } );
-	VIDEO_CALL_SCRIPT_PID = VIDEO_CALL_SCRIPT_PROC.pid;
-	VIDEO_CALL_SCRIPT_PROC.stdout.on( "data" , function( data ) {
-		var message = decoder.write(data);
-		message = message.trim();
-		wHandleOutput( message );
+	return new Promise( async function( resolve , reject ) {
+		try {
+			if ( ACTUALLY_A_LIVE_CALL ) { resolve(); }
+			await ensureSkypeBinaryIsOpen();
+			ACTUALLY_A_LIVE_CALL = false;
+			NEED_TO_RESTORE_SERVICE = true;
+			CACHED_USER_NAME = wUserName;
+			VIDEO_CALL_SCRIPT_PROC = spawn( 'python' , [ VIDEO_CALL_SCRIPT , CACHED_USER_NAME ] , { detatched: false } );
+			VIDEO_CALL_SCRIPT_PID = VIDEO_CALL_SCRIPT_PROC.pid;
+			VIDEO_CALL_SCRIPT_PROC.stdout.on( "data" , function( data ) {
+				var message = decoder.write(data);
+				message = message.trim();
+				wHandleOutput( message );
+			});
+			VIDEO_CALL_SCRIPT_PROC.stderr.on( "data" , function(data) {
+				var message = decoder.write(data);
+				message = message.trim();
+				wHandleOutput(message);
+			});
+			wMaxTimeoutHandler();
+			VIDEO_CALL_SCRIPT_PROC.unref();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
 	});
-	VIDEO_CALL_SCRIPT_PROC.stderr.on( "data" , function(data) {
-		var message = decoder.write(data);
-		message = message.trim();
-		wHandleOutput(message);
-	});
-	wMaxTimeoutHandler();
-	VIDEO_CALL_SCRIPT_PROC.unref();
 }
 
 
