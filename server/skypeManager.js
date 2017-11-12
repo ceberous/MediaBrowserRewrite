@@ -13,7 +13,6 @@ const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
 function wcl( wSTR ) { console.log( colors.white.bgBlue( "[SKYPE_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
-
 const FIND_SKYPE = "ps aux | grep skype";
 function ensureSkypeBinaryIsOpen() {
 	return new Promise( async function( resolve , reject ) {
@@ -38,8 +37,7 @@ function ensureSkypeBinaryIsOpen() {
 	});
 }
 
-const VIDEO_CALL_SCRIPT = path.join( __dirname , "py_scripts" , "callFriend.py" );
-//const VIDEO_CALL_SCRIPT = path.join( __dirname , "py_scripts" , "testLongRunning.py" );
+
 
 function xRestorePreviousAction() {
 	if ( NEED_TO_RESTORE_SERVICE ) {
@@ -110,13 +108,13 @@ function wMaxTimeoutHandler() {
 		if ( !ACTUALLY_A_LIVE_CALL ) { wRestoreCleanup(); }
 	} , 30000 );
 }
-
 var VIDEO_CALL_SCRIPT_PROC = null;
 var VIDEO_CALL_SCRIPT_PID = null;
 var SKYPE_WINDOW_ID = null;
 var CACHED_USER_NAME = null;
 var NEED_TO_RESTORE_SERVICE = false;
 var ACTUALLY_A_LIVE_CALL = false;
+const VIDEO_CALL_SCRIPT = path.join( __dirname , "py_scripts" , "callFriend.py" );
 function wVideoCallUserName( wUserName ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -145,22 +143,5 @@ function wVideoCallUserName( wUserName ) {
 	});
 }
 
-
-
-// (async function placeCallTest() {
-// 	//wVideoCallUserName( "haley.cerbus" );
-// }());
-
 module.exports.startCall = wVideoCallUserName;
 module.exports.endCall = wRegularCleanup;
-
-// process.on('SIGINT', function () {
-// 	wcl( "Shutting Down" );
-// 	wRegularCleanup();
-// 	process.exit(1);
-// });
-
-
-// setInterval(function(){
-// 	console.log("we are still here");
-// } , 3000 );
