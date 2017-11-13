@@ -18,13 +18,11 @@ module.exports.restart =  function() {
 			for ( var i = 0; i < random_list.length; ++i ) {
 				random_list[ i ] = JSON.parse( random_list[ i ] );
 			}
-
 			await require( "./tracklistManager.js" ).clearList();
 			await require( "./tracklistManager.js" ).loadList( random_list );
 			await require( "./playbackManager.js" ).play();
 			await sleep( 2000 );
 			await require( "./playbackManager.js" ).getState();
-
 
 			resolve();
 		}

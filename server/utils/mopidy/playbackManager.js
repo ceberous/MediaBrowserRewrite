@@ -34,8 +34,15 @@ function PAUSE() {
 	return new Promise( function( resolve , reject ) {
 		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
 		try {
-			mopidy.playback.pause().then( function ( something ) {
-				resolve("success");
+			mopidy.playback.getState().then( async function ( state ) {
+				if ( state === "paused" ) {
+					await RESUME();
+				}
+				else {
+					mopidy.playback.pause().then( function ( something ) {
+						resolve("success");
+					});
+				}
 			});
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -85,6 +92,18 @@ function GET_CURRENT_TRACK_INDEX() {
 	});
 }
 
+function GET_CURRENT_TRACK() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.getCurrentTrack()
+			.then( function ( wTrack ) { resolve( wTrack ); } )
+			.catch( function( wERR ) { reject( wERR ); } );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 const R_CUR_STATE = R_BASE + "STATE";
 function GET_STATE() {
 	return new Promise( function( resolve , reject ) {
@@ -112,6 +131,7 @@ module.exports.initialize = INITIALIZE;
 module.exports.getState = GET_STATE;
 module.exports.play = PLAY;
 module.exports.getCurrentTrackIndex = GET_CURRENT_TRACK_INDEX;
+module.exports.getCurrentTrack = GET_CURRENT_TRACK;
 module.exports.previous = PREVIOUS;
 module.exports.next = NEXT;
 module.exports.pause = PAUSE;

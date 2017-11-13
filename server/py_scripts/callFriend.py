@@ -6,6 +6,7 @@ import time
 # http://web.archive.org/web/20130607130426/http://dev.skype.com/desktop-api-reference#Linux
 print sys.argv[1]
 
+CALL_LIVE = False
 CallStatus = 0
 callobj1 = 0
 retryCount = 0
@@ -19,6 +20,7 @@ def CallStatusText(status):
     return skype.Convert.CallStatusToText(status)
 
 def OnCall(call, status):
+    global CALL_LIVE
     global CallStatus
     global callobj1
     global skype
@@ -58,14 +60,20 @@ def OnCall(call, status):
         return        
 
     elif ( wText == "Never placed" ):
-        print("NeverPlaced")
-        sys.stdout.flush()
-        call.Finish()
-        #sys.exit(1)
-        CallStatus = Skype4Py.clsFinished
-        sys.exit(1)
-        raise SystemExit
-        return
+        #call.Finish()
+        if ( retryCount < 3 ):
+            retryCount = retryCount + 1
+            time.sleep(2)
+            makeCall()
+        else:        
+            print("NeverPlaced")
+            sys.stdout.flush()
+            call.Finish()
+            #sys.exit(1)
+            CallStatus = Skype4Py.clsFinished
+            sys.exit(1)
+            raise SystemExit
+            return
 
     elif ( wText == "Sorry, call failed!" ):
         #call.Finish()
@@ -89,10 +97,17 @@ def OnCall(call, status):
     		makeCall()
 
     elif ( wText == "Finished" ):
-        print( "Finished" )
-        sys.stdout.flush()
+        if CALL_LIVE == False:
+            if ( retryCount < 3 ):
+                retryCount = retryCount + 1
+                time.sleep(2)
+                makeCall()
+        else:
+            print( "Finished" )
+            sys.stdout.flush()
 
     elif ( wText == "Call in Progress" ):
+        CALL_LIVE = True
         print( "CallLive" )
         sys.stdout.flush()
 

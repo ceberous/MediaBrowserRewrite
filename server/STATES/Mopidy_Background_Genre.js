@@ -12,7 +12,6 @@ function wStart( wButton_Genre_Type ) {
 
 			wButton_Genre_Type = wButton_Genre_Type || "UNKNOWN";
 			wButton_Genre_Type = wButton_Genre_Type + ".TRACKS";
-
 			await RU.setKey( redis , R_CONTINUOUS_PLAY , wButton_Genre_Type );
 			await require( "../utils/mopidy/restartContinousPlay.js" ).restart();
 

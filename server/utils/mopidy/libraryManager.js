@@ -32,9 +32,12 @@ function UPDATE_CACHE() {
 			var ek = await RU.getKeysFromPattern( redis , "MOPIDY.CACHE*" );
 			//FORCED-CLEANSING
 			if ( ek.length > 0 ) {
-				ek = ek.map( x => [ "del" , x  ] );
+				// ek = ek.map( x => [ "del" , x  ] );
+				for ( var i = 0; i < ek.length; ++i ) {
+					ek[ i ] = [ "del" , ek[ i ] ];
+				}
 				await RU.setMulti( redis , ek );
-				FORCED_RESET = true;
+				await sleep( 1000 );
 				console.log( "done cleansing instance" );
 			}
 			
@@ -79,6 +82,7 @@ function UPDATE_CACHE() {
 				
 				await RU.setMulti( redis , R_MULTI );
 				console.log( "finished setting multi-1" );
+				await sleep( 1000 );
 
 				await RU.setMulti( redis , R_MULTI2 );
 				console.log( "finished setting multi-2" );

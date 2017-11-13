@@ -6,12 +6,13 @@ const wEmitter	= require("../main.js").wEmitter;
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+const redis = require( "../main.js" ).redis;
+const RU = require( "./utils/redis_Utils.js" );
+
 
 const wSkypeNames = require("../personal.js").skypeNames;
 
 
-// of fucking btw , I've had this starred for who knows how fucking long
-// https://github.com/9and3r/mopidy-ttsgpio
 const BTN_MAN 	= require( "./buttonManager.js" );
 
 // Currently Importing This here ONLY for its Initialization Block
@@ -19,7 +20,7 @@ const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" );
 
 const MOPIDY_MAN = require( "./mopidyManager.js" );
 
-
+const R_ACTIVE_STATE = "LAST_SS.ACTIVE_STATE";
 var CURRENT_STATE = null;
 
 async function MASTER_STATE_STOP() {
@@ -32,6 +33,7 @@ async function BUTTON_PRESS_0( wArgArray ) {
 	wcl( "PRESSED BUTTON 0" );
 	wcl( "Youtube Live Background" );
 	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
+	await RU.setKey( redis , R_ACTIVE_STATE , "YOU_TUBE_LIVE_BACKGROUND" );
 	CURRENT_STATE = require( "./STATES/YT_Live_Background.js" );
 	await CURRENT_STATE.start();
 }
@@ -40,9 +42,10 @@ async function BUTTON_PRESS_1( wArgArray ) {
 	wcl( "PRESSED BUTTON 1" );
 	wcl( "Youtube Live Background with Mopidy Classic Random Playlist" );
 	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
-	//CURRENT_STATE = await require( "./STATES/Mopidy_Foreground_YT_Live_Background.js" );
-	CURRENT_STATE = await require( "./STATES/Mopidy_Background_Genre.js" );
-	await CURRENT_STATE.start( "UNKNOWN" );
+	
+	await RU.setKey( redis , R_ACTIVE_STATE , "MOPIDY_BACKGROUND_GENRE" );
+	CURRENT_STATE = await require( "./STATES/Mopidy_Foreground_YT_Live_Background.js" );
+	await CURRENT_STATE.start();
 }
 
 async function BUTTON_PRESS_2( wArgArray ) {

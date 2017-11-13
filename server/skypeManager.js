@@ -1,12 +1,14 @@
-var wEmitter = require("../main.js").wEmitter;
+const wEmitter = require("../main.js").wEmitter;
 //var wRestorePreviousAction = require( "./clientManager.js" ).restorePreviousAction;
 
-var path = require("path");
-var StringDecoder = require("string_decoder").StringDecoder;
-var decoder = new StringDecoder('utf8');
-var spawn = require("child_process").spawn;
+const path = require("path");
+const fs = require("fs");
+const StringDecoder = require("string_decoder").StringDecoder;
+const decoder = new StringDecoder('utf8');
+const spawn = require("child_process").spawn;
+const fork = require("child_process").fork;
 require("shelljs/global");
-var colors = require("colors");
+const colors = require("colors");
 
 const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
 
@@ -28,8 +30,9 @@ function ensureSkypeBinaryIsOpen() {
 			}
 			if ( !OPEN ) {
 				wcl( "Skype Binary NOT Open , Launching Now" );
-				exec( "/usr/bin/skype" , { silent: true , async: false } );
-				await wSleep( 3000 );
+				fork( "./server/utils/skypeLauncher.js" );
+				//exec( "/usr/bin/skype" , { silent: true , async: false , detatched: true } );
+				await wSleep( 10000 );
 			}
 			resolve();
 		}
@@ -120,10 +123,11 @@ function wVideoCallUserName( wUserName ) {
 		try {
 			if ( ACTUALLY_A_LIVE_CALL ) { resolve(); }
 			await ensureSkypeBinaryIsOpen();
+			wcl( "skype binary supposedly ready" );
 			ACTUALLY_A_LIVE_CALL = false;
 			NEED_TO_RESTORE_SERVICE = true;
 			CACHED_USER_NAME = wUserName;
-			VIDEO_CALL_SCRIPT_PROC = spawn( 'python' , [ VIDEO_CALL_SCRIPT , CACHED_USER_NAME ] , { detatched: false } );
+			VIDEO_CALL_SCRIPT_PROC = spawn( "python" , [ VIDEO_CALL_SCRIPT , CACHED_USER_NAME ] , { detatched: false } );
 			VIDEO_CALL_SCRIPT_PID = VIDEO_CALL_SCRIPT_PROC.pid;
 			VIDEO_CALL_SCRIPT_PROC.stdout.on( "data" , function( data ) {
 				var message = decoder.write(data);
