@@ -38,9 +38,10 @@ async function BUTTON_PRESS_0( wArgArray ) {
 
 async function BUTTON_PRESS_1( wArgArray ) {
 	wcl( "PRESSED BUTTON 1" );
+	wcl( "Youtube Live Background with Mopidy Classic Random Playlist" );
 	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 	//CURRENT_STATE = await require( "./STATES/Mopidy_Foreground_YT_Live_Background.js" );
-	CURRENT_STATE = await require( "./STATES/Mopidy_Background.js" );
+	CURRENT_STATE = await require( "./STATES/Mopidy_Background_Genre.js" );
 	await CURRENT_STATE.start( "UNKNOWN" );
 }
 

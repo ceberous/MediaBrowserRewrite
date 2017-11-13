@@ -6,6 +6,85 @@ function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms )
 const R_BASE = "MOPIDY.";
 
 
+function STOP() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.stop().then( function ( something ) {
+				resolve("success");
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function PLAY() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.play().then( function ( something ) {
+				resolve("success");
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function PAUSE() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.pause().then( function ( something ) {
+				resolve("success");
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function RESUME() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.resume().then( function ( something ) {
+				resolve("success");
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function NEXT() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.next().then( function ( something ) {
+				resolve("success");
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function PREVIOUS() {
+	return new Promise( function( resolve , reject ) {
+		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
+		try {
+			mopidy.playback.previous().then( function ( something ) {
+				resolve("success");
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function GET_CURRENT_TRACK_INDEX() {
+	return new Promise( function( resolve , reject ) {
+		try { mopidy.tracklist.index( {} ).then( function( data ) { resolve( data ); }).catch( function( wERR ) { /*console.log( error );*/ } ); }
+		catch( error ) { /*console.log( error );*/ /* reject( error ); */ }
+	});
+}
+
 const R_CUR_STATE = R_BASE + "STATE";
 function GET_STATE() {
 	return new Promise( function( resolve , reject ) {
@@ -31,3 +110,10 @@ function INITIALIZE() {
 }
 module.exports.initialize = INITIALIZE;
 module.exports.getState = GET_STATE;
+module.exports.play = PLAY;
+module.exports.getCurrentTrackIndex = GET_CURRENT_TRACK_INDEX;
+module.exports.previous = PREVIOUS;
+module.exports.next = NEXT;
+module.exports.pause = PAUSE;
+module.exports.resume = RESUME;
+module.exports.stop = STOP;

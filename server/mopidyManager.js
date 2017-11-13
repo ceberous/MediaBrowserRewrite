@@ -54,13 +54,30 @@ module.exports.mopidy = mopidy;
 
 mopidy.on( "state:online" , GLOBAL_INITIALIZE );
 
+var LAST_EVENT_TIME = 0;
+const EVENT_TIME_EASEMENT = 5000;
+const R_LAST_SS_BASE = "LAST_SS.MOPIDY.";
+const R_CONTINUOUS_PLAY = R_LAST_SS_BASE + "CONTINUOUS_PLAY";
 mopidy.on( "event:trackPlaybackEnded" , async function ( wEvent ) {
 	wcl( "PLAYBACK --> ENDED" );
-	//var wCTIDX = await MM.PLAYBACK.getCurrentTrackIndex();
-	//console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
-	// if ( wCTIDX === "0" || wCTIDX === 0 ) {
-	// 	MM.startNewTask( MM.activeTask , MM.selectedGenre , MM.activeListName );
-	// }
+	await sleep( 1000 );
+	const time_now = new Date().getTime();
+	const wDiff = ( time_now - LAST_EVENT_TIME );
+	if ( wDiff < EVENT_TIME_EASEMENT ) {
+		LAST_EVENT_TIME = time_now;
+		await sleep( EVENT_TIME_EASEMENT );
+	}
+	else {
+		var wCTIDX = await require( "./utils/mopidy/playbackManager.js" ).getCurrentTrackIndex();
+		console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
+		if ( wCTIDX === null ) {
+			var still_live = await RU.getKey( redis , R_CONTINUOUS_PLAY );
+			if ( still_live !== null && still_live !== "STOPPED" ) {
+				await require( "./utils/mopidy/restartContinousPlay.js" ).restart();
+			}
+		}
+		LAST_EVENT_TIME = time_now;
+	}
 });
 
 mopidy.on( "event:trackPlaybackStarted" , async function ( wEvent ) {
