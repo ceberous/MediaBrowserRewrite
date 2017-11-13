@@ -82,7 +82,18 @@ function REDIS_GET_FULL_SET( rInstance , wKey ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-
+function REDIS_GET_RANDOM_SET_MEMBERS( rInstance , wKey , wNumber ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.srandmember( wKey , wNumber , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+function REDIS_POP_RANDOM_SET_MEMBERS( rInstance , wKey , wNumber ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.spop( wKey , wNumber , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
@@ -90,9 +101,11 @@ module.exports.getKey = REDIS_GET_KEY;
 module.exports.delKey = REDIS_DELETE_KEY;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
-module.exports.getMultiKeys= REDIS_GET_MULTI_KEY;
-module.exports.getFullList= REDIS_GET_FULL_LIST;
-module.exports.getFullSet= REDIS_GET_FULL_SET;
+module.exports.getMultiKeys = REDIS_GET_MULTI_KEY;
+module.exports.getFullList = REDIS_GET_FULL_LIST;
+module.exports.getFullSet = REDIS_GET_FULL_SET;
+module.exports.getRandomSetMembers = REDIS_GET_RANDOM_SET_MEMBERS;
+module.exports.popRandomSetMembers = REDIS_POP_RANDOM_SET_MEMBERS;
 module.exports.setKey= REDIS_SET_KEY;
 module.exports.setMulti= REDIS_SET_MULTI;
 module.exports.setListFromArray= REDIS_SET_LIST_FROM_ARRAY;

@@ -8,10 +8,16 @@ function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms 
 
 
 const wSkypeNames = require("../personal.js").skypeNames;
+
+
+// of fucking btw , I've had this starred for who knows how fucking long
+// https://github.com/9and3r/mopidy-ttsgpio
 const BTN_MAN 	= require( "./buttonManager.js" );
+
 // Currently Importing This here ONLY for its Initialization Block
 const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" ); 
 
+const MOPIDY_MAN = require( "./mopidyManager.js" );
 
 
 var CURRENT_STATE = null;
@@ -31,10 +37,11 @@ async function BUTTON_PRESS_0( wArgArray ) {
 }
 
 async function BUTTON_PRESS_1( wArgArray ) {
-	wArgArray = wArgArray || [ "classic" ];
 	wcl( "PRESSED BUTTON 1" );
-	// MopidyManager.js Needs Rewritten to Use REDIS
 	if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
+	//CURRENT_STATE = await require( "./STATES/Mopidy_Foreground_YT_Live_Background.js" );
+	CURRENT_STATE = await require( "./STATES/Mopidy_Background.js" );
+	await CURRENT_STATE.start( "UNKNOWN" );
 }
 
 async function BUTTON_PRESS_2( wArgArray ) {
