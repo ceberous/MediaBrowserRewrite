@@ -6,6 +6,8 @@ const R_STATE = R_BASE + "ACTIVE";
 const R_PREVIOUS = R_BASE + "PREVIOUS";
 const R_STATE_NAME = "YOUTUBE_LIVE_BACKGROUND";
 
+function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
 async function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -28,6 +30,8 @@ function wPause() {
 function wStop() { 
 	return new Promise( async function( resolve , reject ) {
 		try {
+			await require( "../utils/xdotoolWrapper.js" ).mouseDoubleClick();
+			await wsleep( 1000 );
 			await require( "../firefoxManager.js" ).terminateFFWithClient(); 
 			resolve();
 		}

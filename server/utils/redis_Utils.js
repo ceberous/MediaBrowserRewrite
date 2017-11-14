@@ -58,6 +58,13 @@ function REDIS_SET_KEY( rInstance , wKey , wVal ) {
 	});
 }
 
+function REDIS_SET_HASH_MULTI( rInstance , ...args ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.hmset( ...args , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function REDIS_SET_MULTI( rInstance , wArgs ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.multi( wArgs ).exec( function( err , results ) { console.log( err ); resolve( results ); }); }
@@ -107,6 +114,7 @@ module.exports.getFullSet = REDIS_GET_FULL_SET;
 module.exports.getRandomSetMembers = REDIS_GET_RANDOM_SET_MEMBERS;
 module.exports.popRandomSetMembers = REDIS_POP_RANDOM_SET_MEMBERS;
 module.exports.setKey= REDIS_SET_KEY;
-module.exports.setMulti= REDIS_SET_MULTI;
-module.exports.setListFromArray= REDIS_SET_LIST_FROM_ARRAY;
-module.exports.setSetFromArray= REDIS_SET_SET_FROM_ARRAY;
+module.exports.setMulti = REDIS_SET_MULTI;
+module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
+module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;
+module.exports.setHashMulti = REDIS_SET_HASH_MULTI;

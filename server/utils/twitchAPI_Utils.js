@@ -5,6 +5,10 @@ const wTwitchKeys = require( "../../personal.js" ).twitch;
 //var wSES = [ process.argv[2] , process.argv[3] , process.argv[4] , process.argv[5] ];
 //console.log( wSES );
 
+
+const redis = require( "../../main.js" ).redis;
+const RU = require( "./redis_Utils.js" );
+
 function followUserName( wUserNameToFollow  ) {
 	return new Promise( function( resolve , reject ) {
 		try {
@@ -49,12 +53,68 @@ function getFollowers() {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-( async ()=> {
-	var r1 = await followUserName( "jovian" );
-	console.log( r1 );
-	var r2 = await getFollowers();
-	console.log( r2 );
-})();
+
+const R_TWITCH_LIVE_USERS = "TWITCH.LIVE_USERS";
+function UPDATE_LIVE_USERS() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await RU.delKey( redis , R_TWITCH_LIVE_USERS );
+			var xR = null;
+			//var fR = [];
+			var wTMP = [];
+			function parseResults() {
+				return new Promise( async function( resolve2 , reject2 ) {
+					try {
+						for ( var x1 = 0; x1 < xR[ "streams" ].length; ++x1 ) {
+							var t1 = new Date( xR[ "streams" ][ x1 ][ "created_at" ] );
+							var t2 = Math.round( t1.getTime() / 1000 );
+							var wOBJ = {
+								name: xR[ "streams" ][ x1 ][ "channel" ][ "display_name" ].toLowerCase() ,
+								game: xR[ "streams" ][ x1 ][ "game" ] ,
+								_id: xR[ "streams" ][ x1 ][ "_id" ] ,
+								start_time: t2 ,
+								resolution: xR[ "streams" ][ x1 ][ "video_height" ] ,
+								status: xR[ "streams" ][ x1 ][ "stream_type" ] ,
+							};
+							//fR.push( wOBJ );
+							// console.log( wOBJ.status );
+							// console.log( ( wOBJ.status === "live" ) ? true:false );
+							if ( wOBJ.status === "live" ) {
+								console.log( wOBJ );
+								wTMP.push( wOBJ.name );
+							}
+						}
+						if ( wTMP.length > 0 ) {
+							console.log( wTMP );
+							await RU.setSetFromArray( redis , R_TWITCH_LIVE_USERS , wTMP );
+						}
+						resolve2( wTMP );
+					}
+					catch( error ) { console.log( error ); reject2( error ); }
+				});
+			}
+			var wURL = "https://api.twitch.tv/kraken/streams/followed?client_id=" +
+			wTwitchKeys.client_id + "&oauth_token=" + wTwitchKeys.oauth_token + "&on_site=1";
+			request( wURL , async function ( err , response , body ) {
+		        //if ( err ) { wcl( err ); reject( err ); return; }
+				xR = JSON.parse( body );
+				if ( xR[ "error" ] ) { if ( xR[ "error"] === "Bad Request" ) { console.log( xR ); resolve( xR ); } }
+				var fr = await parseResults();
+				resolve( fr );
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.updateLiveUsers = UPDATE_LIVE_USERS;
+
+
+// ( async ()=> {
+// 	var r1 = await followUserName( "jovian" );
+// 	console.log( r1 );
+// 	var r2 = await getFollowers();
+// 	console.log( r2 );
+// })();
 
 module.exports.followUserName = followUserName;
 module.exports.unfollowUserName = unfollowUserName;

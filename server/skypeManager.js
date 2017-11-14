@@ -32,15 +32,13 @@ function ensureSkypeBinaryIsOpen() {
 				wcl( "Skype Binary NOT Open , Launching Now" );
 				fork( "./server/utils/skypeLauncher.js" );
 				//exec( "/usr/bin/skype" , { silent: true , async: false , detatched: true } );
-				await wSleep( 10000 );
+				await wSleep( 15000 );
 			}
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-
-
 
 function xRestorePreviousAction() {
 	if ( NEED_TO_RESTORE_SERVICE ) {

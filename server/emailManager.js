@@ -1,9 +1,12 @@
-require('shelljs/global');
+require("shelljs/global");
 const path = require("path");
 const notifier = require( "mail-notifier" );
 
+const redis = require( "../main.js" ).redis;
+const RU = require( "./utils/redis_Utils.js" );
+
 const wEmailCREDS = require( "../personal.js" ).emailServer;
-const wNotifyTwitchManViewerIsLive = require( "./twitchManager.js" ).followerIsNowLiveEmailUpdate;
+//const wNotifyTwitchManViewerIsLive = require( "./twitchManager.js" ).followerIsNowLiveEmailUpdate;
 
 const wPYSEmailScriptPath = path.join( __dirname , "py_scripts" , "sendEmail.py" );
 function wSendEmail( wMessageText , wSubject , wToEmailAddress ) {
@@ -33,13 +36,27 @@ const imap = {
 };
 const wEmailNotifier = notifier( imap );
 
-function parseTwitch( wMail ) {
+const R_TWITCH_LIVE_USERS = "TWITCH.LIVE_FOLLOWERS";
+function updateLiveFollowers( wFollower ) {
+  return new Promise( async function( resolve , reject ) {
+    try {
+    var current_live = await require( "./utils/twitchAPI_Utils.js" ).updateLiveUsers();
+    console.log( "Current Live Twitch Users = " );
+    console.log( current_live );
+    resolve();
+    }
+    catch( error ) { console.log( error ); reject( error ); }
+  });
+}
+
+async function parseTwitch( wMail ) {
     var wSubject = wMail.subject
     console.log( wSubject );
     var xx = wSubject.split( " " );
     var x1 = xx.shift();
     if ( xx[0] === "just" && xx[1] === "went" && xx[2] === "live" ) {
-      wNotifyTwitchManViewerIsLive( x1 );
+      //wNotifyTwitchManViewerIsLive( x1 );
+      await updateLiveFollowers( x1 );
     }
 }
 

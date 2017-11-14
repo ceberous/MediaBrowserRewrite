@@ -11,6 +11,9 @@ const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
 function wcl( wSTR ) { console.log( colors.black.bgRed( "[FIREFOX_MAN] --> " + wSTR ) ); }
 function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+// https://addons.mozilla.org/en-US/firefox/addon/r-kiosk/
+// http://www.brighthub.com/internet/google/articles/107735.aspx
+
 // about:config
 // browser.sessionstore.resume_from_crash = false
 const ffWrapper = {
@@ -147,8 +150,8 @@ const ffWrapper = {
 };
 
 
-wEmitter.on( "youtubeReadyForFullScreenGlitch" , function() { ffWrapper.youtubeFullScreen(); });
-wEmitter.on( "ffGlitchFullScreenTwitch" , function() { ffWrapper.twitchFullScreen(); });
+// wEmitter.on( "youtubeReadyForFullScreenGlitch" , function() { ffWrapper.youtubeFullScreen(); });
+// wEmitter.on( "ffGlitchFullScreenTwitch" , function() { ffWrapper.twitchFullScreen(); });
 
 module.exports.youtubeFullScreen = ffWrapper.youtubeFullScreen;
 module.exports.twitchFullScreen = ffWrapper.twitchFullScreen;
@@ -169,6 +172,18 @@ module.exports.terminateFFWithClient = function() {
 	});
 };
 
+module.exports.exitTwitch = function() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await xdoWrapper.resetFocus( ffWrapper.windowID );
+			await xdoWrapper.mouseDoubleClick();
+			await wsleep( 1000 );
+			ffWrapper.terminateFFAbsolute();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+};
 
 module.exports.openURL = function( wURL ) {
 	return new Promise( async function( resolve , reject ) {
@@ -177,6 +192,7 @@ module.exports.openURL = function( wURL ) {
 			if ( ffWrapper.isFFOpen() ) { ffWrapper.terminateFF(); await wsleep( 3000 ); }
 			
 			ffWrapper.launchFF_Rewrite();
+			await wsleep( 1000 );
 
 			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );			
 			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );

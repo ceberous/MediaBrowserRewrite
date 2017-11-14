@@ -9,8 +9,11 @@ function wGetWindowIDFromName( wName ) {
 	try {
 		var findName = 'xdotool search --name "' + wName + '"';
 		var wWindowID = exec( findName , { silent: true , async: false } );
+		if ( !wWindowID ) { return null; }
+		if ( wWindowID.stderr ) { return null; }
 		if ( wWindowID.stderr.length > 1 ) { wcl( "ERROR --> Could not Wrap FF Window" ); return null; }
 		var wF = wWindowID.stdout.trim();
+		//if ( wF.length < 1 ) { return null; }
 		wcl( "WindowID = " + wF );
 		return wF;
 	}
@@ -26,12 +29,12 @@ function  wEnsureWindowNameIsReady( wName ) {
 				//wExecSync("sleep 1");
 				await sleep( 1000 );
 				xFoundID = wGetWindowIDFromName( wName );
-				if ( xFoundID.length > 1 ) { xFound = true; }
+				if ( xFoundID !== null ) { xFound = true; }
 			}
 			wcl( "X-Window READY !!! " + xFoundID );
-			resolve(xFoundID);
+			resolve( xFoundID );
 		}
-		catch( error ){ wcl( error ); reject(); }
+		catch( error ){ wcl( error ); resolve( error ); }
 	});
 }
 
@@ -104,7 +107,7 @@ function wMouseDoubleClick() {
 function wPressKeyboardKey( wKey ) {
 	var fKeyPress = 'xdotool key ' + wKey.toString();
 	exec( fKeyPress , { silent: true , async: false } );
-	wcl( "f key pressed" );
+	wcl( wKey + " key pressed" );
 }
 
 module.exports.getWindowIDFromName 			= wGetWindowIDFromName;

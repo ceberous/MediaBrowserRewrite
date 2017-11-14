@@ -26,7 +26,7 @@ module.exports.setStagedFFClientTask = function( wOptions ) { STAGED_FF_CLIENT_T
 wEmitter.on( "sendFFClientMessage" , function( wMessage ) {
 	wss.clients.forEach( function each( ws ) { ws.send( JSON.stringify( { message: wMessage } ) ); });
 });
-function sendWebSocketMessage() {
+function sendStagedWebSocketMessage() {
 	wss.clients.forEach( function each( ws ) {
 		ws.send( STAGED_FF_CLIENT_TASK );
 	});
@@ -35,15 +35,20 @@ wss.on( "connection" ,  function( socket , req ) {
 	const ip = req.connection.remoteAddress;
 	socket.isAlive = true;
 	wcl( "New WebSocket Client Connected @@@ " + ip );
-	sendWebSocketMessage();
-	socket.on( "message" , function( message ) {
+	sendStagedWebSocketMessage();
+	socket.on( "message" ,  function( message ) {
 		switch( message ) {
 			case "pong":
 				//console.log( "inside pong()" );
 				this.isAlive = true;
 				break;
 			case "youtubeReadyForFullScreenGlitch":
-				wEmitter.emit( "youtubeReadyForFullScreenGlitch" );
+				require( "./server/firefoxManager.js" ).youtubeFullScreen();
+				//wEmitter.emit( "youtubeReadyForFullScreenGlitch" );
+				break;
+			case "twitchReadyForFullScreenGlitch":
+				require( "./server/firefoxManager.js" ).twitchFullScreen();
+				//wEmitter.emit( "twitchReadyForFullScreenGlitch" );
 				break;
 			default:
 				break;
