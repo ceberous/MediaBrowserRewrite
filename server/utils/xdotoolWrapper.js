@@ -5,6 +5,36 @@ var colors = require("colors");
 function wcl( wSTR ) { console.log( colors.blue.bgRed( "[XDO_TOOL_MAN] --> " + wSTR ) ); }
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+// [XDO_TOOL_MAN] --> WindowID = 
+// [XDO_TOOL_MAN] --> X-Window READY !!! 
+// [XDO_TOOL_MAN] --> ERROR --> Could not Activate Window ID
+// [XDO_TOOL_MAN] --> ERROR --> Could not Focus Window ID
+// [XDO_TOOL_MAN] --> ERROR --> Could not set Window ID to Full Screen
+// [XDO_TOOL_MAN] --> There are no windows in the stack
+// Invalid window '%1'
+// Invalid argument count, got 3, expected 2
+// Usage: windowsize [--sync] [--usehints] [window=%1] width height
+// If no window is given, %1 is used. See WINDOW STACK in xdotool(1)
+// --usehints  - Use window sizing hints (like font size in terminals)
+// --sync      - only exit once the window has resized
+
+// null
+// [MAIN] --> New WebSocket Client Connected @@@ ::ffff:192.168.0.71
+// [XDO_TOOL_MAN] --> ERROR --> Could not Activate Window ID
+// [XDO_TOOL_MAN] --> ERROR --> Could not Focus Window ID
+// [XDO_TOOL_MAN] --> ERROR --> Could not set Window ID to Full Screen
+// [XDO_TOOL_MAN] --> There are no windows in the stack
+// Invalid window '%1'
+// Invalid argument count, got 3, expected 2
+// Usage: windowsize [--sync] [--usehints] [window=%1] width height
+// If no window is given, %1 is used. See WINDOW STACK in xdotool(1)
+// --usehints  - Use window sizing hints (like font size in terminals)
+// --sync      - only exit once the window has resized
+
+// [XDO_TOOL_MAN] --> mouse double clicked
+
+
+
 function wGetWindowIDFromName( wName ) {
 	try {
 		var findName = 'xdotool search --name "' + wName + '"';
@@ -29,7 +59,7 @@ function  wEnsureWindowNameIsReady( wName ) {
 				//wExecSync("sleep 1");
 				await sleep( 1000 );
 				xFoundID = wGetWindowIDFromName( wName );
-				if ( xFoundID !== null ) { xFound = true; }
+				if ( xFoundID !== null  ) { if ( xFoundID.length > 1 ) { xFound = true; } }
 			}
 			wcl( "X-Window READY !!! " + xFoundID );
 			resolve( xFoundID );

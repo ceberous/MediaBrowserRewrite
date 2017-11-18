@@ -3,7 +3,7 @@ const mopidy = require( "../../mopidyManager.js" ).mopidy;
 function CLEAR_LIST() {
 	return new Promise( function( resolve , reject ) {
 		try { mopidy.tracklist.clear().then( function( result ) { resolve( "success" ); } ); }
-		catch( error ) { wcl( error ); reject( error ); } 
+		catch( error ) { console.log( error ); reject( error ); } 
 	});
 }
 

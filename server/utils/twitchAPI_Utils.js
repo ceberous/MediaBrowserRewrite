@@ -55,6 +55,7 @@ function getFollowers() {
 }
 
 const R_TWITCH_LIVE_USERS = "TWITCH.LIVE_USERS";
+const R_TWITCH_LIVE_TASK_PARITY = "TWITCH.LIVE_TASK_PARITY";
 function UPDATE_LIVE_USERS() {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -87,6 +88,7 @@ function UPDATE_LIVE_USERS() {
 						if ( wTMP.length > 0 ) {
 							console.log( wTMP );
 							await RU.setSetFromArray( redis , R_TWITCH_LIVE_USERS , wTMP );
+							await RU.setKey( redis , R_TWITCH_LIVE_TASK_PARITY , "true" );
 						}
 						resolve2( wTMP );
 					}

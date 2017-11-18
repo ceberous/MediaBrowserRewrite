@@ -1,8 +1,30 @@
+// https://stackoverflow.com/questions/13385029/automatically-start-forever-node-on-system-restart
+// https://github.com/zapty/forever-service
+// https://github.com/Unitech/pm2
+// https://github.com/chovy/node-startup
+
+// https://github.com/sindresorhus/p-retry
+// https://github.com/sindresorhus/p-timeout
+// https://github.com/sindresorhus/p-limit
+// https://github.com/sindresorhus/p-queue
+// https://github.com/sindresorhus/p-pipe
+// https://github.com/sindresorhus/p-reduce
+// https://github.com/sindresorhus/p-some
+// https://github.com/sindresorhus/p-all
+// https://github.com/sindresorhus/p-props
+// https://github.com/sindresorhus/p-if
+// https://github.com/sindresorhus/p-wait-for
+// https://github.com/sindresorhus/p-waterfall
+// https://github.com/sindresorhus/p-forever
+// https://github.com/sindresorhus/p-race
+// https://github.com/sindresorhus/p-map
+// https://github.com/sindresorhus/pify
+
 require("shelljs/global");
-const fs = require('fs');
+const fs = require("fs");
 const path = require("path");
 const colors = require("colors");
-var wEmitter = new (require('events').EventEmitter);
+var wEmitter = new (require("events").EventEmitter);
 module.exports.wEmitter = wEmitter;
 
 const REDIS = require("redis");

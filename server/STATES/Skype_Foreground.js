@@ -1,7 +1,9 @@
-function wStart( wSkypeNameToCall ) {
+const wSkypeNames = require("../../personal.js").skypeNames;
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../skypeManager.js" ).startCall( wSkypeNameToCall );
+			var name = wSkypeNames[ wOptions.personal_number ];
+			await require( "../skypeManager.js" ).startCall( name );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

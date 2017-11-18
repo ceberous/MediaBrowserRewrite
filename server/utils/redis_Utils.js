@@ -71,6 +71,13 @@ function REDIS_SET_MULTI( rInstance , wArgs ) {
 		catch( error ) { console.log( error ); resolve( "error" ); }
 	});
 }
+function REDIS_POP_RANDOM_FROM_SET( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.spop( wKey , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.llen( wKey , function( err , key ) { resolve( key ); }); }
@@ -118,3 +125,4 @@ module.exports.setMulti = REDIS_SET_MULTI;
 module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
 module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;
 module.exports.setHashMulti = REDIS_SET_HASH_MULTI;
+module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;

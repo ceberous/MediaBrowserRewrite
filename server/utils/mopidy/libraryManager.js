@@ -100,6 +100,19 @@ function UPDATE_CACHE() {
 	});
 }
 
+function UPDATE_PLAYLIST_GENRE() {
+	return new Promise( function( resolve , reject ) {
+		try {
+			// wcl( "UPDATING --> " + wPlaylistID + " <-- FROM " + wOldGenre + " TO --> " + wNewGenre );
+			// LIB_CACHE[ "playlists" ][ wNewGenre ][ wPlaylistID ] = LIB_CACHE[ "playlists" ][ wOldGenre ][ wPlaylistID ];
+			// delete LIB_CACHE[ "playlists" ][ wOldGenre ][ wPlaylistID ];
+			// WRITE_LIBRARY_CACHE();
+			resolve("success");
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function INITIALIZE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -113,3 +126,4 @@ function INITIALIZE() {
 }
 module.exports.initialize = INITIALIZE;
 module.exports.updateCache = UPDATE_CACHE;
+module.exports.updatePlaylistGenre = UPDATE_PLAYLIST_GENRE;

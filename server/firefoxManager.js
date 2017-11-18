@@ -36,9 +36,9 @@ const ffWrapper = {
 
 	isFFOpen: function() {
 
-		const ffBinaryLocation1 = '/usr/lib/firefox/firefox';
-		const ffBinaryLocation2 = '/bin/sh -c firefox';
-		const checkFFOpen = 'ps aux | grep firefox';
+		const ffBinaryLocation1 = "/usr/lib/firefox/firefox";
+		const ffBinaryLocation2 = "/bin/sh -c firefox";
+		const checkFFOpen = "ps aux | grep firefox";
 
 		var isFFOpen = exec( checkFFOpen , { silent:true , async: false } );
 		if ( isFFOpen.stderr.length > 1 ) { wcl( "ERROR --> Could not Locate FF Binary" ); return null; }

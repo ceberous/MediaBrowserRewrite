@@ -13,7 +13,7 @@ function wStart() {
 			await RU.setMulti( redis , [
 				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 				[ "set" , R_LM_Config_Genre , "TVShows" ] ,
-				[ "set" , R_LM_Config_AdvanceShow , "false" ] ,
+				[ "set" , R_LM_Config_AdvanceShow , "true" ] ,
 				[ "set" , R_LM_Config_SpecificShow , "false" ] ,
 				[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
 			]);

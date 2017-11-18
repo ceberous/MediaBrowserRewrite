@@ -2,11 +2,12 @@
 var MOPIDY_BASE = null;
 var YOUTUBE_MAN = null;
 
-function wStart() {
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			wGenre = wOptions.genre || "UNKNOWN";
 			MOPIDY_BASE = require( "./Mopidy_Background_Genre.js" );
-			await MOPIDY_BASE.start( "UNKNOWN" );
+			await MOPIDY_BASE.start( wGenre );
 			YOUTUBE_MAN = require( "./YT_Live_Background.js" );
 			await YOUTUBE_MAN.start();
 			resolve();
