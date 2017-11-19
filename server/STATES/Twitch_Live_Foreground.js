@@ -1,5 +1,6 @@
 const redis = require("../../main.js").redis;
 const RU = require( "../utils/redis_Utils.js" );
+const wEmitter = require( "../../main.js" ).wEmitter;
 
 const R_BASE = "LAST_SS.STATE.";
 const R_STATE = R_BASE + "ACTIVE";
@@ -27,8 +28,15 @@ function wStart( wUser ) {
 	});
 }
 
-function wPause() {
 
+function wPause() {
+	return new Promise( function( resolve , reject ) {
+		try {
+			wEmitter.emit( "sendFFClientMessage" , "pause" );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
 function wStop() {
@@ -41,6 +49,39 @@ function wStop() {
 	});	
 }
 
+function wNext( wNextChannelName ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			if ( wNextChannelName ) {
+				wEmitter.emit( "sendFFClientMessage" , "twitchLiveNewChannel" , wNextChannelName );
+			}
+			else {
+				wEmitter.emit( "sendFFClientMessage" , "next" );
+			}
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});	
+}
+
+function wPrevious( wNextChannelName ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			if ( wNextChannelName ) {
+				wEmitter.emit( "sendFFClientMessage" , "twitchLiveNewChannel" , wNextChannelName );
+			}
+			else {
+				wEmitter.emit( "sendFFClientMessage" , "previous" );
+			}
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});	
+}
+
+
 module.exports.start = wStart;
 module.exports.pause = wPause;
 module.exports.stop = wStop;
+module.exports.next = wNext;
+module.exports.previous = wPrevious;

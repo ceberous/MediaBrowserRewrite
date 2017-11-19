@@ -172,7 +172,7 @@ module.exports.terminateFFWithClient = function() {
 	});
 };
 
-module.exports.exitTwitch = function() {
+function EXIT_TWITCH() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await xdoWrapper.resetFocus( ffWrapper.windowID );
@@ -182,14 +182,20 @@ module.exports.exitTwitch = function() {
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
-	});
-};
+	});	
+}
+module.exports.exitTwitch = EXIT_TWITCH
 
 module.exports.openURL = function( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			
-			if ( ffWrapper.isFFOpen() ) { ffWrapper.terminateFF(); await wsleep( 3000 ); }
+			if ( ffWrapper.isFFOpen() ) {
+				wEmitter.emit( "sendFFClientMessage" , "shutdown" );
+				await wsleep( 3000 );
+				ffWrapper.terminateFF();
+				await wsleep( 3000 );
+			}
 			
 			ffWrapper.launchFF_Rewrite();
 			await wsleep( 1000 );

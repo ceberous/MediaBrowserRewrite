@@ -151,6 +151,12 @@ $(document).ready( function() {
 			case "YTStandardForeground":
 				waitForYoutubeReady( x1 );
 				break;
+			case "next":
+				YTIFrameManager.wPlayer.nextVideo();
+				break;
+			case "previous":
+				YTIFrameManager.wPlayer.previousVideo();
+				break;				
 			case "shutdown":
 				YTIFrameManager.wPlayer.destroy();
 				break;

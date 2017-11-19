@@ -55,8 +55,8 @@ function getFollowers() {
 }
 
 const R_TWITCH_LIVE_USERS = "TWITCH.LIVE_USERS";
-const R_TWITCH_LIVE_TASK_PARITY = "TWITCH.LIVE_TASK_PARITY";
-function UPDATE_LIVE_USERS() {
+const R_TWITCH_LIVE_USERS_INDEX = "TWITCH.LIVE_USERS_INDEX";
+function UPDATE_LIVE_USERS( wResetIndex ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await RU.delKey( redis , R_TWITCH_LIVE_USERS );
@@ -87,8 +87,8 @@ function UPDATE_LIVE_USERS() {
 						}
 						if ( wTMP.length > 0 ) {
 							console.log( wTMP );
-							await RU.setSetFromArray( redis , R_TWITCH_LIVE_USERS , wTMP );
-							await RU.setKey( redis , R_TWITCH_LIVE_TASK_PARITY , "true" );
+							await RU.setListFromArray( redis , R_TWITCH_LIVE_USERS , wTMP );
+							if ( !wResetIndex ) { await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 ); }
 						}
 						resolve2( wTMP );
 					}

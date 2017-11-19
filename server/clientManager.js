@@ -13,14 +13,11 @@ const RU = require( "./utils/redis_Utils.js" );
 // MODULES
 // ======================================================================
 // ======================================================================
-const BTN_MAN 	= require( "./buttonManager.js" );
-
-// Currently Importing This here ONLY for its Initialization Block
-const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" ); 
-
-const MOPIDY_MAN = require( "./mopidyManager.js" );
-
 const EMAIL_MAN = require( "./emailManager.js" );
+const BTN_MAN 	= require( "./buttonManager.js" );
+	// Currently Importing These here ONLY for Their Initialization Blocks
+const LOCAL_MEDIA_MAN = require( "./localMediaManager.js" ); 
+const MOPIDY_MAN = require( "./mopidyManager.js" );
 // ======================================================================
 // ======================================================================
 

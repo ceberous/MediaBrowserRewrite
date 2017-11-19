@@ -77,10 +77,10 @@ $(document).ready( function() {
 				startPlayer();
 				break;
 			case "twitchLiveNewChannel":
-				setNewChannel( data.newChannelName );
+				setNewChannel( x1.options );
 				break;
 			case "twitchLiveNewVideo":
-				setNewVideo( data.newVideoID );
+				setNewVideo( x1.options );
 				break;
 			case "pause":
 				TWITCH_PLAYER.pause();
