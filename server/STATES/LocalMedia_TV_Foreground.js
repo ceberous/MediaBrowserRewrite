@@ -7,15 +7,20 @@ const R_LM_Config_Genre = R_LM_Config_Base + "GENRE";
 const R_LM_Config_AdvanceShow = R_LM_Config_Base + "ADVANCE_SHOW";
 const R_LM_Config_SpecificShow = R_LM_Config_Base + "SPECIFIC_SHOW";
 const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
-function wStart() {
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			wOptions = wOptions || {
+				advance_show: "true" , 
+				specific_show: "false" ,
+				specific_episode: "false" ,
+			};
 			await RU.setMulti( redis , [
 				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 				[ "set" , R_LM_Config_Genre , "TVShows" ] ,
-				[ "set" , R_LM_Config_AdvanceShow , "true" ] ,
-				[ "set" , R_LM_Config_SpecificShow , "false" ] ,
-				[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
+				[ "set" , R_LM_Config_AdvanceShow , wOptions.advance_show ] ,
+				[ "set" , R_LM_Config_SpecificShow , wOptions.specific_show ] ,
+				[ "set" , R_LM_Config_SpecificEpisode , wOptions.specific_episode ] ,
 			]);
 			require( "../localMediaManager.js" ).play();
 			resolve();

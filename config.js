@@ -14,6 +14,6 @@ module.exports.BUTTON_TO_STATE_MAP = {
 	9: { state: null , label: "next" } ,
 	10: { state: "LocalMedia_Movie_Foreground" , options: {} } ,
 	11: { state: "LocalMedia_Odyssey_Foreground_YT_Live_Background" , options: {} } ,
-	12: { state: "LocalMedia_TV_Foreground" , options: {} } ,
+	12: { state: "LocalMedia_TV_Foreground" , options: { advance_show: "true" , specific_show: "false" , specific_episode: "false" } } ,
 
 };

@@ -30,25 +30,29 @@ function cleanupChildPROC() {
 	wcl( "Media is Over !!!" );
 }
 function wPlayFilePath( wFP ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			EMIT_OVER_EVENT = true;
+			
+			process.env.mplayerFP = fixPathSpace( wFP );
+			wcl( process.env.mplayerFP );
 
-	EMIT_OVER_EVENT = true;
-	
-	process.env.mplayerFP = fixPathSpace( wFP );
-	wcl( process.env.mplayerFP );
+			var wOptions = {
+				stdio: [ "pipe" , 1 , 2 , "ipc" ], // === 2 way communication
+				//stdio: [ null , null , 2 , "ipc" ], // === 1 way , from child to parent only
+				env: process.env
+			}; 
 
-	var wOptions = {
-		stdio: [ "pipe" , 1 , 2 , "ipc" ], // === 2 way communication
-		//stdio: [ null , null , 2 , "ipc" ], // === 1 way , from child to parent only
-		env: process.env
-	}; 
-
-	wPROC = spawn( "node" , [ mplayerWrapperScript_FP ] , wOptions );
-	wPROC.on( "message" , function( wMessage ) {
-		if ( wMessage.ended ) { if ( wMessage.ended === "UNREF_ME" ) { wPROC_TIME = Math.floor( wMessage.time ); cleanupChildPROC();  } }
-		if ( wMessage.status ) { /* console.log( wMessage.status ); */  wPROC_STATUS = wMessage.status; wPROC_DURATION = Math.floor( wMessage.status.duration ); }
-		if ( wMessage.time ) { var x1 = Math.floor( wMessage.time ); wPROC_TIME = ( x1 >= 1 ) ? x1 : wPROC_TIME; }
+			wPROC = spawn( "node" , [ mplayerWrapperScript_FP ] , wOptions );
+			wPROC.on( "message" , function( wMessage ) {
+				if ( wMessage.ended ) { if ( wMessage.ended === "UNREF_ME" ) { wPROC_TIME = Math.floor( wMessage.time ); cleanupChildPROC();  } }
+				if ( wMessage.status ) { /* console.log( wMessage.status ); */  wPROC_STATUS = wMessage.status; wPROC_DURATION = Math.floor( wMessage.status.duration ); }
+				if ( wMessage.time ) { var x1 = Math.floor( wMessage.time ); wPROC_TIME = ( x1 >= 1 ) ? x1 : wPROC_TIME; }
+			});	
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
 	});
-
 }
 
 function wQuit() { if ( wPROC !== null ) { wPROC.send( "quit" ); wPROC = null; return wPROC_TIME;  } }

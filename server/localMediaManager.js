@@ -320,72 +320,78 @@ function getLiveConfig() {
 	});
 }
 
-async function wPlay( skipping , previous ) {
+function wPlay( skipping , previous ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var FinalNowPlaying = {};
 
-	var FinalNowPlaying = {};
+			var lc = await getLiveConfig();
+			var liveLastPlayed = JSON.parse( lc[ 0 ] );
+			var liveConfig = lc[ 1 ];
+			//console.log( liveLastPlayed );
+			console.log( "\nLive Config === \n" );
+			console.log( liveConfig );
+			console.log("");
 
-	var lc = await getLiveConfig();
-	var liveLastPlayed = JSON.parse( lc[ 0 ] );
-	var liveConfig = lc[ 1 ];
-	console.log("");
-	console.log( liveLastPlayed );
-	console.log( liveConfig );
-	console.log("");
+			if ( previous ) { console.log("inside previous case"); FinalNowPlaying = await calculatePrevious( liveLastPlayed , liveConfig ); }
+			else if ( skipping ) { console.log("inside skipping case"); FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
 
-	if ( previous ) { console.log("inside previous case"); FinalNowPlaying = await calculatePrevious( liveLastPlayed , liveConfig ); }
-	else if ( skipping ) { console.log("inside skipping case"); FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
+			else if ( liveLastPlayed === null ) { // IF - Nothing ever watched in Genre
+				console.log( "genre is FRESH !!" );
+				const R_FirstShow = h1 + liveConfig[ 0 ] + ".META.UNEQ";
+				const showName = await RU.getFromSetByIndex( redis , R_FirstShow , 0 );
+				const R_FirstEpisodeFP = h1 + liveConfig[ 0 ] + ".FP." + showName + ".0";
+				const firstEpisode = await RU.getFromSetByIndex( redis , R_FirstEpisodeFP , 0 );
+				const firstEpFullPath = GLOBAL_INSTANCE_MOUNT_POINT + "/" + liveConfig[ 0 ] + "/" + showName + "/01/" + firstEpisode;
+				FinalNowPlaying = { 
+					genre: liveConfig[ 0 ] , uneq_idx: 0 , show_name: showName ,
+					season_idx: 0 , episode_idx: 0 , fp: firstEpFullPath ,
+					completed: false , cur_time: 0 , remaining_time: 0 ,
+					three_percent: 0 , duration: 0
+				};
+			}
+			else { // NOT Genre Fresh ---- NORMAL Case , aka just episode +1
+				console.log( "\nhere at stage 3" );
+				console.log( "not genre fresh !!" );
 
-	else if ( liveLastPlayed === null ) { // IF - Nothing ever watched in Genre
-		console.log( "genre is FRESH !!" );
-		const R_FirstShow = h1 + liveConfig[ 0 ] + ".META.UNEQ";
-		const showName = await RU.getFromSetByIndex( redis , R_FirstShow , 0 );
-		const R_FirstEpisodeFP = h1 + liveConfig[ 0 ] + ".FP." + showName + ".0";
-		const firstEpisode = await RU.getFromSetByIndex( redis , R_FirstEpisodeFP , 0 );
-		const firstEpFullPath = GLOBAL_INSTANCE_MOUNT_POINT + "/" + liveConfig[ 0 ] + "/" + showName + "/01/" + firstEpisode;
-		FinalNowPlaying = { 
-			genre: liveConfig[ 0 ] , uneq_idx: 0 , show_name: showName ,
-			season_idx: 0 , episode_idx: 0 , fp: firstEpFullPath ,
-			completed: false , cur_time: 0 , remaining_time: 0 ,
-			three_percent: 0 , duration: 0
-		};
-	}
-	else { // NOT Genre Fresh ---- NORMAL Case , aka just episode +1			
-		console.log( "not genre fresh !!" );
+				// If Previously Last-Played OBJ is NOT fully watched , restart then and seek to where was left off
+				if ( !liveLastPlayed.completed ) { FinalNowPlaying = liveLastPlayed; console.log( "not completed" ); }
+				// ELSE , calculate the **Next** playing-obj
+				else { FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); } 
+			}
 
-		// If Previously Last-Played OBJ is NOT fully watched , restart then and seek to where was left off
-		if ( !liveLastPlayed.completed ) { FinalNowPlaying = liveLastPlayed; console.log( "not completed" ); console.log( FinalNowPlaying ); }
-		// ELSE , calculate the **Next** playing-obj
-		else { FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); } 
-	}
+			// Populate Duration and Three-Percent Values
+			if ( FinalNowPlaying.three_percent === 0 ) {
+				FinalNowPlaying.duration = wGetDuration( FinalNowPlaying.fp );
+				FinalNowPlaying.three_percent = Math.floor( ( FinalNowPlaying.duration - ( FinalNowPlaying.duration * 0.025 ) ) );
+				console.log( "Duration === " + FinalNowPlaying.duration.toString() );
+				console.log( "Three Percent === " + FinalNowPlaying.three_percent.toString() );
+			}
 
-	// Populate Duration and Three-Percent Values
-	if ( FinalNowPlaying.three_percent === 0 ) {
-		FinalNowPlaying.duration = wGetDuration( FinalNowPlaying.fp );
-		FinalNowPlaying.three_percent = Math.floor( ( FinalNowPlaying.duration - ( FinalNowPlaying.duration * 0.025 ) ) );
-		console.log( "Duration === " + FinalNowPlaying.duration.toString() );
-		console.log( "Three Percent === " + FinalNowPlaying.three_percent.toString() );
-	}
+			console.log( "\nFinal Now Computed NowPlaying === \n" );
+			console.log( FinalNowPlaying );
 
-	console.log( FinalNowPlaying );
-
-	const x1 = JSON.stringify( FinalNowPlaying );
-	const R_NP_ShowName_BackupKey = R_LocalMedia_Base + liveConfig[ 0 ] + "." + FinalNowPlaying.show_name;
-	const R_Live_Genre_NP = R_LocalMedia_Base + liveConfig[ 0 ] + "." + "NOW_PLAYING";
-	await RU.setMulti( redis , [ [ "set" , R_Live_Genre_NP , x1 ] ,  [ "set" , R_NP_ShowName_BackupKey , x1 ] ]);
-
-
-	G_NOW_PLAYING = FinalNowPlaying;
-	G_R_Live_Genre_NP = R_Live_Genre_NP;
-	G_R_NP_ShowName_Backup = R_NP_ShowName_BackupKey;
+			const x1 = JSON.stringify( FinalNowPlaying );
+			const R_NP_ShowName_BackupKey = R_LocalMedia_Base + liveConfig[ 0 ] + "." + FinalNowPlaying.show_name;
+			const R_Live_Genre_NP = R_LocalMedia_Base + liveConfig[ 0 ] + "." + "NOW_PLAYING";
+			await RU.setMulti( redis , [ [ "set" , R_Live_Genre_NP , x1 ] ,  [ "set" , R_NP_ShowName_BackupKey , x1 ] ]);
 
 
-	console.log( "STARTING --> MPLAYER" );	
-	MPLAYER_MAN.playFilePath( FinalNowPlaying.fp );
-	if ( FinalNowPlaying.cur_time > 1 ) {
-		await wSleep( 1000 );
-		MPLAYER_MAN.seekSeconds( FinalNowPlaying.cur_time );
-	}
+			G_NOW_PLAYING = FinalNowPlaying;
+			G_R_Live_Genre_NP = R_Live_Genre_NP;
+			G_R_NP_ShowName_Backup = R_NP_ShowName_BackupKey;
 
+
+			console.log( "\nSTARTING --> MPLAYER" );	
+			await MPLAYER_MAN.playFilePath( FinalNowPlaying.fp );
+			if ( FinalNowPlaying.cur_time > 1 ) {
+				await wSleep( 1000 );
+				MPLAYER_MAN.seekSeconds( FinalNowPlaying.cur_time );
+			}
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
 function wPause() {

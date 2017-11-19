@@ -1,27 +1,19 @@
 const redis = require("../../main.js").redis;
 const RU = require( "../utils/redis_Utils.js" );
 
-const R_LocalMedia_Base = "LAST_SS.LOCAL_MEDIA.";
-const R_LM_Config_Base = "CONFIG.LOCAL_MEDIA.LIVE.";
-const R_LM_Config_Genre = R_LM_Config_Base + "GENRE";
-const R_LM_Config_AdvanceShow = R_LM_Config_Base + "ADVANCE_SHOW";
-const R_LM_Config_SpecificShow = R_LM_Config_Base + "SPECIFIC_SHOW";
-const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
-function wStart() {
+const R_STATE_BASE = "LAST_SS.STATE."
+const R_STATE_ACTIVE = R_STATE_BASE + ".ACTIVE";
+const R_STATE_PREVIOUS = R_STATE_BASE + ".PREVIOUS";
+const R_STATE_NAME = "LOCAL_MEDIA_ODYSSEY_FOREGROUND_YT_LIVE_BACKGROUND";
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			
-			await RU.setMulti( redis , [
-				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
-				[ "set" , R_LM_Config_Genre , "Odyssey" ] ,
-				[ "set" , R_LM_Config_AdvanceShow , "false" ] ,
-				[ "set" , R_LM_Config_SpecificShow , "false" ] ,
-				[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
-			]);
-			
-			require( "../localMediaManager.js" ).play();
+			var current_state = await RU.getKey( redis , R_STATE_ACTIVE );
+			current_state = current_state || "null";
+			wOptions = wOptions || null;
+			await require( "./LocalMedia_Odyseey_Foreground.js" ).start( wOptions );
 			await require( "./YT_Live_Background.js" ).start();
-
+			await RU.setMulti( redis , [ [ "set" , R_STATE_ACTIVE , R_STATE_NAME ] , [ "set" , R_STATE_PREVIOUS , current_state ] ] );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -31,7 +23,7 @@ function wStart() {
 function wPause() { 
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../localMediaManager.js" ).pause(); 
+			await require( "./LocalMedia_Odyseey_Foreground.js" ).pause();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -40,7 +32,7 @@ function wPause() {
 function wResume() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../localMediaManager.js" ).resume();
+			await require( "./LocalMedia_Odyseey_Foreground.js" ).resume();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -50,7 +42,7 @@ function wResume() {
 function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../localMediaManager.js" ).stop();
+			await require( "./LocalMedia_Odyseey_Foreground.js" ).stop();
 			await require( "./YT_Live_Background.js" ).stop();
 			resolve();
 		}
@@ -61,7 +53,7 @@ function wStop() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../localMediaManager.js" ).next();
+			await require( "./LocalMedia_Odyseey_Foreground.js" ).next();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -71,7 +63,7 @@ function wNext() {
 function wPrevious() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../localMediaManager.js" ).previous();
+			await require( "./LocalMedia_Odyseey_Foreground.js" ).previous();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

@@ -39,12 +39,13 @@ async function wPressButtonMaster( wButtonNum , wArgArray ) {
 	if ( wBTN_I > 12 || wBTN_I < 0 ) { return "out of range"; }
 	wSendButtonPressNotificationEmail( wButtonNum );
 	if ( BTN_TO_STATE_MAP[ wButtonNum ][ "state" ] !== null ) {
+		if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
 		var state_fp = path.join( __dirname , "STATES" ,  BTN_TO_STATE_MAP[ wButtonNum ][ "state" ] + ".js" );
 		wcl( "LAUNCHING STATE--->" );
 		wcl( state_fp );
 		CURRENT_STATE = require( state_fp );
 		wArgArray = wArgArray || BTN_TO_STATE_MAP[ wButtonNum ][ "options" ];
-		await CURRENT_STATE.start( BTN_TO_STATE_MAP[ wButtonNum ][ wArgArray ] );
+		await CURRENT_STATE.start( wArgArray );
 	}
 	else { wcl( "STATE ACTION --> " + BTN_TO_STATE_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_TO_STATE_MAP[ wButtonNum ][ "label" ] ](); }
 }
