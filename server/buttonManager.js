@@ -1,21 +1,39 @@
-var wEmitter = require('../main.js').wEmitter;
-var wPressButtonMaster = require("./clientManager.js").pressButtonMaster;
-var colors = require("colors");
-var fs = require("fs");
-var path = require("path");
-var StringDecoder = require("string_decoder").StringDecoder;
-var decoder = new StringDecoder('utf8');
-var spawn = require("child_process").spawn;
+const wEmitter = require('../main.js').wEmitter;
+const wPressButtonMaster = require("./clientManager.js").pressButtonMaster;
+const colors = require("colors");
+const fs = require("fs");
+const path = require("path");
+const StringDecoder = require("string_decoder").StringDecoder;
+const decoder = new StringDecoder('utf8');
+const spawn = require("child_process").spawn;
 require("shelljs/global");
 
 function wcl( wSTR ) { console.log( colors.yellow.bgBlack( "[BUTTON_MAN] --> " + wSTR ) ); }
 
+// https://blog.petrockblock.com/controlblock/
+// http://www.cuddleburrito.com/blog/2015/5/31/connecting-raspberry-pi-arcade-buttons-to-gpio
+// http://www.cuddleburrito.com/blog/2016/7/20/kodi-support-for-gpio-arcade-buttons-on-raspberry-pi
+// http://www.cuddleburrito.com/blog/2016/5/18/adding-rigidity-and-strength-to-the-frame
+// http://www.cuddleburrito.com/blog/2016/5/30/quick-electronics-frame-by-resin-filling-3d-prints
+// https://github.com/adafruit/Adafruit-Retrogame
 
+// https://www.linuxquestions.org/questions/linux-software-2/a-guide-to-set-nomachine-nx-3-5-x-up-on-debian-wheezy-and-possibly-others-917816/
+// http://www.debugpoint.com/2014/12/nomachine-a-remote-desktop-client-for-ubuntu/
+
+// https://www.nomachine.com/forums/topic/nomachine-behind-nat
+// https://www.nomachine.com/AR11L00827
+// https://wiki.x2go.org/doku.php/doc:newtox2go
+
+// https://www.reddit.com/r/NoMachine/comments/5z19yh/nomachine_over_wan_with_2_factor_authentication/?st=ja81xwvk&sh=c7f142c1
+// https://www.reddit.com/r/NoMachine/comments/5xxybf/nomachine_and_ssh/?st=ja81xzng&sh=fab7f1ab
+
+// https://wiki.x2go.org/doku.php/doc:installation:x2goserver
+
+const usbDeviceID = "usb-DragonRise_Inc._Generic_USB_Joystick-event-joystick";
+const findEventPath = 'ls -la /dev/input/by-id';
 function getUSBDeviceEventPath() {
 
-	var usbDeviceID = "usb-DragonRise_Inc._Generic_USB_Joystick-event-joystick";
-	var findEventPath = 'ls -la /dev/input/by-id';
-	var findEventPathCMD = exec( findEventPath , { silent:true , async: false });
+	var findEventPathCMD = exec( findEventPath , { silent:true , async: false } );
 	
 	if ( findEventPathCMD.stderr.length > 1 ) { wcl( "ERROR --> " + findEventPathCMD.stderr  ); }
 
@@ -43,7 +61,7 @@ function cleanseButtonENV() {
 	function isButtonScriptOpen() {
 
 		var wPIDS = [];
-		var wCMD1 = "ps aux | grep python";
+		const wCMD1 = "ps aux | grep python";
 		var findButton = exec( wCMD1 , { silent:true , async: false });
 		if ( findButton.stderr.length > 1 || findButton.stdout.length < 1 ) { return -1; }
 

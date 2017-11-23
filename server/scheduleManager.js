@@ -58,9 +58,3 @@ function REMOVE_SCHEDULED_JOB() {
 
 module.exports.addScheduledJob = ADD_SCHEDULED_JOB;
 module.exports.removeScheduledJob = REMOVE_SCHEDULED_JOB;
-
-// const wStartTime = 
-// const wStopTime = 
-// var j1 = schedule.scheduleJob( wStartTime , function() { if ( !JOB_OVERRIDE_HALEY_IS_HOME ) { BUTTON_PRESS_11(); } });
-// //var j2 = schedule.scheduleJob( wStopTime , function(){ if ( LAST_SS.CURRENT_ACTION === "YTLiveBackground" ) { BUTTON_PRESS_6(); } });
-// var j2 = schedule.scheduleJob( wStopTime , function(){ BUTTON_PRESS_6(); YOUTUBE_MAN.stopYTLiveBackground(); HALEY_HOME_OVERRIDED_ALREADY = false; } );

@@ -33,6 +33,63 @@
 // https://developer.vidyo.io/documentation/4-1-17-5/getting-started
 // https://vidyo.io/how-to-videos/
 
+// or this --> https://github.com/jitsi/jitsi-meet/blob/master/doc/api.md
+// https://meet.jit.si/external_api.js
+// https://github.com/jitsi/luajwt
+// ^^^^ how the fuck do I use JWT ??? why am I so retarded ???
+// https://github.com/saghul/jitsi-meet-api
+
+// https://www.zoiper.com/
+// http://www.counterpath.com/x-lite/
+// http://www.fring.com/
+
+// https://zoom.us/pricing
+// https://developer.zoom.us/
+
+// http://ekiga.org/
+// https://ubuntuforums.org/archive/index.php/t-309218.html
+
+// https://www.spiritdsp.com/
+
+// https://hubl.in/
+// https://github.com/linagora/hublin
+
+// https://github.com/RocketChat/Rocket.Chat
+
+// https://docs.ring.cx/dev/compiling_and_installing/daemon.html
+// https://github.com/sevaivanov/ring-api
+// https://github.com/savoirfairelinux/ring-daemon
+// https://github.com/sevaivanov/ring-for-the-web
+
+// https://tox.chat/
+// https://github.com/TokTok/c-toxcore
+// https://toxme.io/
+// https://wiki.tox.chat/developers/client_examples/echo_bot
+// https://github.com/qTox/qTox/blob/master/INSTALL.md#linux
+// https://github.com/qTox/qTox/issues/633
+
+// http://www.linphone.org/
+// https://askubuntu.com/questions/866131/what-are-the-sip-connection-parameters-for-an-ekiga-net-account
+// http://www.linphone.org/technical-corner/linphone/downloads
+// http://flatpak.org/getting.html
+// https://wiki.linphone.org/xwiki/wiki/public/view/Linphone/Linphone%20and%20Raspberry%20Pi/
+
+// https://github.com/peers/peerjs/
+// https://github.com/nttcom/peerjs/tree/master/examples
+// https://github.com/nttcom/peerjs/blob/master/examples/videochat/index.html
+
+// https://github.com/feross/simple-peer
+
+// https://www.twilio.com/webrtc
+// https://github.com/twilio/video-quickstart-js
+
+// https://github.com/jeremija/peer-calls
+
+// http://moose-team.github.io/friends/
+// http://pushertc.herokuapp.com/
+// https://blog.carbonfive.com/2014/10/16/webrtc-made-simple/
+
+// https://github.com/feross/lxjs-chat
 
 const wSkypeNames = require("../../personal.js").skypeNames;
 function wStart( wOptions ) {
