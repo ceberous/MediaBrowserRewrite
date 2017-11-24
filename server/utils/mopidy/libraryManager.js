@@ -22,7 +22,8 @@ function UPDATE_CACHE() {
 			var lastUpdatedTime = await RU.getKey( redis , R_LAST_UPDATE_TIME );
 			console.log( "lastUpdatedTime = " + lastUpdatedTime );
 			var wDiff = 0;
-			if ( lastUpdatedTime === null ) { lastUpdatedTime = "NEVER"; }
+			if ( !lastUpdatedTime ) { lastUpdatedTime = "NEVER"; }
+			else if ( lastUpdatedTime === null || lastUpdatedTime === undefined ) { lastUpdatedTime = "NEVER"; }
 			else { wDiff = ( timeNow - parseInt( lastUpdatedTime ) ); }
 			console.log( "DIFF = " + wDiff.toString() );
 			console.log( ( HOUR - wDiff ).toString() +  " SECONDS REMAINING UNTIL CACHE NEEDS UPDATED" );

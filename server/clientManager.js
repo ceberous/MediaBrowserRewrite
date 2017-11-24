@@ -9,19 +9,8 @@ function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms 
 const redis = require( "../main.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
-
-// MODULES
-// ======================================================================
-// ======================================================================
 const CEC_MAN		= require( "./utils/cecClientManager.js" );
 const EMAIL_MAN 	= require( "./emailManager.js" );
-const BTN_MAN 		= require( "./buttonManager.js" );
-	// Currently Importing These here ONLY for Their Initialization Blocks
-const LOCAL_MEDIA_MAN 	= require( "./localMediaManager.js" ); 
-const MOPIDY_MAN 		= require( "./mopidyManager.js" );
-// ======================================================================
-// ======================================================================
-
 
 var CURRENT_STATE = null;
 var BTN_MAP = require( "../config.js" ).BUTTON_MAP;
@@ -51,7 +40,7 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
 		if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
-		//CEC_MAN.activate();
+		CEC_MAN.activate();
 		if ( BTN_MAP[ wButtonNum ][ "session" ] ) {
 			launching_fp = path.join( __dirname , "SESSIONS" ,  BTN_MAP[ wButtonNum ][ "session" ] + ".js" );
 		}
@@ -71,4 +60,14 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 }
 module.exports.pressButtonMaster = wPressButtonMaster;
 
-const SCHEDULE_MAN 	= require( "./scheduleManager.js" );
+
+// MODULES
+// ======================================================================
+// ======================================================================
+const BTN_MAN 			= require( "./buttonManager.js" );
+	// Currently Importing These here ONLY for Their Initialization Blocks
+const LOCAL_MEDIA_MAN 	= require( "./localMediaManager.js" ); 
+const MOPIDY_MAN 		= require( "./mopidyManager.js" );
+const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
+// ======================================================================
+// ======================================================================

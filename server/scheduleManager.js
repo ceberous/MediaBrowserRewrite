@@ -24,6 +24,7 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 				}
 			}
 			if ( AllConditionsMet ) {
+				console.log( "starting scheduled job" );
 				wButtonMaster( STATE_TRANSITIONS[ job ][ "state" ] , STATE_TRANSITIONS[ job ][ "stateOptions" ] );
 			}
 			else { console.log( "condition not met for scheduled task" ); }
@@ -70,6 +71,8 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 				console.log( "all conditions were met !!!" );
 				// run update function()
 				const B_PATH = path.join( __dirname , ...UPDATE_JOBS[ job ][ "functionPath" ] );
+				console.log( "starting scheduled update func()" );
+				console.log( B_PATH );
 				if ( UPDATE_JOBS[ job ][ "functionName" ] ) {
 					require( B_PATH )[ UPDATE_JOBS[ job ][ "functionName" ] ]();
 				}

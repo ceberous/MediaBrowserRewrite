@@ -113,7 +113,6 @@ wcl( "@@PID=" + ButtonManager.pid );
 var lastPressed = new Date().getTime();
 var timeNow;
 var handleButtonInput = function(wInput) {
-
 	wInput = wInput.toString();
 	console.log(wInput);
 
@@ -125,7 +124,6 @@ var handleButtonInput = function(wInput) {
 	//wEmitter.emit( wE );
 	wInput = parseInt( wInput );
 	wPressButtonMaster( wInput );
-	
 };
 
 ButtonManager.stdout.on( "data" , function( data ) {
