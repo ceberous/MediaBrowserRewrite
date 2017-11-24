@@ -52,14 +52,16 @@ const h1 = "HARD_DRIVE.";
 
 	var FORCED_RESET = false;
 	//FORCED-CLEANSING
-	if ( ek.length > 0 ) {
-		ek = ek.map( x => [ "del" , x  ] );
-		await RU.setMulti( redis , ek );
-		FORCED_RESET = true;
-		console.log( "done cleansing instance" );
-	}
+	//if ( ek.length > 0 ) {
+		//ek = ek.map( x => [ "del" , x  ] );
+		//await RU.setMulti( redis , ek );
+		//FORCED_RESET = true;
+		//console.log( "done cleansing instance" );
+	//}
 
 	var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
+	mp = mp + "MEDIA_MANAGER";
+	console.log( mp );
 	//var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
 	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
 	GLOBAL_INSTANCE_MOUNT_POINT = mp;

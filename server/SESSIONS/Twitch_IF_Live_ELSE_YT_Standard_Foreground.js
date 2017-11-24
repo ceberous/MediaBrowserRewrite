@@ -63,7 +63,7 @@ function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			await require( "../utils/twitchAPI_Utils.js" ).followUserName( "exbc" );
+			//await require( "../utils/twitchAPI_Utils.js" ).followUserName( "exbc" );
 
 			var current_state = await RU.getKey( redis , R_STATE );
 			var wMulti = [ [ "set" , R_PREVIOUS , current_state ] ];

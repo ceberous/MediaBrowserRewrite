@@ -21,27 +21,27 @@ module.exports.BUTTON_MAP = {
 module.exports.SCHEDULES = {
 
 	STATE_TRANSITIONS: {
-		// arriveHome: {
-		// 	startPattern: "01 16 * * 1,2,3,5" ,
-		// 	endPattern: "01 18 * * 1,2,3,5" ,
-		// 	state: 11,
-		// 	stateOptions: null ,
-		// 	startConditions: { "CONFIG.ARRIVED_HOME": "false" } ,
-		// 	stopConditions: null ,
-		// 	startPID: null ,
-		// 	stopPID: null
-		// } ,
+		arriveHome: {
+		 	startPattern: "01 16 * * 1,2,3,5" ,
+		 	endPattern: "01 18 * * 1,2,3,5" ,
+		 	state: 11,
+		 	stateOptions: null ,
+		 	startConditions: { "CONFIG.ARRIVED_HOME": "false" } ,
+		 	stopConditions: null ,
+		 	startPID: null ,
+		 	stopPID: null
+		 } ,
 	} ,
 
 	// Paths Must be **relative** to scheduleManager.js
 	UPDATES: {
-		// gmusicPlaylistCache: {
-		// 	startPattern: "0 */3 * * *" , // every 3 hours
-		// 	startConditions: { "MOPIDY.STATE": "stopped" } ,
-		// 	funtionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
-		// 	functionName: "updateCache" ,
-		// 	jobPID: null
-		// }
+		 gmusicPlaylistCache: {
+		 	startPattern: "0 */3 * * *" , // every 3 hours
+		 	startConditions: { "MOPIDY.STATE": "stopped" } ,
+		 	funtionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
+		 	functionName: "updateCache" ,
+		 	jobPID: null
+		 }
 		// testUpdate: {
 		// 	startPattern: "* * * * *" , // every 1 minute ??
 		// 	startConditions: { "MOPIDY.STATE": "stopped" } ,

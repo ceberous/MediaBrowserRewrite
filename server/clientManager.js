@@ -60,6 +60,7 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 		}
 		wcl( "LAUNCHING STATE--->" );
 		wcl( launching_fp );
+		CURRENT_STATE = null;
 		CURRENT_STATE = require( launching_fp );
 		wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
 		await CURRENT_STATE.start( wOptions );
