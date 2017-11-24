@@ -1,18 +1,18 @@
-var colors = require("colors");
-var FeedParser = require("feedparser");
-var request = require("request");
-var cheerio = require("cheerio");
-var path = require("path");
+const colors = require("colors");
+const FeedParser = require("feedparser");
+const request = require("request");
+const cheerio = require("cheerio");
+const path = require("path");
 
 // Fucking Glory
 // https://github.com/toniov/p-iteration
 const { map } = require( "p-iteration" );
 
-var wEmitter	= require("../main.js").wEmitter;
+const wEmitter	= require("../main.js").wEmitter;
 //var wEmitter = new (require("events").EventEmitter);
 //module.exports.wEmitter = wEmitter;
 
-var redis = require( "../main.js" ).redis;
+const redis = require( "../main.js" ).redis;
 //var REDIS = require("redis");
 //var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );

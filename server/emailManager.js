@@ -34,7 +34,7 @@ const imap = {
   tls: true ,
   tlsOptions: { rejectUnauthorized: false }
 };
-const wEmailNotifier = notifier( imap );
+
 
 const R_TWITCH_LIVE_USERS = "TWITCH.LIVE_FOLLOWERS";
 function updateLiveFollowers( wFollower ) {
@@ -72,11 +72,23 @@ function parseEmail( wMail ) {
     }
 }
 
+var wEmailNotifier = null;
+
+function INITIALIZATION() {
+  return new Promise( async function( resolve , reject ) {
+    try {
+      wEmailNotifier = notifier( imap );
+      await wEmailNotifier.start();
+      console.log("Email Server-Client Connected");
+      wEmailNotifier.on( "mail" , ( mail ) => parseEmail( mail ) );
+      resolve( "connected" );
+    }
+    catch( error ) { resolve( "could not connect to email-server" ); }
+  });
+}
+
 ( async ()=> {
-  await wEmailNotifier.start();
-  console.log("Email Server-Client Connected");
-  wEmailNotifier.on( "end" , () => wEmailNotifier.start() );
-  wEmailNotifier.on( "mail" , ( mail ) => parseEmail( mail ) )
+  await INITIALIZATION();
 })();
 
 module.exports.sendEmail = wSendEmail;

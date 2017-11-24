@@ -2,8 +2,8 @@ const redis = require("../../main.js").redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 const R_STATE_BASE = "LAST_SS.STATE."
-const R_STATE_ACTIVE = R_STATE_BASE + ".ACTIVE";
-const R_STATE_PREVIOUS = R_STATE_BASE + ".PREVIOUS";
+const R_STATE_ACTIVE = R_STATE_BASE + "ACTIVE";
+const R_STATE_PREVIOUS = R_STATE_BASE + "PREVIOUS";
 const R_STATE_NAME = "LOCAL_MEDIA_ODYSSEY_FOREGROUND_YT_LIVE_BACKGROUND";
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {

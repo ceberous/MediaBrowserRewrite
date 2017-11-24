@@ -45,6 +45,7 @@ function setNewVideo( wVideoID ) { TWITCH_PLAYER.setVideo( wVideoID ); }
 var FULL_SCREEN = false;
 var TWITCH_PLAYER = null;
 var LIVE_USERS = null;
+var LIVE_USERS_INDEX = 0;
 
 var socket = null;
 var webSocketConnectionString = "ws://" + socketServerAddress + ":" + socketPORT;
@@ -77,7 +78,9 @@ $(document).ready( function() {
 				startPlayer();
 				break;
 			case "twitchLiveNewChannel":
-				setNewChannel( x1.options );
+				LIVE_USERS_INDEX += 1;
+				if ( LIVE_USERS_INDEX === LIVE_USERS.length ) { LIVE_USERS_INDEX = 0; }
+				setNewChannel( LIVE_USERS[ LIVE_USERS_INDEX ] );
 				break;
 			case "twitchLiveNewVideo":
 				setNewVideo( x1.options );

@@ -1,7 +1,7 @@
 
 
 function wStart() {
-	console.log( "this is fucking state 13 bitch" );
+	console.log( "this is fucking state 13 bitch akaa a session!" );
 }
 
 function wStop() {

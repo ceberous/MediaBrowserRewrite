@@ -97,7 +97,7 @@ server.listen( port , function() {
 	wcl( "\thttp://localhost:" + port );
 });
 
-process.on('SIGINT', function () {
+process.on( "SIGINT" , function () {
 	wEmitter.emit( "closeEverything" );
 	setTimeout( ()=> {
 		exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );

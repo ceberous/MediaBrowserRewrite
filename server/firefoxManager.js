@@ -203,7 +203,7 @@ module.exports.openURL = function( wURL ) {
 			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );			
 			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );
 
-			await wsleep( 500 );
+			await wsleep( 2000 );
 			ffWrapper.openNewTab( wURL );
 			
 			resolve();

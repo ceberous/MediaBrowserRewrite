@@ -25,7 +25,7 @@ function RESTART_AS_YOUTUBE() {
 			CURRENT_MAN_NAME = "youtube";
 			await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
 			await RU.setKey( redis , R_STATE , R_STATE_NAME_YOUTUBE );
-			CUR_MAN = require( "./YT_Standard_Foreground.js" );
+			CUR_MAN = require( "../STATES/YT_Standard_Foreground.js" );
 			await CUR_MAN.start();
 			resolve();
 		}
@@ -63,7 +63,7 @@ function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			//await require( "../utils/twitchAPI_Utils.js" ).followUserName( "chess" );
+			await require( "../utils/twitchAPI_Utils.js" ).followUserName( "exbc" );
 
 			var current_state = await RU.getKey( redis , R_STATE );
 			var wMulti = [ [ "set" , R_PREVIOUS , current_state ] ];
@@ -85,10 +85,10 @@ function wStart() {
 				else {
 					wMulti.push( [ "set" , R_STATE , R_STATE_NAME_TWITCH ] );
 					CURRENT_MAN_NAME = "twitch";
-					CUR_MAN = require( "./Twitch_Live_Foreground.js" );
+					CUR_MAN = require( "../STATES/Twitch_Live_Foreground.js" );
 					await CUR_MAN.start( ACTIVE_TWITCH_USER_NAME );
 					CHECK_LIVE_INT = setInterval( LIVE_CHECK_INT , 120000 );
-					if ( c_index === 0 ) { await RU.incrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX ); }
+					//if ( c_index === 0 ) { await RU.incrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX ); }
 				}
 			}
 			else { await RESTART_AS_YOUTUBE(); }

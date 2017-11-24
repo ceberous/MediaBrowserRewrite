@@ -25,7 +25,7 @@ const MOPIDY_MAN 		= require( "./mopidyManager.js" );
 var CURRENT_STATE = null;
 var BTN_TO_STATE_MAP = require( "../config.js" ).BUTTON_TO_STATE_MAP;
 
-const R_ARRIVE_HOME = "CONFIG.ARRIVE_HOME";
+const R_ARRIVE_HOME = "CONFIG.ARRIVED_HOME";
 async function wSendButtonPressNotificationEmail( wButtonNum ) {
 	const x1 = "MB-Pressed--" + wButtonNum.toString();
 	const dNow = new Date();
@@ -47,16 +47,22 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 	var wBTN_I = parseInt( wButtonNum );
 	if ( wBTN_I > 13 || wBTN_I < 0 ) { return "out of range"; }
 	wSendButtonPressNotificationEmail( wButtonNum );
-	if ( BTN_TO_STATE_MAP[ wButtonNum ][ "state" ] !== null ) {
+	var launching_fp = null;
+	if ( BTN_TO_STATE_MAP[ wButtonNum ][ "state" ] || BTN_TO_STATE_MAP[ wButtonNum ][ "session" ] ) {
 		if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
-		var state_fp = path.join( __dirname , "STATES" ,  BTN_TO_STATE_MAP[ wButtonNum ][ "state" ] + ".js" );
+		if ( BTN_TO_STATE_MAP[ wButtonNum ][ "session" ] ) {
+			launching_fp = path.join( __dirname , "SESSIONS" ,  BTN_TO_STATE_MAP[ wButtonNum ][ "session" ] + ".js" );
+		}
+		else {
+			launching_fp = path.join( __dirname , "STATES" ,  BTN_TO_STATE_MAP[ wButtonNum ][ "state" ] + ".js" );
+		}
 		wcl( "LAUNCHING STATE--->" );
-		wcl( state_fp );
-		CURRENT_STATE = require( state_fp );
+		wcl( launching_fp );
+		CURRENT_STATE = require( launching_fp );
 		wOptions = wOptions || BTN_TO_STATE_MAP[ wButtonNum ][ "options" ];
 		await CURRENT_STATE.start( wOptions );
 	}
-	else { wcl( "STATE ACTION --> " + BTN_TO_STATE_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_TO_STATE_MAP[ wButtonNum ][ "label" ] ](); }
+	else { if ( CURRENT_STATE ) { wcl( "STATE ACTION --> " + BTN_TO_STATE_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_TO_STATE_MAP[ wButtonNum ][ "label" ] ](); } }
 }
 module.exports.pressButtonMaster = wPressButtonMaster;
 

@@ -77,6 +77,7 @@ mopidy.on( "event:trackPlaybackStarted" , async function ( wEvent ) {
 
 mopidy.on( "event:playbackStateChanged" , async function ( wEvent ) {
 	await sleep( 3000 );
+	await RU.setKey( redis , "MOPIDY.STATE" , wEvent );
 	wcl( "PLAYBACK --> CHANGED --> " );
 	console.log( wEvent );
 });

@@ -52,12 +52,13 @@ function wStop() {
 function wNext( wNextChannelName ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			if ( wNextChannelName ) {
-				wEmitter.emit( "sendFFClientMessage" , "twitchLiveNewChannel" , wNextChannelName );
-			}
-			else {
-				wEmitter.emit( "sendFFClientMessage" , "next" );
-			}
+			// if ( wNextChannelName ) {
+			// 	wEmitter.emit( "sendFFClientMessage" , "twitchLiveNewChannel" , wNextChannelName );
+			// }
+			// else {
+			// 	wEmitter.emit( "sendFFClientMessage" , "next" );
+			// }
+			await wStart( wNextChannelName );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
