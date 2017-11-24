@@ -50,15 +50,6 @@ const h1 = "HARD_DRIVE.";
 
 	var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
 
-	var FORCED_RESET = false;
-	//FORCED-CLEANSING
-	//if ( ek.length > 0 ) {
-		//ek = ek.map( x => [ "del" , x  ] );
-		//await RU.setMulti( redis , ek );
-		//FORCED_RESET = true;
-		//console.log( "done cleansing instance" );
-	//}
-
 	var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
 	mp = mp + "MEDIA_MANAGER";
 	console.log( mp );
@@ -66,7 +57,7 @@ const h1 = "HARD_DRIVE.";
 	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
 	GLOBAL_INSTANCE_MOUNT_POINT = mp;
 
-	if ( FORCED_RESET || ek.length < 1 ) { 
+	if ( ek.length < 1 ) { 
 		var x1 = await require( "./utils/localMedia_Util" ).buildHardDriveReference( mp ); // we alll know this is cancer. but fml
 		for ( var wGenre in x1 ) {
 			var x1Shows = Object.keys( x1[ wGenre ] );
@@ -89,16 +80,6 @@ const h1 = "HARD_DRIVE.";
 		}
 		console.log( "done building HD_REF" );
 	}
-
-	// await RU.setMulti( redis , [
-	// 	[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
-	// 	[ "set" , R_LM_Config_Genre , "TVShows" ] ,
-	// 	[ "set" , R_LM_Config_AdvanceShow , "false" ] ,
-	// 	[ "set" , R_LM_Config_SpecificShow , "false" ] ,
-	// 	[ "set" , R_LM_Config_SpecificEpisode , "false" ] ,
-	// ]);
-
-	// wPlay();
 
 })();
 

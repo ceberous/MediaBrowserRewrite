@@ -1,4 +1,4 @@
-
+const { map } = require( "p-iteration" );
 
 function REDIS_GET_KEYS_FROM_PATTERN( rInstance , wPattern ) {
 	return new Promise( function( resolve , reject ) {
@@ -130,6 +130,26 @@ function REDIS_SELECT_DATABASE( rInstance , wNumber ) {
 	});
 }
 
+function REDIS_DELETE_MULTIPLE_PATTERNS( rInstance , wKeyPatterns ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var del_keys = await map( wKeyPatterns , wPattern => REDIS_GET_KEYS_FROM_PATTERN( rInstance , wPattern ) );
+			del_keys = [].concat.apply( [] , del_keys );
+			console.log( "\ndeleteing these keys --> \n" );
+			console.log( del_keys );
+			
+			if ( del_keys.length > 0 ) {
+				del_keys = del_keys.map( x => [ "del" , x  ] );
+				await REDIS_SET_MULTI( rInstance , del_keys );
+			}
+
+			console.log( "done CLEANSING all R_KEYS" );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
@@ -149,5 +169,6 @@ module.exports.setHashMulti = REDIS_SET_HASH_MULTI;
 module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;
 module.exports.incrementInteger = REDIS_INCREMENT_INTEGER;
 module.exports.decrementInteger = REDIS_DECREMENT_INTEGER;
+module.exports.deleteMultiplePatterns = REDIS_DELETE_MULTIPLE_PATTERNS;
 
 module.exports.selectDatabase = REDIS_SELECT_DATABASE;

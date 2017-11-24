@@ -1,3 +1,5 @@
+// Eventually this will get moved to a JSON struct
+
 module.exports.USB_DRIVE_UUID = "2864E38A64E358D8";
 
 module.exports.BUTTON_MAP = {
@@ -17,6 +19,9 @@ module.exports.BUTTON_MAP = {
 	13: { session: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" , options: {} }
 };
 
+module.exports.INITIALIZATION_CONFIG = {
+	//R_DB_RESETS: [ "HARD_DRIVE.*" , "YOU_TUBE.*" ]
+};
 
 module.exports.SCHEDULES = {
 

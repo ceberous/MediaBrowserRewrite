@@ -38,17 +38,6 @@ const Default_Standard_Blacklist = [];
 ( async ()=> {
 	
 	var ek = await RU.getKeysFromPattern( redis , "YOU_TUBE.*" );
-
-	//FORCED-CLEANSING
-	if ( ek.length > 0 ) {
-		ek = ek.map( x => [ "del" , x  ] );
-		console.log( ek );
-		await RU.setMulti( redis , ek );
-		console.log( "done cleansing instance" );
-		ek = [];
-		await wSleep( 1000 ); // because remote ?? if not here , causes isues
-	}
-	
 	// Repopulate Redis Structure if Nothing Exists
 	// build up everything into the 1st array 
 	// please ignore naming , it is a storgae container

@@ -25,6 +25,9 @@ function RESTART_AS_YOUTUBE() {
 			CURRENT_MAN_NAME = "youtube";
 			await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
 			await RU.setKey( redis , R_STATE , R_STATE_NAME_YOUTUBE );
+			try { delete require.cache[ CURRENT_MAN_NAME ]; }
+			catch ( e ) {}
+			CUR_MAN = null;
 			CUR_MAN = require( "../STATES/YT_Standard_Foreground.js" );
 			await CUR_MAN.start();
 			resolve();
@@ -87,7 +90,7 @@ function wStart() {
 					CURRENT_MAN_NAME = "twitch";
 					CUR_MAN = require( "../STATES/Twitch_Live_Foreground.js" );
 					await CUR_MAN.start( ACTIVE_TWITCH_USER_NAME );
-					CHECK_LIVE_INT = setInterval( LIVE_CHECK_INT , 120000 );
+					CHECK_LIVE_INT = setInterval( LIVE_CHECK_INT , 60000 );
 					//if ( c_index === 0 ) { await RU.incrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX ); }
 				}
 			}
@@ -115,6 +118,7 @@ function wStop() {
 		try {
 			await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
 			await CUR_MAN.stop();
+			if ( CHECK_LIVE_INT ) { clearInterval( CHECK_LIVE_INT ); }
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
