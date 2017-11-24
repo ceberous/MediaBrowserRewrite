@@ -1,11 +1,13 @@
 require( "shelljs/global" );
 const path = require("path");
 
-var wEmitter	= require("../main.js").wEmitter;
+const USB_DRIVE_UUID = require( "../config.js" ).USB_DRIVE_UUID;
+
+const wEmitter	= require("../main.js").wEmitter;
 //var wEmitter = new (require("events").EventEmitter);
 //module.exports.wEmitter = wEmitter;
 
-var redis = require( "../main.js" ).redis;
+const redis = require( "../main.js" ).redis;
 //var REDIS = require("redis");
 //var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );
@@ -50,15 +52,15 @@ const h1 = "HARD_DRIVE.";
 
 	var FORCED_RESET = false;
 	//FORCED-CLEANSING
-	// if ( ek.length > 0 ) {
-	// 	ek = ek.map( x => [ "del" , x  ] );
-	// 	await RU.setMulti( redis , ek );
-	// 	FORCED_RESET = true;
-	// 	console.log( "done cleansing instance" );
-	// }
+	if ( ek.length > 0 ) {
+		ek = ek.map( x => [ "del" , x  ] );
+		await RU.setMulti( redis , ek );
+		FORCED_RESET = true;
+		console.log( "done cleansing instance" );
+	}
 
-	//var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( "2864E38A64E358D8" );
-	var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
+	var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
+	//var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
 	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
 	GLOBAL_INSTANCE_MOUNT_POINT = mp;
 

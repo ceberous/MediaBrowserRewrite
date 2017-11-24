@@ -88,7 +88,8 @@ function UPDATE_LIVE_USERS( wResetIndex ) {
 						if ( wTMP.length > 0 ) {
 							console.log( wTMP );
 							await RU.setListFromArray( redis , R_TWITCH_LIVE_USERS , wTMP );
-							if ( !wResetIndex ) { await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 ); }
+							//if ( !wResetIndex ) { await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 ); }
+							await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
 						}
 						resolve2( wTMP );
 					}

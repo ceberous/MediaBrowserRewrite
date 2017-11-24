@@ -11,11 +11,14 @@ const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			wOptions = wOptions || {
-				advance_show: "false" , 
-				specific_show: "false" ,
-				specific_episode: "false" ,
-			};
+			if ( !wOptions ) {
+				console.log( "not wOptions ??" );
+				var wOptions = {
+					advance_show: "false" , 
+					specific_show: "false" ,
+					specific_episode: "false" ,
+				};
+			}
 			await RU.setMulti( redis , [
 				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 				[ "set" , R_LM_Config_Genre , "Odyssey" ] ,

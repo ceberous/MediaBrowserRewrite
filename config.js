@@ -1,9 +1,9 @@
+module.exports.USB_DRIVE_UUID = "2864E38A64E358D8";
 
-
-module.exports.BUTTON_TO_STATE_MAP = {
+module.exports.BUTTON_MAP = {
 	0: { state: "YT_Live_Background" , options: {} } ,
-	1: { state: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" } } ,
-	2: { state: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
+	1: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" } } ,
+	2: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
 	3: { session: "Twitch_IF_Live_ELSE_YT_Standard_Foreground" , options: {} } ,
 	4: { state: "Skype_Foreground" , options: { personal_number: 1 } } ,
 	5: { state: "Skype_Foreground" , options: { personal_number: 2 } } ,
@@ -12,7 +12,7 @@ module.exports.BUTTON_TO_STATE_MAP = {
 	8: { label: "previous" } ,
 	9: { label: "next" } ,
 	10: { state: "LocalMedia_Movie_Foreground" , options: {} } ,
-	11: { state: "LocalMedia_Odyssey_Foreground_YT_Live_Background" , options: {} } ,
+	11: { session: "LocalMedia_Odyssey_Foreground_YT_Live_Background" , options: {} } ,
 	12: { state: "LocalMedia_TV_Foreground" , options: { advance_show: "true" , specific_show: "false" , specific_episode: "false" } } ,
 	13: { session: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" , options: {} }
 };
@@ -27,17 +27,6 @@ module.exports.SCHEDULES = {
 		// 	state: 11,
 		// 	stateOptions: null ,
 		// 	startConditions: { "CONFIG.ARRIVED_HOME": "false" } ,
-		// 	stopConditions: null ,
-		// 	startPID: null ,
-		// 	stopPID: null
-		// } ,
-		
-		// testSession: {
-		// 	startPattern: "* * * * *" ,
-		// 	endPattern: "01 18 * * 1,2,3,5" ,
-		// 	state: 13,
-		// 	stateOptions: null ,
-		// 	//startConditions: { "CONFIG.ARRIVED_HOME": "false" } ,
 		// 	stopConditions: null ,
 		// 	startPID: null ,
 		// 	stopPID: null

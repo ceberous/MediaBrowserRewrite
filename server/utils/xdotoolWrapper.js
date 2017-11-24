@@ -43,6 +43,8 @@ function wGetWindowIDFromName( wName ) {
 		if ( wWindowID.stderr ) { return null; }
 		if ( wWindowID.stderr.length > 1 ) { wcl( "ERROR --> Could not Wrap FF Window" ); return null; }
 		var wF = wWindowID.stdout.trim();
+		wF = wF.split("\n");
+		wF = wF.pop();
 		//if ( wF.length < 1 ) { return null; }
 		wcl( "WindowID = " + wF );
 		return wF;
@@ -160,7 +162,7 @@ module.exports.setFullScreen = function( wID , wScreenNum ) {
 
 	setTimeout( function(){
 		wSetWindowIDFocus( wID );
-	} , 500 );
+	} , 1000 );
 	setTimeout( function() {
 		//wWindowMove( wID , wScreenNum );
 	} , 2000 );

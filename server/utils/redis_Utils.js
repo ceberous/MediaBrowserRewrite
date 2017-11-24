@@ -123,6 +123,13 @@ function REDIS_DECREMENT_INTEGER( rInstance , wKey ) {
 	});
 }
 
+function REDIS_SELECT_DATABASE( rInstance , wNumber ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.select( wNumber , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
@@ -142,3 +149,5 @@ module.exports.setHashMulti = REDIS_SET_HASH_MULTI;
 module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;
 module.exports.incrementInteger = REDIS_INCREMENT_INTEGER;
 module.exports.decrementInteger = REDIS_DECREMENT_INTEGER;
+
+module.exports.selectDatabase = REDIS_SELECT_DATABASE;

@@ -27,7 +27,7 @@ const R_YT_LIVE_LATEST_VIDEOS = R_YT_Base + "LIVE.LATEST";
 const R_YT_LIVE_FOLLOWERS = R_YT_Base + "LIVE.FOLLOWERS.";
 const Default_Live_Followers = [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ];
 const R_YT_LIVE_BLACKLIST = R_YT_Base + "LIVE.BLACKLIST";
-const Default_Live_Blacklist = [ "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , "nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ];
+const Default_Live_Blacklist = [ "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , "nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ];
 
 const R_YT_STANDARD_FOLLOWERS = R_YT_Base + "STANDARD.FOLLOWERS.";
 const R_YT_STANDARD_FOLLOWERS_UNEQ = R_YT_STANDARD_FOLLOWERS + "UNEQ";
@@ -40,14 +40,14 @@ const Default_Standard_Blacklist = [];
 	var ek = await RU.getKeysFromPattern( redis , "YOU_TUBE.*" );
 
 	//FORCED-CLEANSING
-	// if ( ek.length > 0 ) {
-	// 	ek = ek.map( x => [ "del" , x  ] );
-	// 	console.log( ek );
-	// 	await RU.setMulti( redis , ek );
-	// 	console.log( "done cleansing instance" );
-	// 	ek = [];
-	// 	await wSleep( 1000 ); // because remote ?? if not here , causes isues
-	// }
+	if ( ek.length > 0 ) {
+		ek = ek.map( x => [ "del" , x  ] );
+		console.log( ek );
+		await RU.setMulti( redis , ek );
+		console.log( "done cleansing instance" );
+		ek = [];
+		await wSleep( 1000 ); // because remote ?? if not here , causes isues
+	}
 	
 	// Repopulate Redis Structure if Nothing Exists
 	// build up everything into the 1st array 
