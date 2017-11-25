@@ -103,7 +103,7 @@ function loadHandlers() {
 	redis = REDIS.createClient( "8443" , "localhost" );
 	//await RU.selectDatabase( redis , 3 ); // testing
 	await wsleep( 1000 );
-	if ( INIT_CONFIG.R_DB_RESETS ) {
+	if ( INIT_CONFIG.RESETS ) {
 		await RU.deleteMultiplePatterns( redis , INIT_CONFIG.RESETS );
 	}
 	if ( INIT_CONFIG.KEYS ) {
