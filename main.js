@@ -101,7 +101,7 @@ function loadHandlers() {
 	fs.writeFileSync( path.join( __dirname , "client" , "js" , "webSocketServerAddress.js" ) , wSIP );
 	
 	redis = REDIS.createClient( "8443" , "localhost" );
-	await RU.selectDatabase( redis , 3 ); // testing
+	//await RU.selectDatabase( redis , 3 ); // testing
 	await wsleep( 1000 );
 	if ( INIT_CONFIG.R_DB_RESETS ) {
 		await RU.deleteMultiplePatterns( redis , INIT_CONFIG.RESETS );
