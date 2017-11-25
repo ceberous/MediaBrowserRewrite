@@ -21,7 +21,8 @@ module.exports.BUTTON_MAP = {
 
 module.exports.REDIS_INIT = {
 	KEYS: {
-		"CONFIG.ARRIVED_HOME": "false"
+		"CONFIG.ARRIVED_HOME": "false" ,
+		"MOPIDY.STATE": "stopped" 
 	} ,
 	RESETS: [ /*"HARD_DRIVE.*"*/ , "YOU_TUBE.*" ]
 };
@@ -44,7 +45,7 @@ module.exports.SCHEDULES = {
 	// Paths Must be **relative** to scheduleManager.js
 	UPDATES: {
 		gmusicPlaylistCache: {
-			startPattern: "0 */3 * * *" , // every 3 hours
+			startPattern: "0 */1 * * *" , // every 1 hours
 			startConditions: { "MOPIDY.STATE": "stopped" } ,
 			funtionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 			functionName: "updateCache" ,

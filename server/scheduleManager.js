@@ -4,8 +4,9 @@ const redis = require( "../main.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 const wButtonMaster = require( "./clientManager.js" ).pressButtonMaster;
-var STATE_TRANSITIONS = require( "../config.js" ).SCHEDULES.STATE_TRANSITIONS;
-var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
+var SCHEDULE = require( "../config.js" ).SCHEDULES;
+var STATE_TRANSITIONS = SCHEDULE.STATE_TRANSITIONS;
+var UPDATE_JOBS = SCHEDULE.UPDATES;
 
 // Initialize State Transition Schedules
 ( async ()=> {
@@ -15,13 +16,16 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 			if ( STATE_TRANSITIONS[ job ][ "startConditions" ] ) {
 				var wConditions = Object.keys( STATE_TRANSITIONS[ job ][ "startConditions" ] );
 				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
-				for ( var i = 0; i < answers.length; ++i ) {
-					if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
-						AllConditionsMet = false;
-						console.log( "condition not met !!!" );
-						console.log( answers[ i ] + " !== " + STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] );						
+				if ( answers ) {
+					for ( var i = 0; i < answers.length; ++i ) {
+						if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
+							AllConditionsMet = false;
+							console.log( "condition not met !!!" );
+							console.log( answers[ i ] + " !== " + STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] );						
+						}
 					}
 				}
+
 			}
 			if ( AllConditionsMet ) {
 				console.log( "starting scheduled job" );
@@ -34,11 +38,14 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 			if ( STATE_TRANSITIONS[ job ][ "stopConditions" ] ) {
 				var wConditions = Object.keys( STATE_TRANSITIONS[ job ][ "stopConditions" ] );
 				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
-				for ( var i = 0; i < answers.length; ++i ) {
-					if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
-						AllConditionsMet = false;
-						console.log( "condition not met !!!" );
-						console.log( answers[ i ] + " !== " + STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] );
+				console.log( answers );
+				if ( answers ) {
+					for ( var i = 0; i < answers.length; ++i ) {
+						if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
+							AllConditionsMet = false;
+							console.log( "condition not met !!!" );
+							console.log( answers[ i ] + " !== " + STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] );
+						}
 					}
 				}
 			}
@@ -59,12 +66,15 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 				var AllConditionsMet = true;
 				var wConditions = Object.keys( UPDATE_JOBS[ job ][ "startConditions" ] );
 				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
-				for ( var i = 0; i < answers.length; ++i ) {
-					if ( answers[ i ] !== UPDATE_JOBS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
-						AllConditionsMet = false;
-						console.log( "condition not met !!!" );
-						console.log( answers[ i ] + " !== " + UPDATE_JOBS[ job ][ "startConditions" ][ wConditions[ i ] ] );
-					}
+				console.log( answers );
+				if ( answers ) {
+					for ( var i = 0; i < answers.length; ++i ) {
+						if ( answers[ i ] !== UPDATE_JOBS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
+							AllConditionsMet = false;
+							console.log( "condition not met !!!" );
+							console.log( answers[ i ] + " !== " + UPDATE_JOBS[ job ][ "startConditions" ][ wConditions[ i ] ] );
+						}
+					}			
 				}
 			}
 			if ( AllConditionsMet ) {
