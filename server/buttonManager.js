@@ -124,6 +124,7 @@ var handleButtonInput = function(wInput) {
 	//wEmitter.emit( wE );
 	wInput = parseInt( wInput );
 	wPressButtonMaster( wInput );
+	console.log( "did we just call button press master ?" );
 };
 
 ButtonManager.stdout.on( "data" , function( data ) {

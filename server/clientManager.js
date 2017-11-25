@@ -34,6 +34,7 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {
+	console.log( "are we here ??" );
 	var wBTN_I = parseInt( wButtonNum );
 	if ( wBTN_I > 13 || wBTN_I < 0 ) { return "out of range"; }
 	wSendButtonPressNotificationEmail( wButtonNum );

@@ -1,18 +1,10 @@
-
-
 const wEmitter	= require("../main.js").wEmitter;
-// const wEmitter = new (require("events").EventEmitter);
-// module.exports.wEmitter = wEmitter;
 
 const redis = require( "../main.js" ).redis;
-// const REDIS = require("redis");
-// const redis = REDIS.createClient( "8443" , "localhost" );
-// module.exports.redis = redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 
 const colors = require("colors");
-//const path = require("path");
 const Mopidy = require("mopidy");
 
 
