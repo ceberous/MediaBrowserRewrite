@@ -95,15 +95,24 @@ function loadHandlers() {
 ( async ()=> {
 	wcl( "starting" );
 
-	INIT_CONFIG = require( "./config.js" ).INITIALIZATION_CONFIG;
+	INIT_CONFIG = require( "./config.js" ).REDIS_INIT;
 	localIP = ip.address();
 	wSIP = 'var socketServerAddress = "' + localIP + '"; var socketPORT = "' + port + '";';	
 	fs.writeFileSync( path.join( __dirname , "client" , "js" , "webSocketServerAddress.js" ) , wSIP );
+	
 	redis = REDIS.createClient( "8443" , "localhost" );
-	//await RU.selectDatabase( redis , 3 ); // testing
+	await RU.selectDatabase( redis , 3 ); // testing
 	await wsleep( 1000 );
 	if ( INIT_CONFIG.R_DB_RESETS ) {
-		await RU.deleteMultiplePatterns( redis , INIT_CONFIG.R_DB_RESETS );
+		await RU.deleteMultiplePatterns( redis , INIT_CONFIG.RESETS );
+	}
+	if ( INIT_CONFIG.KEYS ) {
+		var wMulti = [];
+		for ( var wKey in INIT_CONFIG.KEYS ) {
+			wMulti.push( [ "set" , wKey , INIT_CONFIG.KEYS[ wKey ] ] );
+		}
+		console.log( wMulti );
+		await RU.setMulti( redis , wMulti );
 	}
 	module.exports.redis = redis;
 

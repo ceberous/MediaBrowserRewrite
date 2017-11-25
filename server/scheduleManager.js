@@ -14,7 +14,7 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 			var AllConditionsMet = true;
 			if ( STATE_TRANSITIONS[ job ][ "startConditions" ] ) {
 				var wConditions = Object.keys( STATE_TRANSITIONS[ job ][ "startConditions" ] );
-				var answers = await RU.getMultiKeys( redis , wConditions );
+				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
 				for ( var i = 0; i < answers.length; ++i ) {
 					if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
 						AllConditionsMet = false;
@@ -33,7 +33,7 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 			var AllConditionsMet = true;
 			if ( STATE_TRANSITIONS[ job ][ "stopConditions" ] ) {
 				var wConditions = Object.keys( STATE_TRANSITIONS[ job ][ "stopConditions" ] );
-				var answers = await RU.getMultiKeys( redis , wConditions );
+				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
 				for ( var i = 0; i < answers.length; ++i ) {
 					if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
 						AllConditionsMet = false;
@@ -58,7 +58,7 @@ var UPDATE_JOBS = require( "../config.js" ).SCHEDULES.UPDATES;
 			if ( UPDATE_JOBS[ job ][ "startConditions" ] ) {
 				var AllConditionsMet = true;
 				var wConditions = Object.keys( UPDATE_JOBS[ job ][ "startConditions" ] );
-				var answers = await RU.getMultiKeys( redis , wConditions );
+				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
 				for ( var i = 0; i < answers.length; ++i ) {
 					if ( answers[ i ] !== UPDATE_JOBS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
 						AllConditionsMet = false;

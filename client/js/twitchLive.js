@@ -86,7 +86,12 @@ $(document).ready( function() {
 				setNewVideo( x1.options );
 				break;
 			case "pause":
-				TWITCH_PLAYER.pause();
+				if ( TWITCH_PLAYER.isPaused() ) {
+					TWITCH_PLAYER.play();
+				}
+				else {
+					TWITCH_PLAYER.pause();
+				}
 				break;
 			case "shutdown":
 				TWITCH_PLAYER.pause();

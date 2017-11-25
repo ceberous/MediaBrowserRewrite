@@ -40,7 +40,11 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 	wSendButtonPressNotificationEmail( wButtonNum );
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
-		if ( CURRENT_STATE ) { await CURRENT_STATE.stop(); }
+		if ( CURRENT_STATE || CURRENT_STATE !== null ) { 
+			wcl( "stopping CURRENT_STATE" ); 
+			await CURRENT_STATE.stop(); 
+			await wSleep( 1000 ); 
+		}
 		CEC_MAN.activate();
 		if ( BTN_MAP[ wButtonNum ][ "session" ] ) {
 			launching_fp = path.join( __dirname , "SESSIONS" ,  BTN_MAP[ wButtonNum ][ "session" ] + ".js" );
