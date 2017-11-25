@@ -61,7 +61,7 @@ function INITIALIZE() {
 				await RU.setMulti( redis , R_YT_LIVE_FOLLOWER_KEYS );
 				console.log( "done building YOU_TUBE REF" );
 			}
-			
+
 			//await enumerateLiveFollowers();
 			//await enumerateStandardFollowers();
 
@@ -247,6 +247,6 @@ function enumerateStandardFollowers() {
 	});
 }
 
-module.exports.inittialize = INITIALIZE;
+module.exports.initialize = INITIALIZE;
 module.exports.updateLive = enumerateLiveFollowers;
 module.exports.updateStandard = enumerateStandardFollowers;
