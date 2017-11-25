@@ -76,3 +76,5 @@ const MOPIDY_MAN 		= require( "./mopidyManager.js" );
 const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 // ======================================================================
 // ======================================================================
+
+require( "./youtubeManager.js" ).inittialize();

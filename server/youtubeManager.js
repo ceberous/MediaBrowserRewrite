@@ -35,36 +35,41 @@ const Default_Standard_Followers = [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5
 const R_YT_STANDARD_BLACKLIST = R_YT_Base + "STANDARD.BLACKLIST";
 const Default_Standard_Blacklist = [];
 
-( async ()=> {
-	
-	var ek = await RU.getKeysFromPattern( redis , "YOU_TUBE.*" );
-	// Repopulate Redis Structure if Nothing Exists
-	// build up everything into the 1st array 
-	// please ignore naming , it is a storgae container
-	if ( ek.length < 1 ) {
-		
-		var R_YT_LIVE_FOLLOWER_KEYS = Default_Live_Followers.map( x => [ "set" , R_YT_LIVE_FOLLOWERS + x , "null" ] );
-		var R_YT_STANDARD_FOLLOWER_KEYS = Default_Standard_Followers.map( x => [ "set" , R_YT_STANDARD_FOLLOWERS + x , "null" ] );
-		var x1_uneq = Default_Standard_Followers.map( x => [ "sadd" , R_YT_STANDARD_FOLLOWERS_UNEQ , x ] );
-		var x1_black = Default_Live_Blacklist.map( x => [ "sadd" , R_YT_LIVE_BLACKLIST , x ] );
-		var x1_stand = Default_Standard_Blacklist.map( x => [ "sadd" , R_YT_STANDARD_BLACKLIST , x ] );
+function INITIALIZE() {
+	return new Promise( async function( resolve , reject ) {
+		try {
 
-		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , R_YT_STANDARD_FOLLOWER_KEYS );
-		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_uneq );
-		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_black );
-		Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_stand );
-		R_YT_LIVE_FOLLOWER_KEYS = R_YT_LIVE_FOLLOWER_KEYS.filter( x => x.length > 0 );
-		console.log( R_YT_LIVE_FOLLOWER_KEYS );
-	
-		await RU.setMulti( redis , R_YT_LIVE_FOLLOWER_KEYS );
-		console.log( "done building YOU_TUBE REF" );
-	}
+			var ek = await RU.getKeysFromPattern( redis , "YOU_TUBE.*" );
+			// Repopulate Redis Structure if Nothing Exists
+			// build up everything into the 1st array 
+			// please ignore naming , it is a storgae container
+			if ( ek.length < 1 ) {
+				
+				var R_YT_LIVE_FOLLOWER_KEYS = Default_Live_Followers.map( x => [ "set" , R_YT_LIVE_FOLLOWERS + x , "null" ] );
+				var R_YT_STANDARD_FOLLOWER_KEYS = Default_Standard_Followers.map( x => [ "set" , R_YT_STANDARD_FOLLOWERS + x , "null" ] );
+				var x1_uneq = Default_Standard_Followers.map( x => [ "sadd" , R_YT_STANDARD_FOLLOWERS_UNEQ , x ] );
+				var x1_black = Default_Live_Blacklist.map( x => [ "sadd" , R_YT_LIVE_BLACKLIST , x ] );
+				var x1_stand = Default_Standard_Blacklist.map( x => [ "sadd" , R_YT_STANDARD_BLACKLIST , x ] );
 
-	//await enumerateLiveFollowers();
-	//await enumerateStandardFollowers();
+				Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , R_YT_STANDARD_FOLLOWER_KEYS );
+				Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_uneq );
+				Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_black );
+				Array.prototype.push.apply( R_YT_LIVE_FOLLOWER_KEYS , x1_stand );
+				R_YT_LIVE_FOLLOWER_KEYS = R_YT_LIVE_FOLLOWER_KEYS.filter( x => x.length > 0 );
+				console.log( R_YT_LIVE_FOLLOWER_KEYS );
+			
+				await RU.setMulti( redis , R_YT_LIVE_FOLLOWER_KEYS );
+				console.log( "done building YOU_TUBE REF" );
+			}
 
-})();
+			//await enumerateLiveFollowers();
+			//await enumerateStandardFollowers();
 
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
 function enumerateLiveFollowers() {
 	var current_followers = current_blacklist = [];
@@ -242,6 +247,6 @@ function enumerateStandardFollowers() {
 	});
 }
 
-
+module.exports.inittialize = INITIALIZE;
 module.exports.updateLive = enumerateLiveFollowers;
 module.exports.updateStandard = enumerateStandardFollowers;
