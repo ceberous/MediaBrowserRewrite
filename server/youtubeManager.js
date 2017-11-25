@@ -38,13 +38,13 @@ const Default_Standard_Blacklist = [];
 function INITIALIZE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-
+			wcl( "inside YOUTUBE_MAN init()" );
 			var ek = await RU.getKeysFromPattern( redis , "YOU_TUBE.*" );
 			// Repopulate Redis Structure if Nothing Exists
 			// build up everything into the 1st array 
 			// please ignore naming , it is a storgae container
 			if ( ek.length < 1 ) {
-				
+				console.log( "keys are less than 1" );
 				var R_YT_LIVE_FOLLOWER_KEYS = Default_Live_Followers.map( x => [ "set" , R_YT_LIVE_FOLLOWERS + x , "null" ] );
 				var R_YT_STANDARD_FOLLOWER_KEYS = Default_Standard_Followers.map( x => [ "set" , R_YT_STANDARD_FOLLOWERS + x , "null" ] );
 				var x1_uneq = Default_Standard_Followers.map( x => [ "sadd" , R_YT_STANDARD_FOLLOWERS_UNEQ , x ] );
@@ -61,7 +61,7 @@ function INITIALIZE() {
 				await RU.setMulti( redis , R_YT_LIVE_FOLLOWER_KEYS );
 				console.log( "done building YOU_TUBE REF" );
 			}
-
+			
 			//await enumerateLiveFollowers();
 			//await enumerateStandardFollowers();
 
