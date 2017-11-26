@@ -78,6 +78,13 @@ function REDIS_POP_RANDOM_FROM_SET( rInstance , wKey ) {
 	});
 }
 
+function REDIS_REMOVE_MATCHING_FROM_SET( rInstance , wSetKey , wMatchKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.srem( wSetKey , wMatchKey , function( err , key ) { resolve( key ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.llen( wKey , function( err , key ) { resolve( key ); }); }
@@ -156,6 +163,7 @@ module.exports.getKey = REDIS_GET_KEY;
 module.exports.delKey = REDIS_DELETE_KEY;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
+module.exports.removeMatchingFromSet = REDIS_REMOVE_MATCHING_FROM_SET;
 module.exports.getMultiKeys = REDIS_GET_MULTI_KEY;
 module.exports.getFullList = REDIS_GET_FULL_LIST;
 module.exports.getFullSet = REDIS_GET_FULL_SET;

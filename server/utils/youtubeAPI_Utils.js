@@ -1,6 +1,5 @@
-const request = require( "/home/morpheous/.nvm/versions/node/v8.4.0/lib/node_modules/request" );
-const REDIS = require("/home/morpheous/.nvm/versions/node/v8.4.0/lib/node_modules/redis");
-const redis = REDIS.createClient( "8443" , "localhost" );
+const request = require( "request" );
+const redis = require( "../../main.js" ).redis;
 const RU = require( "./redis_Utils.js" );
 
 const DATA_API_KEY = require( "../../personal.js" ).YT_DATA_API_KEY;
@@ -25,8 +24,11 @@ function storeIntoRedis() {
 function filterJSONResults() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var wFinal = [];
-			if ( FINAL_RESULTS[ FINAL_RESULTS.length - 1 ][ "nextPageToken" ] ) { await getPlaylistJSON( FINAL_RESULTS[ FINAL_RESULTS.length - 1 ][ "nextPageToken" ] ); }
+
+			// Stop Guard to Build Up Full Playlist. 
+			if ( FINAL_RESULTS[ FINAL_RESULTS.length - 1 ][ "nextPageToken" ] ) { 
+				await getPlaylistJSON( FINAL_RESULTS[ FINAL_RESULTS.length - 1 ][ "nextPageToken" ] ); 
+			}
 			
 			for ( var i = 0; i < FINAL_RESULTS.length; ++i ) {
 				if ( FINAL_RESULTS[ i ][ "items" ] ) {
@@ -39,6 +41,7 @@ function filterJSONResults() {
 					}
 				}
 			}
+
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -67,14 +70,15 @@ function getPlaylistJSON( wPageToken ) {
 	});
 }
 
-( async ()=> {
-	await RU.selectDatabase( redis , 3 ); // testing
-	ENUMERATING_ID = "PLcW8xNfZoh7ew0Eru-09bjr-l60IBYYgq"
+module.exports.getPlaylist = async function( wPlaylistID ) {
+	ENUMERATING_ID = null;
+	FINAL_RESULTS = null;
+	FINAL_PARSED = null;	
+	ENUMERATING_ID = wPlaylistID || "PLcW8xNfZoh7ew0Eru-09bjr-l60IBYYgq";
 	await getPlaylistJSON();
 	console.log( FINAL_PARSED );
 	await storeIntoRedis();
 	ENUMERATING_ID = null;
 	FINAL_RESULTS = null;
 	FINAL_PARSED = null;
-	console.log( "done" );
-})();
+};

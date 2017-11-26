@@ -1,3 +1,14 @@
+process.on( "unhandledRejection" , function( reason , p ) {
+    console.error( reason, "Unhandled Rejection at Promise" , p );
+    console.trace();
+    //wEmitter.emit( "closeEverything" );
+});
+process.on( "uncaughtException" , function( err ) {
+    console.error( err , "Uncaught Exception thrown" );
+    console.trace();
+    //wEmitter.emit( "closeEverything" );
+});
+
 require("shelljs/global");
 const fs = require("fs");
 const path = require("path");
@@ -61,25 +72,7 @@ function loadHandlers() {
 		});
 	} , 30000 );
 
-	process.on( "SIGINT" , function () {
-		wEmitter.emit( "closeEverything" );
-		setTimeout( ()=> {
-			exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
-			exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );
-			process.exit(1);
-		} , 2000 );
-	});
 
-	process.on( "unhandledRejection" , function( reason , p ) {
-	    console.error( reason, "Unhandled Rejection at Promise" , p );
-	    console.trace();
-	    //wEmitter.emit( "closeEverything" );
-	});
-	process.on( "uncaughtException" , function( err ) {
-	    console.error( err , "Uncaught Exception thrown" );
-	    console.trace();
-	    //wEmitter.emit( "closeEverything" );
-	});
 
 	server.listen( port , function() {
 		wcl( "\tServer Started on :" );
@@ -95,21 +88,28 @@ function loadHandlers() {
 ( async ()=> {
 	wcl( "starting" );
 
-	INIT_CONFIG = require( "./config.js" ).REDIS_INIT;
+	R_INIT_CONFIG = require( "./config.js" ).REDIS;
 	localIP = ip.address();
 	wSIP = 'var socketServerAddress = "' + localIP + '"; var socketPORT = "' + port + '";';	
 	fs.writeFileSync( path.join( __dirname , "client" , "js" , "webSocketServerAddress.js" ) , wSIP );
 	
 	redis = REDIS.createClient( "8443" , "localhost" );
-	//await RU.selectDatabase( redis , 3 ); // testing
+	await RU.selectDatabase( redis , 3 ); // testing
 	await wsleep( 1000 );
-	if ( INIT_CONFIG.RESETS ) {
-		await RU.deleteMultiplePatterns( redis , INIT_CONFIG.RESETS );
+	if ( R_INIT_CONFIG.RESETS ) {
+		await RU.deleteMultiplePatterns( redis , R_INIT_CONFIG.RESETS );
 	}
-	if ( INIT_CONFIG.KEYS ) {
+	if ( R_INIT_CONFIG.SET_KEYS ) {
 		var wMulti = [];
-		for ( var wKey in INIT_CONFIG.KEYS ) {
-			wMulti.push( [ "set" , wKey , INIT_CONFIG.KEYS[ wKey ] ] );
+		for ( var wKey in R_INIT_CONFIG.SET_KEYS ) {
+			if ( Array.isArray( R_INIT_CONFIG.SET_KEYS[ wKey ] ) ) {
+				for ( var i = 0; i < R_INIT_CONFIG.SET_KEYS[ wKey ].length; ++i ) {
+					wMulti.push( [ "sadd" , wKey , R_INIT_CONFIG.SET_KEYS[ wKey ][ i ] ] );
+				}
+			}
+			else {
+				wMulti.push( [ "set" , wKey , R_INIT_CONFIG.SET_KEYS[ wKey ] ] );
+			}
 		}
 		console.log( wMulti );
 		await RU.setMulti( redis , wMulti );
@@ -124,3 +124,12 @@ function loadHandlers() {
 
 	wcl( "SERVER READY" );
 })();
+
+process.on( "SIGINT" , function () {
+	wEmitter.emit( "closeEverything" );
+	setTimeout( ()=> {
+		exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
+		exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );
+		process.exit(1);
+	} , 2000 );
+});

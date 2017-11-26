@@ -15,3 +15,5 @@ module.exports.press9 = function( req , res ) { wPressButtonMaster( 9 ); sendJSO
 module.exports.press10 = function( req , res ) { wPressButtonMaster( 10 ); sendJSONResponse( res , 200 , { buttonPress: "Play Next Movie" } ); };
 module.exports.press11 = function( req , res ) { wPressButtonMaster( 11 ); sendJSONResponse( res , 200 , { buttonPress: "Play Next Odyssey" } ); };
 module.exports.press12 = function( req , res ) { wPressButtonMaster( 12 ); sendJSONResponse( res , 200 , { buttonPress: "Play Next TV Show" } ); };
+module.exports.press13 = function( req , res ) { wPressButtonMaster( 13 ); sendJSONResponse( res , 200 , { buttonPress: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" } ); };
+module.exports.press14 = function( req , res ) { wPressButtonMaster( 14 ); sendJSONResponse( res , 200 , { buttonPress: "YT_Standard_Foreground" } ); };

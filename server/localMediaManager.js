@@ -50,10 +50,10 @@ const h1 = "HARD_DRIVE.";
 
 	var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
 
-	var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
-	mp = mp + "MEDIA_MANAGER";
-	console.log( mp );
-	//var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
+	// var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
+	// mp = mp + "MEDIA_MANAGER";
+	// console.log( mp );
+	var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
 	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
 	GLOBAL_INSTANCE_MOUNT_POINT = mp;
 

@@ -118,6 +118,7 @@ var YTIFrameManager = {
 var socket = null;
 var webSocketConnectionString = "ws://" + socketServerAddress + ":" + socketPORT;
 var nextVideoTime = null;
+
 function waitForYoutubeReady( x1 ) {
 	function readyYoutube(){
 		if( ( typeof YT !== "undefined" ) && YT && YT.Player ) {
@@ -151,8 +152,11 @@ $(document).ready( function() {
 			case "YTStandardForeground":
 				waitForYoutubeReady( x1 );
 				break;
+			case "pause":
+				YTIFrameManager.wPlayer.pauseVideo();
+				break;				
 			case "next":
-				YTIFrameManager.wPlayer.nextVideo();
+				YTIFrameManager.wPlayer.loadVideoById( x1.options );
 				break;
 			case "previous":
 				YTIFrameManager.wPlayer.previousVideo();
