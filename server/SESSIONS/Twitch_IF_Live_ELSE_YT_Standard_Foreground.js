@@ -20,7 +20,7 @@ function RESTART_AS_YOUTUBE() {
 		try {
 			console.log( "No Live Users , Starting Youtube-Standard" );
 			clearInterval( CHECK_LIVE_INT );
-			await CUR_MAN.stop();
+			if ( CUR_MAN ) { await CUR_MAN.stop(); }
 			CUR_MAN = null;
 			CURRENT_MAN_NAME = "youtube";
 			await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );

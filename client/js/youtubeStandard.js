@@ -153,7 +153,13 @@ $(document).ready( function() {
 				waitForYoutubeReady( x1 );
 				break;
 			case "pause":
-				YTIFrameManager.wPlayer.pauseVideo();
+				var cur_state = parseInt( YTIFrameManager.wPlayer.getPlayerState() );
+				if ( cur_state === 2 ) {
+					YTIFrameManager.wPlayer.playVideo();
+				}
+				else {
+					YTIFrameManager.wPlayer.pauseVideo();
+				}
 				break;				
 			case "next":
 				YTIFrameManager.wPlayer.loadVideoById( x1.options );

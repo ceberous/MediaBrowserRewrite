@@ -20,8 +20,8 @@ function INITIALIZE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			// await enumerateLiveFollowers();
-			// await enumerateStandardFollowers();
+			await enumerateLiveFollowers();
+			await enumerateStandardFollowers();
 
 			resolve();
 		}
