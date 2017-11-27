@@ -130,6 +130,20 @@ function REDIS_DECREMENT_INTEGER( rInstance , wKey ) {
 	});
 }
 
+function REDIS_SET_DIFFERENCE_STORE( rInstance , wStoreKey , wSetKey , wCompareSetKey  ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.sdiffstore( wStoreKey , wSetKey , wCompareSetKey , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function REDIS_SET_STORE_UNION( rInstance , wStoreKey , wSetKey1 , wSetKey2  ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.sdiffstore( wStoreKey , wSetKey1 , wSetKey2 , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function REDIS_SELECT_DATABASE( rInstance , wNumber ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.select( wNumber , function( err , values ) { resolve( values ); }); }
@@ -178,5 +192,8 @@ module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;
 module.exports.incrementInteger = REDIS_INCREMENT_INTEGER;
 module.exports.decrementInteger = REDIS_DECREMENT_INTEGER;
 module.exports.deleteMultiplePatterns = REDIS_DELETE_MULTIPLE_PATTERNS;
+module.exports.setDifferenceStore = REDIS_SET_DIFFERENCE_STORE;
+module.exports.setStoreUnion = REDIS_SET_STORE_UNION;
+
 
 module.exports.selectDatabase = REDIS_SELECT_DATABASE;

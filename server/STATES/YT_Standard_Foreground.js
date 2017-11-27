@@ -2,10 +2,7 @@ const wEmitter = require( "../../main.js" ).wEmitter;
 
 const redis = require( "../../main.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
-const RC = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE.CURRATED;
-const RSTD = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE.STANDARD;
-const R_YT_NP_MODE = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE.NOW_PLAYING_MODE;
-const R_YT_NP_KEY = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE.NOW_PLAYING_KEY;
+const RC = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE;
 
 function GET_NEXT_VIDEO() {
 	return new Promise( async function( resolve , reject ) {
@@ -14,19 +11,24 @@ function GET_NEXT_VIDEO() {
 
 			// Precedance Order Unless Otherwise Segregated into Sub-States
 			// 1.) Check inside redis-Personal-Store for custom youtube.com/playlists
-			var finalVideo = await RU.popRandomSetMembers( redis , RC.MAIN_LIST , 1 );
+			var finalVideo = await RU.popRandomSetMembers( redis , RC.CURRATED.MAIN_LIST , 1 );
 			if ( finalVideo.length > 0 ) { finalMode = "MAIN_LIST"; finalVideo = finalVideo[0]; }
 			// 2.) If none exist , build a mini playlist of Standard Followers Latest Videos this Month
 			else {
 				console.log( "no videos are left in MAIN_LIST" );
 				finalMode = "STANDARD";
-				finalVideo = await RU.popRandomSetMembers( redis , RSTD.LATEST , 1 );
+				finalVideo = await RU.popRandomSetMembers( redis , RC.STANDARD.LATEST , 1 );
 				if ( finalVideo.length < 1 ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve(); return; }
 				else { finalVideo = finalVideo[0]; }
 			}
 			console.log( finalVideo );
 			console.log( finalMode );
-			await RU.setMulti( redis , [ [ "set" , R_YT_NP_KEY , finalVideo ] , [ "set" , R_YT_NP_MODE , finalMode ] ] );			
+			// WutFace https://stackoverflow.com/questions/17060672/ttl-for-a-set-member
+			await RU.setMulti( redis , [ 
+				[ "sadd" , RC.ALREADY_WATCHED , finalVideo ] ,
+				[ "set" , RC.NOW_PLAYING_KEY , finalVideo ] , 
+				[ "set" , RC.NOW_PLAYING_MODE , finalMode ] 
+			]);			
 			resolve( finalVideo );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -36,6 +38,7 @@ function GET_NEXT_VIDEO() {
 function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			//await require( "../youtubeManager.js" ).updateStandard();
 			var final_vid = await GET_NEXT_VIDEO();
 			require( "../../main.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ final_vid ]  } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );

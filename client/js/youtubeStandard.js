@@ -71,6 +71,7 @@ var YTIFrameManager = {
 				break;
 			case 0:
 				console.log(" video is over ");
+				socket.send( "YTStandardVideoOver" );
 				//socket.send( "youtubeLiveStatus" , { status: "over" , id: wID } );
 				break;
 			case 1:

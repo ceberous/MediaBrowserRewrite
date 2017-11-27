@@ -155,7 +155,9 @@ function enumerateStandardFollowers() {
 
 			final_ids = final_ids.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
 			await RU.setSetFromArray( redis , RC.STANDARD.LATEST , final_ids );
-			
+			await RU.setDifferenceStore( redis , RC.PLACEHOLDER , RC.STANDARD.LATEST , RC.ALREADY_WATCHED );
+			await RU.setStoreUnion( redis , RC.UNWATCHED , RC.PLACEHOLDER , RC.UNWATCHED )
+			await RU.delKey( redis , RC.PLACEHOLDER );
 
 			// If you wanted a detailed hash for some reason
 			//var wMultis = [];

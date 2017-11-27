@@ -16,6 +16,9 @@ const R_CONSTANTS = {
 		BASE: YTBASE ,
 		NOW_PLAYING_MODE: YTBASE + "NOW_PLAYING.MODE" ,
 		NOW_PLAYING_KEY: YTBASE + NOW_PLAYING ,
+		ALREADY_WATCHED: YTBASE + "ALREADY_WATCHED" ,
+		UNWATCHED: YTBASE + "UNWATCHED" , 
+		PLACEHOLDER: YTBASE + "PLACEHOLDER" ,
 		LIVE: {
 			BASE: YTLIVE ,
 			LATEST: YTLIVE + "LATEST" ,
@@ -47,7 +50,7 @@ module.exports = {
 	BUTTON_MAP: {
 		0: { state: "YT_Live_Background" , options: {} } ,
 		1: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" } } ,
-		2: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
+		2: { session: "YT_Standard_Foreground" , options: {} } } ,
 		3: { session: "Twitch_IF_Live_ELSE_YT_Standard_Foreground" , options: {} } ,
 		4: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
 		5: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
@@ -65,17 +68,17 @@ module.exports = {
 
 	REDIS: {
 		CONSTANTS: R_CONSTANTS ,
-		// SET_KEYS: {
-		// 	"CONFIG.ARRIVED_HOME": "false" ,
-		// 	"MOPIDY.STATE": "stopped" ,
-		// 	"YOU_TUBE.LIVE.FOLLOWERS" : [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ] ,
-		// 	"YOU_TUBE.LIVE.BLACKLIST" : [ "9zMpeUh6DXs" , "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , 
-		// 	"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
-		// 	"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
-		// 	"YOU_TUBE.STANDARD.BLACKLIST": [] ,
-		// 	"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
-		// } ,
-		//RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
+		SET_KEYS: {
+			"CONFIG.ARRIVED_HOME": "false" ,
+			"MOPIDY.STATE": "stopped" ,
+			"YOU_TUBE.LIVE.FOLLOWERS" : [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ] ,
+			"YOU_TUBE.LIVE.BLACKLIST" : [ "9zMpeUh6DXs" , "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , 
+			"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
+			"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
+			"YOU_TUBE.STANDARD.BLACKLIST": [] ,
+			"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
+		} ,
+		RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
 	} ,
 
 	SCHEDULES: {
@@ -96,12 +99,19 @@ module.exports = {
 		// Paths Must be **relative** to scheduleManager.js
 		UPDATES: {
 			gmusicPlaylistCache: {
-				startPattern: "0 */3 * * *" , // every 1 hours
+				startPattern: "0 */3 * * *" , // every 3 hours
 				startConditions: { "MOPIDY.STATE": "stopped" } ,
 				functionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 				functionName: "updateCache" ,
 				jobPID: null
 			}
+			youtubeStandardList: {
+				startPattern: "0 */12 * * *" , // every 12 hours
+				startConditions: { "MOPIDY.STATE": "stopped" } ,
+				functionPath: [ "youtubeManager.js" ] ,
+				functionName: "updateStandard" ,
+				jobPID: null
+			}			
 		}
 
 	}
