@@ -36,7 +36,7 @@ const R_CONSTANTS = {
 	} ,
 	INSTAGRAM: {
 		BASE: INSTAGRAM ,
-		FOLLOWERS: [ "ceberous" ]
+		FOLLOWERS: INSTAGRAM + "FOLLOWERS"
 	}
 };
 
@@ -60,20 +60,21 @@ module.exports = {
 		12: { state: "LocalMedia_TV_Foreground" , options: { advance_show: "true" , specific_show: "false" , specific_episode: "false" } } ,
 		13: { session: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" , options: {} } ,
 		14: { state: "YT_Standard_Foreground" , options: {} } ,
+		15: { state: "Instagram_Background" , options: {} } ,
 	} ,
 
 	REDIS: {
 		CONSTANTS: R_CONSTANTS ,
-		SET_KEYS: {
-			"CONFIG.ARRIVED_HOME": "false" ,
-			"MOPIDY.STATE": "stopped" ,
-			"YOU_TUBE.LIVE.FOLLOWERS" : [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ] ,
-			"YOU_TUBE.LIVE.BLACKLIST" : [ "9zMpeUh6DXs" , "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , 
-			"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
-			"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
-			"YOU_TUBE.STANDARD.BLACKLIST": [] ,
-			"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
-		} ,
+		// SET_KEYS: {
+		// 	"CONFIG.ARRIVED_HOME": "false" ,
+		// 	"MOPIDY.STATE": "stopped" ,
+		// 	"YOU_TUBE.LIVE.FOLLOWERS" : [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ] ,
+		// 	"YOU_TUBE.LIVE.BLACKLIST" : [ "9zMpeUh6DXs" , "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , 
+		// 	"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
+		// 	"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
+		// 	"YOU_TUBE.STANDARD.BLACKLIST": [] ,
+		// 	"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
+		// } ,
 		//RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
 	} ,
 

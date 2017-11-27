@@ -6,15 +6,16 @@
 // https://github.com/akv2/MaxImage
 // https://github.com/blueimp/Gallery#demo
 
+// https://www.npmjs.com/package/twitter-pic-downloader
+
 
 // https://www.instagram.com/nfl/?__a=1
 
-
-const request = require("/home/morpheous/.nvm/versions/node/v8.4.0/lib/node_modules/request");
-const resolver = require("/home/morpheous/.nvm/versions/node/v8.4.0/lib/node_modules/resolver");
-//const cheerio = require("/home/morpheous/.nvm/versions/node/v8.4.0/lib/node_modules/cheerio");
-const REDIS = require("/home/morpheous/.nvm/versions/node/v8.4.0/lib/node_modules/redis");
-const redis = REDIS.createClient( "8443" , "localhost" );
+const { map } = require( "p-iteration" );
+const request = require("request");
+const resolver = require("resolver");
+//const cheerio = require("cheerio");
+const redis = require( "../main.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 const RC = require( "../config.js" ).REDIS.CONSTANTS.INSTAGRAM;
 
@@ -133,9 +134,17 @@ function SEARCH_FOLLOWER( wUserName ) {
 }
 
 function GET_LATEST_FOLLOWER_MEDIA() {
-	return new Promise( function( resolve , reject ) {
+	return new Promise( async function( resolve , reject ) {
 		try {
-			resolve();
+			var current_followers = await RU.getFullSet( redis , RC.FOLLOWERS );
+			var latest = null;
+			if ( current_followers.length > 0 ) {
+				latest = await map( current_followers , userId => SEARCH_FOLLOWER( userId ) );				
+			}
+			latest = [].concat.apply( [] , latest );
+			latest = latest.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
+			//await RU.setSetFromArray( redis , RC.LIVE.LATEST , live_videos );			
+			resolve( latest );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -143,8 +152,8 @@ function GET_LATEST_FOLLOWER_MEDIA() {
 
 module.exports.getLatestFollowerMedia = GET_LATEST_FOLLOWER_MEDIA;
 
-( async ()=> {
-	await RU.selectDatabase( redis , 3 ); // testing
-	var final_results = await SEARCH_FOLLOWER( "ceberous" );
-	console.log( final_results );
-})();
+// ( async ()=> {
+// 	await RU.selectDatabase( redis , 3 ); // testing
+// 	var final_results = await SEARCH_FOLLOWER( "ceberous" );
+// 	console.log( final_results );
+// })();

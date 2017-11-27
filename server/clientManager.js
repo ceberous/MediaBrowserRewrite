@@ -36,7 +36,7 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 async function wPressButtonMaster( wButtonNum , wOptions ) {
 	console.log( "are we here ??" );
 	var wBTN_I = parseInt( wButtonNum );
-	if ( wBTN_I > 14 || wBTN_I < 0 ) { return "out of range"; }
+	if ( wBTN_I > 15 || wBTN_I < 0 ) { return "out of range"; }
 	wSendButtonPressNotificationEmail( wButtonNum );
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
