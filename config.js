@@ -5,6 +5,8 @@ const YTCURRATED = YTBASE + "CURRATED."
 const FOLLOWERS = "FOLLOWERS";
 const BLACKLIST = "BLACKLIST";
 
+const INSTAGRAM = "INSTAGRAM.";
+
 const UNEQ = "UNEQ";
 const NOW_PLAYING = "NOW_PLAYING_KEY";
 
@@ -31,6 +33,10 @@ const R_CONSTANTS = {
 			MAIN_LIST: YTCURRATED + "MAIN_LIST" ,
 			PLAYLISTS: YTCURRATED + "PLAYLISTS."
 		} ,
+	} ,
+	INSTAGRAM: {
+		BASE: INSTAGRAM ,
+		FOLLOWERS: [ "ceberous" ]
 	}
 };
 
@@ -57,9 +63,7 @@ module.exports = {
 	} ,
 
 	REDIS: {
-		CONSTANTS: {
-			YOU_TUBE: R_CONSTANTS.YOU_TUBE ,
-		} ,
+		CONSTANTS: R_CONSTANTS ,
 		SET_KEYS: {
 			"CONFIG.ARRIVED_HOME": "false" ,
 			"MOPIDY.STATE": "stopped" ,
@@ -68,8 +72,9 @@ module.exports = {
 			"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
 			"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
 			"YOU_TUBE.STANDARD.BLACKLIST": [] ,
+			"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
 		} ,
-		RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
+		//RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
 	} ,
 
 	SCHEDULES: {
