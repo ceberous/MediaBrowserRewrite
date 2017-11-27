@@ -50,7 +50,7 @@ module.exports = {
 	BUTTON_MAP: {
 		0: { state: "YT_Live_Background" , options: {} } ,
 		1: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" } } ,
-		2: { session: "YT_Standard_Foreground" , options: {} } } ,
+		2: { session: "YT_Standard_Foreground" , options: {}  } ,
 		3: { session: "Twitch_IF_Live_ELSE_YT_Standard_Foreground" , options: {} } ,
 		4: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
 		5: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
@@ -63,7 +63,7 @@ module.exports = {
 		12: { state: "LocalMedia_TV_Foreground" , options: { advance_show: "true" , specific_show: "false" , specific_episode: "false" } } ,
 		13: { session: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" , options: {} } ,
 		14: { state: "YT_Standard_Foreground" , options: {} } ,
-		15: { state: "Instagram_Background" , options: {} } ,
+		15: { state: "Instagram_Background" , options: {} }
 	} ,
 
 	REDIS: {
