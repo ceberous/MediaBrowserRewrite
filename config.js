@@ -53,7 +53,7 @@ module.exports = {
 		2: { session: "YT_Standard_Foreground" , options: {}  } ,
 		3: { session: "Twitch_IF_Live_ELSE_YT_Standard_Foreground" , options: {} } ,
 		4: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
-		5: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
+		5: { state: "PeerCall_Foreground" , options: { alertEmails: [ "cerbus.collin@gmail.com" ]  } } ,
 		6: { label: "stop" } ,
 		7: { label: "pause" } ,
 		8: { label: "previous" } ,
@@ -104,10 +104,10 @@ module.exports = {
 				functionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 				functionName: "updateCache" ,
 				jobPID: null
-			}
+			} ,
 			youtubeStandardList: {
-				startPattern: "0 */12 * * *" , // every 12 hours
-				startConditions: { "MOPIDY.STATE": "stopped" } ,
+				startPattern: "0 */9 * * *" , // every 9 hours
+				startConditions: { } ,
 				functionPath: [ "youtubeManager.js" ] ,
 				functionName: "updateStandard" ,
 				jobPID: null

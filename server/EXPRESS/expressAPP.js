@@ -35,10 +35,10 @@ app.get( "/" , function( req , res , next ) {
 });
 
 var specialRoutes = require( "./ROUTES/specialRTR.js" );
-app.use('/special/' , specialRoutes );
+app.use( "/special/" , specialRoutes );
 
 var adminPanelRoutes = require( "./ROUTES/adminPanelRTR.js" );
-app.use('/admin/v1/' , adminPanelRoutes );
+app.use( "/admin/v1/" , adminPanelRoutes );
 app.get( "/admin" , function( req , res , next ) {
 	res.render( 'adminPanel.html' );
 });
@@ -47,19 +47,23 @@ app.use('/buttonpress/' , buttonsRoutes );
 
 // Youtube-Routes
 app.get( "/youtubeStandard" , function( req , res , next ) {
-	res.render( 'youtubeStandard.html' );
+	res.render( "youtubeStandard.html" );
 });
 app.get( "/youtubeLiveBackground" , function( req , res , next ) {
-	res.render( 'youtubeLiveBackground.html' );
+	res.render( "youtubeLiveBackground.html" );
 });
 var youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
-app.use('/youtube/' , youtubeRoutes );
+app.use( "/youtube/" , youtubeRoutes );
 
 // Twitch-Routes
 app.get( "/twitchLive" , function( req , res , next ) {
 	res.render( "twitchLive.html" );
 });
 var twitchRoutes = require( "./ROUTES/twitchRTR.js" );
-app.use('/twitch/' , twitchRoutes );
+app.use( "/twitch/" , twitchRoutes );
+
+app.use( "/peerCall" , function( req , res , next ) {
+	res.render( "peerCall.html" );
+});
 
 module.exports = app;

@@ -9,6 +9,8 @@ const R_STATE_NAME_TWITCH = "TWITCH_LIVE";
 const R_STATE_NAME_YOUTUBE = "YOUTUBE_STANDARD";
 const R_TWITCH_LIVE_TASK_PARITY = R_BASE + "TWITCH.LIVE_TASK_PARITY";
 
+function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
 var CURRENT_MAN_NAME = null;
 var CUR_MAN = null;
 var ACTIVE_TWITCH_USER_NAME = null;
@@ -130,6 +132,7 @@ function wNext() {
 		try {
 			if ( CURRENT_MAN_NAME === "twitch" ) {
 				await RU.incrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX );
+				await wsleep( 1000 );
 				var c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
 				console.log( "c_index === " + c_index );
 				ACTIVE_TWITCH_USER_NAME = await RU.getFromSetByIndex( redis , R_TWITCH_LIVE_USERS , c_index );

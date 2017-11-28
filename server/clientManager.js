@@ -79,6 +79,6 @@ const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 
 ( async ()=> {
 	console.log( "we are here" );
-	await require( "./youtubeManager.js" ).initialize();
+	//await require( "./youtubeManager.js" ).initialize();
 	console.log( "we are done with Initialization" );
 })();
