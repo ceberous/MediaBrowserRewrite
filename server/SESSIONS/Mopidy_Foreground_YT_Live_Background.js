@@ -1,15 +1,10 @@
 
-var MOPIDY_BASE = null;
-var YOUTUBE_MAN = null;
-
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			wGenre = wOptions.genre || "UNKNOWN";
-			MOPIDY_BASE = require( "../STATES/Mopidy_Background_Genre.js" );
-			await MOPIDY_BASE.start( wGenre );
-			YOUTUBE_MAN = require( "../STATES/YT_Live_Background.js" );
-			await YOUTUBE_MAN.start();
+			await require( "../STATES/Mopidy_Background_Genre.js" ).start( wGenre );
+			await require( "../STATES/YT_Live_Background.js" ).start();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -19,7 +14,7 @@ function wStart( wOptions ) {
 function wPause() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await MOPIDY_BASE.pause();
+			await require( "../STATES/Mopidy_Background_Genre.js" ).pause();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -29,7 +24,7 @@ function wPause() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await MOPIDY_BASE.next();
+			await require( "../STATES/Mopidy_Background_Genre.js" ).next();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -39,7 +34,7 @@ function wNext() {
 function wPrevious() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await MOPIDY_BASE.previous();
+			await require( "../STATES/Mopidy_Background_Genre.js" ).previous();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -49,10 +44,8 @@ function wPrevious() {
 function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await MOPIDY_BASE.stop()
-			MOPIDY_BASE = null;
-			await YOUTUBE_MAN.stop()
-			YOUTUBE_MAN = null;
+			await require( "../STATES/Mopidy_Background_Genre.js" ).stop();
+			await require( "../STATES/YT_Live_Background.js" ).stop();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
