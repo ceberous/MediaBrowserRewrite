@@ -30,7 +30,7 @@ function cleanupChildPROC() {
 	wcl( "Media is Over !!!" );
 }
 function wPlayFilePath( wFP ) {
-	return new Promise( function( resolve , reject ) {
+	return new Promise( async function( resolve , reject ) {
 		try {
 			EMIT_OVER_EVENT = true;
 			
@@ -48,7 +48,10 @@ function wPlayFilePath( wFP ) {
 				if ( wMessage.ended ) { if ( wMessage.ended === "UNREF_ME" ) { wPROC_TIME = Math.floor( wMessage.time ); cleanupChildPROC();  } }
 				if ( wMessage.status ) { /* console.log( wMessage.status ); */  wPROC_STATUS = wMessage.status; wPROC_DURATION = Math.floor( wMessage.status.duration ); }
 				if ( wMessage.time ) { var x1 = Math.floor( wMessage.time ); wPROC_TIME = ( x1 >= 1 ) ? x1 : wPROC_TIME; }
-			});	
+			});
+			// Disable Subtitles **hack**
+			await sleep( 1000 );
+			require( "./xdotoolWrapper.js" ).pressKeyboardKey( "v" ); 
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

@@ -10,7 +10,13 @@ function wStart( wOptions ) {
 		try {
 			var current_state = await RU.getKey( redis , R_STATE_ACTIVE );
 			current_state = current_state || "null";
-			await require( "../STATES/LocalMedia_Odyseey_Foreground.js" ).start( wOptions );
+			var LM_OPS = {
+				genre: "Odyssey" ,
+				advance_show: "false" , 
+				specific_show: "false" ,
+				specific_episode: "false" ,
+			};
+			await require( "../STATES/LocalMedia_Foreground.js" ).start( LM_OPS );
 			await require( "../STATES/YT_Live_Background.js" ).start();
 			await RU.setMulti( redis , [ [ "set" , R_STATE_ACTIVE , R_STATE_NAME ] , [ "set" , R_STATE_PREVIOUS , current_state ] ] );
 			resolve();
@@ -22,7 +28,7 @@ function wStart( wOptions ) {
 function wPause() { 
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../STATES/LocalMedia_Odyseey_Foreground.js" ).pause();
+			await require( "../STATES/LocalMedia_Foreground.js" ).pause();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -31,7 +37,7 @@ function wPause() {
 function wResume() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../STATES/LocalMedia_Odyseey_Foreground.js" ).resume();
+			await require( "../STATES/LocalMedia_Foreground.js" ).resume();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -41,7 +47,7 @@ function wResume() {
 function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../STATES/LocalMedia_Odyseey_Foreground.js" ).stop();
+			await require( "../STATES/LocalMedia_Foreground.js" ).stop();
 			await require( "../STATES/YT_Live_Background.js" ).stop();
 			resolve();
 		}
@@ -52,7 +58,7 @@ function wStop() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../STATES/LocalMedia_Odyseey_Foreground.js" ).next();
+			await require( "../STATES/LocalMedia_Foreground.js" ).next();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -62,7 +68,7 @@ function wNext() {
 function wPrevious() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../STATES/LocalMedia_Odyseey_Foreground.js" ).previous();
+			await require( "../STATES/LocalMedia_Foreground.js" ).previous();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

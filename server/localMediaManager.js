@@ -1,18 +1,16 @@
 require( "shelljs/global" );
 const path = require("path");
-
-const USB_DRIVE_UUID = require( "../config.js" ).USB_DRIVE_UUID;
-
 const wEmitter	= require("../main.js").wEmitter;
-//var wEmitter = new (require("events").EventEmitter);
-//module.exports.wEmitter = wEmitter;
-
 const redis = require( "../main.js" ).redis;
-//var REDIS = require("redis");
-//var redis = REDIS.createClient( "8443" , "localhost" );
 const RU = require( "./utils/redis_Utils.js" );
+const RC = require( "../config.js" ).REDIS.CONSTANTS.LOCAL_MEDIA;
+const h1 = "HARD_DRIVE.";
 
+const MP_CONFIG = require( "../config.js" ).MEDIA_MOUNT_POINT;
 const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
+
+// Logic Info and Doc Links
+// https://docs.google.com/document/d/1FH4fTbUnyNo4hFxcenGKhPUenl_CJgshhNVaFZUsM_s/edit?usp=sharing
 
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
@@ -37,52 +35,64 @@ function wGetDuration( wFP ) {
 	catch( error ) { console.log( error ); }
 }
 
-
-// Logic Info and Doc Links
-// https://docs.google.com/document/d/1FH4fTbUnyNo4hFxcenGKhPUenl_CJgshhNVaFZUsM_s/edit?usp=sharing
-
-
 var GLOBAL_INSTANCE_MOUNT_POINT = "";
 var G_NOW_PLAYING = G_R_Live_Genre_NP = G_R_NP_ShowName_Backup = null;
-// Initialization 
-const h1 = "HARD_DRIVE.";
-( async ()=> {
 
-	var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
+function INITIALIZATION() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			// Assume if there is stuff in redis , that it is correct. 
+			// Otherwise , if an error is found , we should clear first , and then call this
+			// to build from scratch
+			var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
+			if ( ek.length > 1 ) { 
+				GLOBAL_INSTANCE_MOUNT_POINT = await RU.getKey( redis , "HARD_DRIVE.MOUNT_POINT" );
+				resolve( "already in redis" ); 
+				return; 
+			}
+			// Cleanse and Prepare Mount_Point
+			//await RU.deleteMultiplePatterns( RC.BASE + "*" );
 
-	var mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
-	mp = mp + "MEDIA_MANAGER";
-	console.log( mp );
-	//var mp = "/home/morpheous/TMP2/EMULATED_MOUNT_PATH";
-	await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
-	GLOBAL_INSTANCE_MOUNT_POINT = mp;
+			var mp = null;
+			if ( MP_CONFIG[ "UUID" ] ) {
+				mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( USB_DRIVE_UUID );
+			}
+			else if ( MP_CONFIG[ "LOCAL_PATH" ] ) {
+				mp = MP_CONFIG[ "LOCAL_PATH" ];
+			}
+			if ( mp === null ) { resolve( "no media available" ); return; }
+			await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
+			console.log( "Mount_Point = " + mp );
 
-	if ( ek.length < 1 ) { 
-		var x1 = await require( "./utils/localMedia_Util" ).buildHardDriveReference( mp ); // we alll know this is cancer. but fml
-		for ( var wGenre in x1 ) {
-			var x1Shows = Object.keys( x1[ wGenre ] );
-			if ( x1Shows.length < 1 ) { continue; }
-			var LSS_SK_B = h1 + wGenre + ".META.";
-			var LSS_SK_U = LSS_SK_B + "UNEQ";
-			var LSS_SK_T = LSS_SK_B + "TOTAL";
-			var LSS_SK_C = LSS_SK_B + "CURRENT_INDEX";
-			await RU.setMulti( redis , [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
-			redis.rpush.apply( redis , [ LSS_SK_U ].concat( x1Shows ) );
-			for ( var wShow in x1[ wGenre ] ) { // Each Show in Genre
-				var wShow_R_KEY = h1 + wGenre + ".FP." + wShow;
-				for ( var j = 0; j < x1[ wGenre ][ wShow ].length; ++j ) {
-					var wSeason_R_KEY = wShow_R_KEY + "." + j.toString();
-					if ( x1[ wGenre ][ wShow ][ j ].length > 0 ) { // <-- Has Episodes Stored in Season Folders
-						redis.rpush.apply( redis , [ wSeason_R_KEY ].concat( x1[ wGenre ][ wShow ][ j ] ) );
+			// Scan Mount_Point
+			var x1 = await require( "./utils/localMedia_Util" ).buildHardDriveReference( mp );
+
+			// Store Info into Redis ... why
+			for ( var wGenre in x1 ) {
+				var x1Shows = Object.keys( x1[ wGenre ] );
+				if ( x1Shows.length < 1 ) { continue; }
+				var LSS_SK_B = RC.BASE + wGenre + ".META.";
+				var LSS_SK_U = LSS_SK_B + "UNEQ";
+				var LSS_SK_T = LSS_SK_B + "TOTAL";
+				var LSS_SK_C = LSS_SK_B + "CURRENT_INDEX";
+				await RU.setMulti( redis , [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
+				redis.rpush.apply( redis , [ LSS_SK_U ].concat( x1Shows ) );
+				for ( var wShow in x1[ wGenre ] ) { // Each Show in Genre
+					var wShow_R_KEY = RC.BASE + wGenre + ".FP." + wShow;
+					for ( var j = 0; j < x1[ wGenre ][ wShow ].length; ++j ) {
+						var wSeason_R_KEY = wShow_R_KEY + "." + j.toString();
+						if ( x1[ wGenre ][ wShow ][ j ].length > 0 ) { // <-- Has Episodes Stored in Season Folders
+							redis.rpush.apply( redis , [ wSeason_R_KEY ].concat( x1[ wGenre ][ wShow ][ j ] ) );
+						}
 					}
 				}
 			}
+			console.log( "done building HD_REF" );
+			resolve();
 		}
-		console.log( "done building HD_REF" );
-	}
-
-})();
-
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
 function calculatePrevious( lastPlayed , config ) {
 	return new Promise( async function( resolve , reject ) {
@@ -148,7 +158,6 @@ function calculatePrevious( lastPlayed , config ) {
 	});
 }
 
-const R_GET_LOCAL_MEDIA_CONFIG = "CONFIG.LOCAL_MEDIA.LIVE";
 function calculateNext( lastPlayed , config ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -266,7 +275,7 @@ function updateLastPlayedTime( wTime ) {
 				G_NOW_PLAYING.remaining_time = ( G_NOW_PLAYING.duration - G_NOW_PLAYING.cur_time );
 				if ( G_NOW_PLAYING.cur_time >= G_NOW_PLAYING.three_percent ) { G_NOW_PLAYING.completed = true; }
 				var x1 = JSON.stringify( G_NOW_PLAYING );
-				await RU.setMulti( redis , [ [ "set" , G_R_Live_Genre_NP , x1 ] ,  [ "set" , G_R_NP_ShowName_Backup , x1 ] ]);
+				await RU.setMulti( redis , [ [ "set" , RC.LAST_SS.NOW_PLAYING[ G_NOW_PLAYING.genre ] , x1 ] ,  [ "set" , G_R_NP_ShowName_Backup , x1 ] ]);
 			}
 			//else { console.log( "no wTIME !!!!" ); G_NOW_PLAYING.completed = true; } // Just assuming something **bad** happened , and mark as completed anyways
 			resolve();
@@ -286,19 +295,13 @@ wEmitter.on( "MPlayerOVER" , async function( wResults ) {
 
 });
 
-const R_LocalMedia_Base = "LAST_SS.LOCAL_MEDIA.";
-const R_LM_Config_Base = "CONFIG.LOCAL_MEDIA.LIVE.";
-const R_LM_Config_Genre = R_LM_Config_Base + "GENRE";
-const R_LM_Config_AdvanceShow = R_LM_Config_Base + "ADVANCE_SHOW";
-const R_LM_Config_SpecificShow = R_LM_Config_Base + "SPECIFIC_SHOW";
-const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
+
 function getLiveConfig() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var liveConfig = await RU.getMultiKeys( redis , R_LM_Config_Genre , R_LM_Config_AdvanceShow , R_LM_Config_SpecificShow , R_LM_Config_SpecificEpisode );
-			const R_Live_Genre_Base = R_LocalMedia_Base + liveConfig[ 0 ];
-			const R_Live_Genre_NP = R_Live_Genre_Base + ".NOW_PLAYING";
-			var liveLastPlayed = await RU.getKey( redis , R_Live_Genre_NP );
+			var liveConfig = await RU.getMultiKeys( redis , RC.CONFIG.GENRE , RC.CONFIG.ADVANCE_SHOW , RC.CONFIG.SPECIFIC_SHOW , RC.CONFIG.SPECIFIC_EPISODE );
+			console.log( liveConfig );
+			var liveLastPlayed = await RU.getKey( redis , RC.LAST_SS.NOW_PLAYING[ liveConfig[ 0 ] ] );
 			resolve( [ liveLastPlayed , liveConfig ] );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -357,13 +360,12 @@ function wPlay( skipping , previous ) {
 			console.log( FinalNowPlaying );
 
 			const x1 = JSON.stringify( FinalNowPlaying );
-			const R_NP_ShowName_BackupKey = R_LocalMedia_Base + liveConfig[ 0 ] + "." + FinalNowPlaying.show_name;
-			const R_Live_Genre_NP = R_LocalMedia_Base + liveConfig[ 0 ] + "." + "NOW_PLAYING";
-			await RU.setMulti( redis , [ [ "set" , R_Live_Genre_NP , x1 ] ,  [ "set" , R_NP_ShowName_BackupKey , x1 ] ]);
+			const R_NP_ShowName_BackupKey = RC.LAST_SS.BASE + liveConfig[ 0 ] + "." + FinalNowPlaying.show_name;
+			//const R_Live_Genre_NP = RC.LAST_SS.NOW_PLAYING[ liveConfig[ 0 ];
+			await RU.setMulti( redis , [ [ "set" , RC.LAST_SS.NOW_PLAYING[ liveConfig[ 0 ] ] , x1 ] ,  [ "set" , R_NP_ShowName_BackupKey , x1 ] ]);
 
 
 			G_NOW_PLAYING = FinalNowPlaying;
-			G_R_Live_Genre_NP = R_Live_Genre_NP;
 			G_R_NP_ShowName_Backup = R_NP_ShowName_BackupKey;
 
 
@@ -402,6 +404,7 @@ function wStop() {
 async function wNext() { await wStop(); wPlay( true ); }
 async function wPrevious() { await wStop(); wPlay( false , true ); }
 
+module.exports.initialize = INITIALIZATION;
 
 module.exports.play 			= wPlay;
 

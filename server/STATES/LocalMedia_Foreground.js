@@ -1,28 +1,26 @@
 const redis = require("../../main.js").redis;
 const RU = require( "../utils/redis_Utils.js" );
+const RC = require( "../../config.js" ).REDIS.CONSTANTS.LOCAL_MEDIA;
 
-const R_LocalMedia_Base = "LAST_SS.LOCAL_MEDIA.";
-const R_LM_Config_Base = "CONFIG.LOCAL_MEDIA.LIVE.";
-const R_LM_Config_Genre = R_LM_Config_Base + "GENRE";
-const R_LM_Config_AdvanceShow = R_LM_Config_Base + "ADVANCE_SHOW";
-const R_LM_Config_SpecificShow = R_LM_Config_Base + "SPECIFIC_SHOW";
-const R_LM_Config_SpecificEpisode = R_LM_Config_Base + "SPECIFIC_EPISODE";
+function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			wOptions = wOptions || {
+				genre: "TVShows" ,
 				advance_show: "true" , 
 				specific_show: "false" ,
 				specific_episode: "false" ,
 			};
 			await RU.setMulti( redis , [
 				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
-				[ "set" , R_LM_Config_Genre , "TVShows" ] ,
-				[ "set" , R_LM_Config_AdvanceShow , wOptions.advance_show ] ,
-				[ "set" , R_LM_Config_SpecificShow , wOptions.specific_show ] ,
-				[ "set" , R_LM_Config_SpecificEpisode , wOptions.specific_episode ] ,
+				[ "set" , RC.CONFIG.GENRE , wOptions.genre ] ,
+				[ "set" , RC.CONFIG.ADVANCE_SHOW , wOptions.advance_show ] ,
+				[ "set" , RC.CONFIG.SPECIFIC_SHOW , wOptions.specific_show ] ,
+				[ "set" , RC.CONFIG.SPECIFIC_EPISODE , wOptions.specific_episode ] ,
 			]);
-			require( "../localMediaManager.js" ).play();
+			await require( "../localMediaManager.js" ).play();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -60,6 +58,7 @@ function wStop() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			await RU.setKey( redis , RC.CONFIG.ADVANCE_SHOW , "false" );
 			await require( "../localMediaManager.js" ).next();
 			resolve();
 		}

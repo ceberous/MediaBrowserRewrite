@@ -34,7 +34,7 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {
-	console.log( "are we here ??" );
+	wcl( "wPressButtonMaster( " + wButtonNum.toString() + " )" );
 	var wBTN_I = parseInt( wButtonNum );
 	if ( wBTN_I > 15 || wBTN_I < 0 ) { return "out of range"; }
 	wSendButtonPressNotificationEmail( wButtonNum );
@@ -78,7 +78,8 @@ const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 // ======================================================================
 
 ( async ()=> {
-	console.log( "we are here" );
-	//await require( "./youtubeManager.js" ).initialize();
-	console.log( "we are done with Initialization" );
+	wcl( "Initializing stuff" );
+	await require( "./youtubeManager.js" ).initialize();
+	await require( "./localMediaManager.js" ).initialize();
+	wcl( "we are done with Initialization" );
 })();
