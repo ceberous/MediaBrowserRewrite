@@ -85,9 +85,9 @@ module.exports = {
 	BUTTON_MAP: {
 		0: { state: "YT_Live_Background" , options: {} } ,
 		1: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" } } ,
-		2: { session: "YT_Standard_Foreground" , options: {}  } ,
+		2: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" }  } ,
 		3: { session: "Twitch_IF_Live_ELSE_YT_Standard_Foreground" , options: {} } ,
-		4: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN"  } } ,
+		4: { session: "PeerCall_Foreground" , options: { alertEmails: [ "cerbus.collin@gmail.com" ] } } ,
 		5: { state: "PeerCall_Foreground" , options: { alertEmails: [ "cerbus.collin@gmail.com" ]  } } ,
 		6: { label: "stop" } ,
 		7: { label: "pause" } ,
@@ -142,11 +142,11 @@ module.exports = {
 			} ,
 			youtubeStandardList: {
 				startPattern: "0 */9 * * *" , // every 9 hours
-				startConditions: { } ,
+				startConditions: {} ,
 				functionPath: [ "youtubeManager.js" ] ,
 				functionName: "updateStandard" ,
 				jobPID: null
-			}			
+			}
 		}
 
 	}

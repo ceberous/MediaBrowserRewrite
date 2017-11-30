@@ -3,8 +3,8 @@ function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			wGenre = wOptions.genre || "UNKNOWN";
+			require( "../STATES/YT_Live_Background.js" ).start();
 			await require( "../STATES/Mopidy_Background_Genre.js" ).start( wGenre );
-			await require( "../STATES/YT_Live_Background.js" ).start();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

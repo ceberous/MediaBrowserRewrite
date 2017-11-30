@@ -57,6 +57,7 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 		try { delete require.cache[ CURRENT_STATE ]; }
 		catch ( e ) {}
 		CURRENT_STATE = null;
+		await wSleep( 1000 );
 		CURRENT_STATE = require( launching_fp );
 		wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
 		await CURRENT_STATE.start( wOptions );

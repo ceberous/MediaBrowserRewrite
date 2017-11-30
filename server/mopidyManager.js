@@ -7,6 +7,7 @@ const RU = require( "./utils/redis_Utils.js" );
 const colors = require("colors");
 const Mopidy = require("mopidy");
 
+// https://github.com/thebigmunch/gmusicapi-scripts
 
 function wcl( wSTR ) { console.log( colors.white.bgBlue( "[MOPIDY_MAN] --> " + wSTR ) ); }
 function tryIgnoreError( wFunc ) { try { wFunc(); } catch( error ) { return; } }
@@ -69,7 +70,7 @@ mopidy.on( "event:trackPlaybackStarted" , async function ( wEvent ) {
 
 mopidy.on( "event:playbackStateChanged" , async function ( wEvent ) {
 	await sleep( 3000 );
-	await RU.setKey( redis , "MOPIDY.STATE" , wEvent );
+	await RU.setKey( redis , "MOPIDY.STATE" , wEvent.new_state );
 	wcl( "PLAYBACK --> CHANGED --> " );
 	console.log( wEvent );
 });

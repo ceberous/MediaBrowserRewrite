@@ -10,6 +10,7 @@ var UPDATE_JOBS = SCHEDULE.UPDATES;
 
 // Initialize State Transition Schedules
 ( async ()=> {
+	console.log( "setting up state transition schedules" );
 	for ( var job in STATE_TRANSITIONS ) {
 		STATE_TRANSITIONS[ job ][ "startPID" ] = schedule.scheduleJob( STATE_TRANSITIONS[ job ][ "startPattern" ] , async function() { 
 			var AllConditionsMet = true;
@@ -59,11 +60,11 @@ var UPDATE_JOBS = SCHEDULE.UPDATES;
 
 // Initialize Update Functions
 ( async ()=> {
+	console.log( "setting up update function schedules" );
 	for ( var job in UPDATE_JOBS ) {
 		UPDATE_JOBS[ job ][ "jobPID" ] = schedule.scheduleJob( UPDATE_JOBS[ job ][ "startPattern" ] , async function() {
 			var AllConditionsMet = true;
 			if ( UPDATE_JOBS[ job ][ "startConditions" ] ) {
-				var AllConditionsMet = true;
 				var wConditions = Object.keys( UPDATE_JOBS[ job ][ "startConditions" ] );
 				var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
 				console.log( answers );
