@@ -9,7 +9,6 @@
 	<script src="../js/jquery.min.js"></script>
 	<script src="../js/tether.min.js"></script>
 	<script src="../js/bootstrap.min.js"></script>
-	<script src="../js/sockioServerAddress.js"></script>
 	<script src="../js/webSocketServerAddress.js"></script>
 	<script src="../js/peerCall.js"></script>
 
@@ -26,7 +25,9 @@
 <div class="col-xs-4" id="wRightCol" ></div>
 </div>
 <div id="mainPeerCallRow" class="row">
-	<div id="addPeerCallHere" class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12"></div>
+	<div id="addPeerCallHere" class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12">
+		<iframe id="peerCallIFrame"></iframe>
+	</div>
 </div>
 </body>
 </html>

@@ -75,6 +75,7 @@ const R_CONSTANTS = {
 	}
 };
 
+const ALERT_EMAILS = require( "./personal.js" ).peerCallNames;
 module.exports = {
 
 	MEDIA_MOUNT_POINT: {
@@ -87,8 +88,8 @@ module.exports = {
 		1: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" } } ,
 		2: { session: "Mopidy_Foreground_YT_Live_Background" , options: { genre: "UNKNOWN" }  } ,
 		3: { session: "Twitch_IF_Live_ELSE_YT_Standard_Foreground" , options: {} } ,
-		4: { session: "PeerCall_Foreground" , options: { alertEmails: [ "cerbus.collin@gmail.com" ] } } ,
-		5: { state: "PeerCall_Foreground" , options: { alertEmails: [ "cerbus.collin@gmail.com" ]  } } ,
+		4: { session: "PeerCall_Foreground" , options: { alertEmails: [ ALERT_EMAILS[ 1 ] ] } } ,
+		5: { state: "PeerCall_Foreground" , options: { alertEmails: [ ALERT_EMAILS[ 2 ] ] } } ,
 		6: { label: "stop" } ,
 		7: { label: "pause" } ,
 		8: { label: "previous" } ,
@@ -102,6 +103,7 @@ module.exports = {
 	} ,
 
 	REDIS: {
+		DATABASE_NUM: 0 ,
 		CONSTANTS: R_CONSTANTS ,
 		SET_KEYS: {
 			"CONFIG.ARRIVED_HOME": "false" ,

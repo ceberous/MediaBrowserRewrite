@@ -13,6 +13,11 @@ function wcl( wSTR ) { console.log( colors.white.bgBlue( "[MOPIDY_MAN] --> " + w
 function tryIgnoreError( wFunc ) { try { wFunc(); } catch( error ) { return; } }
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+// Change File --> /usr/local/lib/python2.7/dist-packages/gmusicapi/clients/mobileclient.py
+// --> @ Line Number 143
+// 		self.android_id = self._validate_device_id(device_id, is_mac=is_mac)
+// --> TO:
+// 		self.android_id = "VALID_DEVICE_ID"
 
 var mopidy = null;
 Mopidy.prototype._handleWebSocketError = function ( error ) { wcl( "Mopdiy WebSocket ERROR" ); this._cleanup(); this.close(); mopidy.off(); mopidy = null;  return; };

@@ -7,7 +7,7 @@ function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + 
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
 const redis = require( "../main.js" ).redis;
-const RU = require( "./utils/redis_Utils.js" );
+const RU 	= require( "./utils/redis_Utils.js" );
 
 const CEC_MAN		= require( "./utils/cecClientManager.js" );
 const EMAIL_MAN 	= require( "./emailManager.js" );

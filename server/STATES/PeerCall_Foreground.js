@@ -6,18 +6,31 @@ const R_STATE = R_BASE + "ACTIVE";
 const R_PREVIOUS = R_BASE + "PREVIOUS";
 const R_STATE_NAME = "PEER_CALL_FOREGROUND";
 
-function wStart( wAlertEmails ) {
+
+function generateRandomCallURL() {
+	//cc318b3d-9511-4a43-9a9c-526c6b4d1328
+	function gRL( wLength ) {
+		let str = "";
+		while( str.length < wLength ) str += Math.random().toString(36).substr(2);
+		return str.substr( 0 , wLength );
+	}
+	return gRL( 8 ) + "-" + gRL( 4 ) + "-" + gRL( 4 ) + gRL( 4 ) + "-" + gRL( 12 );
+}
+
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-
+			console.log( wOptions );
+			var wCall_URL = generateRandomCallURL();
+			var wFull_Call_URL = "https://peercalls.com/call/" + wCall_URL;
 			var current_state = await RU.getKey( redis , R_STATE );
-			require( "../../main.js" ).setStagedFFClientTask( { message: "PeerCall" } );
+			require( "../../main.js" ).setStagedFFClientTask( { message: "PeerCall" , url: wCall_URL } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/peerCall" );
 			await RU.setMulti( redis , [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
 
-			// for ( var i = 0; i < wAlertEmails.length; ++i ) {
-			// 	require( "../emailManager.js" ).sendEmail( wURL_LINK_TO_JOIN  , "HALEY IS CALLING YOU" , wAlertEmails[ i ] )
-			// }
+			for ( var i = 0; i < wOptions.alertEmails.length; ++i ) {
+				await require( "../emailManager.js" ).sendEmail( wFull_Call_URL  , "HALEY_IS_CALLING_YOU" , wOptions.alertEmails[ i ] )
+			}
 			
 			resolve();
 		}
