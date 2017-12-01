@@ -103,8 +103,29 @@ function loadHandlers() {
 	wSIP = 'var socketServerAddress = "' + localIP + '"; var socketPORT = "' + port + '";';	
 	fs.writeFileSync( path.join( __dirname , "client" , "js" , "webSocketServerAddress.js" ) , wSIP );
 	
-	redis = REDIS.createClient( "8443" , "localhost" );
-	await RU.selectDatabase( redis , R_INIT_CONFIG[ "DATABASE_NUM" ] ); // testing
+	redis = REDIS.createClient({ 
+		host: "localhost" ,
+		port: "8443" ,
+		db: R_INIT_CONFIG[ "DATABASE_NUM" ] ,
+		retry_strategy: function ( options ) {
+	        if (options.error && options.error.code === 'ECONNREFUSED') {
+	            // End reconnecting on a specific error and flush all commands with
+	            // a individual error
+	            return new Error('The server refused the connection');
+	        }
+	        if ( options.total_retry_time > 1000 * 60 * 60 ) {
+	            // End reconnecting after a specific timeout and flush all commands
+	            // with a individual error
+	            return new Error('Retry time exhausted');
+	        }
+	        if ( options.attempt > 20 ) {
+	            // End reconnecting with built in error
+	            return undefined;
+	        }
+	        // reconnect after
+	        return Math.min( options.attempt * 100 , 3000 );
+	    }
+	});
 	await wsleep( 1000 );
 	if ( R_INIT_CONFIG.RESETS ) {
 		await RU.deleteMultiplePatterns( redis , R_INIT_CONFIG.RESETS );

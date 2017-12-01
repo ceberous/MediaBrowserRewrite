@@ -6,6 +6,7 @@ const redis = require( "../main.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 const wEmailCREDS = require( "../personal.js" ).emailServer;
+const wPeerCallListenEmails = require( "../personal.js" ).peerCallNames;
 //const wNotifyTwitchManViewerIsLive = require( "./twitchManager.js" ).followerIsNowLiveEmailUpdate;
 
 const wPYSEmailScriptPath = path.join( __dirname , "py_scripts" , "sendEmail.py" );
@@ -81,10 +82,10 @@ function parseEmail( wMail ) {
     case "no-reply@twitch.tv":
       parseTwitch( wMail );
       break;
-    case "cerbus.collin@gmail.com":
+    case wPeerCallListenEmails[ 0 ]:
       parsePeerCall( wMail );
       break;
-    case "cerbus.cameron@yahoo.com":
+    case wPeerCallListenEmails[ 1 ]:
       parsePeerCall( wMail );
       break;
     default:

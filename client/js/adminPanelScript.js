@@ -1,3 +1,6 @@
+
+// https://github.com/kristoferjoseph/flexboxgrid
+
 const ROW_VIEW_MAP = {
 	basePath: "../views/admin_panel/",
 	views: {

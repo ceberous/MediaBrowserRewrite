@@ -129,8 +129,6 @@ module.exports = {
 				stateOptions: null ,
 				startConditions: { "CONFIG.ARRIVED_HOME": "false" } ,
 				stopConditions: null ,
-				startPID: null ,
-				stopPID: null
 			} ,
 		} ,
 
@@ -141,15 +139,13 @@ module.exports = {
 				startConditions: { "MOPIDY.STATE": "stopped" } ,
 				functionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 				functionName: "updateCache" ,
-				jobPID: null
 			} ,
 			youtubeStandardList: {
 				startPattern: "0 */9 * * *" , // every 9 hours
 				startConditions: {} ,
 				functionPath: [ "youtubeManager.js" ] ,
 				functionName: "updateStandard" ,
-				jobPID: null
-			}
+			} ,
 		}
 
 	}

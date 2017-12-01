@@ -6,6 +6,10 @@ const RU = require( "./utils/redis_Utils.js" );
 const RC = require( "../config.js" ).REDIS.CONSTANTS.LOCAL_MEDIA;
 const h1 = "HARD_DRIVE.";
 
+const colors	= require( "colors" );
+function wcl( wSTR ) { console.log( colors.magenta.bgBlack( "[LOCAL_MEDIA_MAN] --> " + wSTR ) ); }
+
+
 const MP_CONFIG = require( "../config.js" ).MEDIA_MOUNT_POINT;
 const MPLAYER_MAN = require( "./utils/mplayerManager.js" );
 
@@ -62,7 +66,7 @@ function INITIALIZATION() {
 			}
 			if ( mp === null ) { resolve( "no media available" ); return; }
 			await RU.setKey( redis , "HARD_DRIVE.MOUNT_POINT" , mp );
-			console.log( "Mount_Point = " + mp );
+			wcl( "Mount_Point = " + mp );
 
 			// Scan Mount_Point
 			var x1 = await require( "./utils/localMedia_Util" ).buildHardDriveReference( mp );
@@ -87,7 +91,7 @@ function INITIALIZATION() {
 					}
 				}
 			}
-			console.log( "done building HD_REF" );
+			wcl( "done building HD_REF" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -112,11 +116,11 @@ function calculatePrevious( lastPlayed , config ) {
 			const R_Previous_Base = R_N_BASE + "FP." + F_ShowName;
 			const R_Previous_EP = R_Previous_Base + "." + F_Season_IDX;
 			previousEpisode = await RU.getFromSetByIndex( redis , R_Previous_EP , previousEpisode );
-			console.log( "next episode === " + previousEpisode );
+			//console.log( "next episode === " + previousEpisode );
 
 			if ( previousEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
 				
-				console.log( "inside episode reset" );
+				//console.log( "inside episode reset" );
 				F_Season_IDX = ( F_Season_IDX - 1 );
 				if ( F_Season_IDX === -1 ) { // We Precceded Past Season '0' , and we need to set to last season , last episode
 					F_Season_IDX = await RU.getKeysFromPattern( redis , R_Previous_Base + ".*" );
@@ -179,12 +183,12 @@ function calculateNext( lastPlayed , config ) {
 
 			}
 			else if ( config[ 1 ] === "true" ) { // IF Advance-Next-Show is Enabled
-				console.log( "inside Advance-Next-Show" );
+				//console.log( "inside Advance-Next-Show" );
 				F_UNEQ_IDX = ( F_UNEQ_IDX + 1 );
 				const R_NextShow = R_N_BASE + "META.UNEQ";
 				F_ShowName = await RU.getFromSetByIndex( redis , R_NextShow , F_UNEQ_IDX );
 				if ( F_ShowName === null ) { //  IF Advanced Past Total-UNEQ-aka-Unique Shows in Genre
-					console.log( "inside show-in-genre reset" );
+					//console.log( "inside show-in-genre reset" );
 					F_UNEQ_IDX = 0;
 					F_ShowName = await RU.getFromSetByIndex( redis , R_NextShow , F_UNEQ_IDX );
 				}
@@ -216,16 +220,16 @@ function calculateNext( lastPlayed , config ) {
 						F_Episode_IDX = nextEpisode;
 						const R_Next_EP = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
 						nextEpisode = await RU.getFromSetByIndex( redis , R_Next_EP , nextEpisode );
-						console.log( "next episode === " + nextEpisode );
+						//console.log( "next episode === " + nextEpisode );
 
 						if ( nextEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
-							console.log( "inside episode reset" );
+							//console.log( "inside episode reset" );
 							F_Episode_IDX = 0;
 							F_Season_IDX = ( F_Season_IDX + 1 );
 							var R_Next_Season = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
 							var intermediaryNext_Episode = await RU.getFromSetByIndex( redis , R_Next_Season , 0 );
 							if ( intermediaryNext_Episode === null ) { // IF Advanced Past Total-Seasons in Show Boundry
-								console.log( "inside season reset" );
+								//console.log( "inside season reset" );
 								F_Season_IDX = 0;
 								R_Next_Season = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
 								F_FP = await RU.getFromSetByIndex( redis , R_Next_Season , 0 );
@@ -270,7 +274,7 @@ function updateLastPlayedTime( wTime ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			if ( wTime ) { 
-				console.log( "wTime === " + wTime.toString() );
+				wcl( "wTime === " + wTime.toString() );
 				G_NOW_PLAYING.cur_time = wTime;
 				G_NOW_PLAYING.remaining_time = ( G_NOW_PLAYING.duration - G_NOW_PLAYING.cur_time );
 				if ( G_NOW_PLAYING.cur_time >= G_NOW_PLAYING.three_percent ) { G_NOW_PLAYING.completed = true; }
@@ -288,10 +292,12 @@ wEmitter.on( "MPlayerOVER" , async function( wResults ) {
 	
 	await updateLastPlayedTime( wResults );
 
+	await wSleep( 1000 );
+
 	// Continue if Config Says were Still Active
 	var wAS = await RU.getMultiKeys( redis , "LAST_SS.ACTIVE_STATE" , "LAST_SS.ACTIVE_STATE.META" );
 	if ( wAS[0] === "LOCAL_MEDIA" ) { wPlay(); }
-	else { console.log( "WE WERE TOLD TO QUIT" ); }
+	else { wcl( "WE WERE TOLD TO QUIT" ); }
 
 });
 
@@ -300,7 +306,7 @@ function getLiveConfig() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			var liveConfig = await RU.getMultiKeys( redis , RC.CONFIG.GENRE , RC.CONFIG.ADVANCE_SHOW , RC.CONFIG.SPECIFIC_SHOW , RC.CONFIG.SPECIFIC_EPISODE );
-			console.log( liveConfig );
+			//wcl( liveConfig );
 			var liveLastPlayed = await RU.getKey( redis , RC.LAST_SS.NOW_PLAYING[ liveConfig[ 0 ] ] );
 			resolve( [ liveLastPlayed , liveConfig ] );
 		}
@@ -317,15 +323,14 @@ function wPlay( skipping , previous ) {
 			var liveLastPlayed = JSON.parse( lc[ 0 ] );
 			var liveConfig = lc[ 1 ];
 			//console.log( liveLastPlayed );
-			console.log( "\nLive Config === \n" );
-			console.log( liveConfig );
+			wcl( "Live Config === \n" + liveConfig );
 			console.log("");
 
-			if ( previous ) { console.log("inside previous case"); FinalNowPlaying = await calculatePrevious( liveLastPlayed , liveConfig ); }
-			else if ( skipping ) { console.log("inside skipping case"); FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
+			if ( previous ) { /*console.log("inside previous case");*/ FinalNowPlaying = await calculatePrevious( liveLastPlayed , liveConfig ); }
+			else if ( skipping ) { /*console.log("inside skipping case");*/ FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); }
 
 			else if ( liveLastPlayed === null ) { // IF - Nothing ever watched in Genre
-				console.log( "genre is FRESH !!" );
+				//console.log( "genre is FRESH !!" );
 				const R_FirstShow = h1 + liveConfig[ 0 ] + ".META.UNEQ";
 				const showName = await RU.getFromSetByIndex( redis , R_FirstShow , 0 );
 				const R_FirstEpisodeFP = h1 + liveConfig[ 0 ] + ".FP." + showName + ".0";
@@ -339,11 +344,11 @@ function wPlay( skipping , previous ) {
 				};
 			}
 			else { // NOT Genre Fresh ---- NORMAL Case , aka just episode +1
-				console.log( "\nhere at stage 3" );
-				console.log( "not genre fresh !!" );
+				//console.log( "\nhere at stage 3" );
+				//console.log( "not genre fresh !!" );
 
 				// If Previously Last-Played OBJ is NOT fully watched , restart then and seek to where was left off
-				if ( !liveLastPlayed.completed ) { FinalNowPlaying = liveLastPlayed; console.log( "not completed" ); }
+				if ( !liveLastPlayed.completed ) { FinalNowPlaying = liveLastPlayed; /*console.log( "not completed" );*/ }
 				// ELSE , calculate the **Next** playing-obj
 				else { FinalNowPlaying = await calculateNext( liveLastPlayed , liveConfig ); } 
 			}
@@ -352,11 +357,11 @@ function wPlay( skipping , previous ) {
 			if ( FinalNowPlaying.three_percent === 0 ) {
 				FinalNowPlaying.duration = wGetDuration( FinalNowPlaying.fp );
 				FinalNowPlaying.three_percent = Math.floor( ( FinalNowPlaying.duration - ( FinalNowPlaying.duration * 0.025 ) ) );
-				console.log( "Duration === " + FinalNowPlaying.duration.toString() );
-				console.log( "Three Percent === " + FinalNowPlaying.three_percent.toString() );
+				//console.log( "Duration === " + FinalNowPlaying.duration.toString() );
+				//console.log( "Three Percent === " + FinalNowPlaying.three_percent.toString() );
 			}
 
-			console.log( "\nFinal Now Computed NowPlaying === \n" );
+			wcl( "\nFinal Now Computed NowPlaying === \n" );
 			console.log( FinalNowPlaying );
 
 			const x1 = JSON.stringify( FinalNowPlaying );
@@ -369,7 +374,7 @@ function wPlay( skipping , previous ) {
 			G_R_NP_ShowName_Backup = R_NP_ShowName_BackupKey;
 
 
-			console.log( "\nSTARTING --> MPLAYER" );	
+			wcl( "\nSTARTING --> MPLAYER" );	
 			await MPLAYER_MAN.playFilePath( FinalNowPlaying.fp );
 			if ( FinalNowPlaying.cur_time > 1 ) {
 				await wSleep( 1000 );
@@ -421,3 +426,9 @@ process.on( "SIGINT" , async function () {
 	await wSleep( 3000 );
 	redis.quit();
 });
+
+
+
+module.exports.testUpdateScheduleFunction = function() {
+	console.log( "\nwe are here in testUpdateScheduleFunction()\n" );
+};
