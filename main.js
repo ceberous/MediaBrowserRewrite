@@ -34,8 +34,17 @@ function sendStagedWebSocketMessage() {
 		ws.send( STAGED_FF_CLIENT_TASK );
 	});
 }
+function SET_STAGED_FF_CLIENT_TASK( wOptions ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 function loadHandlers() {
-	module.exports.setStagedFFClientTask = function( wOptions ) { STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions ); }	
+	module.exports.setStagedFFClientTask = SET_STAGED_FF_CLIENT_TASK;
 	wEmitter.on( "sendFFClientMessage" , function( wMessage , wOptions ) {
 		wss.clients.forEach( function each( ws ) { wOptions = wOptions || "none"; ws.send( JSON.stringify( { message: wMessage , options: wOptions } ) ); });
 	});
@@ -52,11 +61,9 @@ function loadHandlers() {
 					break;
 				case "youtubeReadyForFullScreenGlitch":
 					require( "./server/firefoxManager.js" ).youtubeFullScreen();
-					//wEmitter.emit( "youtubeReadyForFullScreenGlitch" );
 					break;
 				case "twitchReadyForFullScreenGlitch":
 					require( "./server/firefoxManager.js" ).twitchFullScreen();
-					//wEmitter.emit( "twitchReadyForFullScreenGlitch" );
 					break;
 				case "YTStandardVideoOver":
 					clientManager.pressButtonMaster( 9 ); // next

@@ -60,16 +60,37 @@ async function parseTwitch( wMail ) {
     }
 }
 
+// https://peercalls.com/call/9fb37cad-8546-47ba-b683-117ee12559db
+async function parsePeerCall( wMail ) {
+  var wStart = wMail.text.indexOf( "peercalls.com/call/" ); // 19 long
+  if ( wStart !== -1 ) {
+    var wExtendedCapture = wMail.text.substring( wStart , ( wStart + 70 ) );
+    wExtendedCapture = wExtendedCapture.split( " " )[0];
+    wExtendedCapture = wExtendedCapture.split( "/call/" )[1];
+    wExtendedCapture = wExtendedCapture.split( " " )[0];
+    wExtendedCapture = wExtendedCapture.replace( /\n/g , '' );
+    console.log( wExtendedCapture );
+    require( "./clientManager.js" ).pressButtonMaster( 16 , { alertEmails: [] , recievedCall: true , url: wExtendedCapture } );
+  }
+}
+
+
 function parseEmail( wMail ) {
-    var wFA = wMail.from[0].address;
-    switch( wFA ) {
-        case "no-reply@twitch.tv":
-            parseTwitch( wMail );
-            break;
-        default:
-            //console.log("unknown email , skipping");
-            break;
-    }
+  var wFA = wMail.from[0].address;
+  switch( wFA ) {
+    case "no-reply@twitch.tv":
+      parseTwitch( wMail );
+      break;
+    case "cerbus.collin@gmail.com":
+      parsePeerCall( wMail );
+      break;
+    case "cerbus.cameron@yahoo.com":
+      parsePeerCall( wMail );
+      break;
+    default:
+      //console.log("unknown email , skipping");
+      break;
+  }
 }
 
 var wEmailNotifier = null;

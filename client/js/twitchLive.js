@@ -5,12 +5,14 @@ function startPlayer() {
 		width: xWidth ,
 		height: xHeight ,
 		channel: LIVE_USERS[0] ,
+		chat: "default" ,
+		layout: "video-and-chat" ,
 		allowfullscreen: true ,
 		autoplay: true ,
 		muted: false ,
 	};
 
-	// https://dev.twitch.tv/docs/embed
+	
 	TWITCH_PLAYER = new Twitch.Player( "addTwitchPlayerHere" , xOptions );
 	TWITCH_PLAYER.addEventListener( "online" , function () {
 		console.log( "Player ONLINE !!!" );
@@ -46,6 +48,9 @@ var FULL_SCREEN = false;
 var TWITCH_PLAYER = null;
 var LIVE_USERS = null;
 var LIVE_USERS_INDEX = 0;
+
+// https://dev.twitch.tv/docs/embed
+// https://dev.twitch.tv/docs/embed#embedding-everything
 
 var socket = null;
 var webSocketConnectionString = "ws://" + socketServerAddress + ":" + socketPORT;

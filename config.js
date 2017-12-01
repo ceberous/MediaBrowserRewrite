@@ -99,7 +99,8 @@ module.exports = {
 		12: { state: "LocalMedia_Foreground" , options: { genre: "TVShows" , advance_show: "true" , specific_show: "false" , specific_episode: "false" } } ,
 		13: { session: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" , options: {} } ,
 		14: { state: "YT_Standard_Foreground" , options: {} } ,
-		15: { state: "Instagram_Background" , options: {} }
+		15: { state: "Instagram_Background" , options: {} } ,
+		16: { state: "PeerCall_Foreground" , options: { alertEmails: [] , recievedCall: true } }
 	} ,
 
 	REDIS: {

@@ -41,6 +41,7 @@ function RESTART_AS_YOUTUBE() {
 function LIVE_CHECK_INT() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+
 			var current_live = await require( "../utils/twitchAPI_Utils.js" ).updateLiveUsers( true );
 			console.log( "Current Live Twitch Users = " );
 			console.log( current_live );
@@ -68,7 +69,8 @@ function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			//await require( "../utils/twitchAPI_Utils.js" ).followUserName( "exbc" );
+			//await require( "../utils/twitchAPI_Utils.js" ).followUserName( "lost_in_house" );
+			//await wsleep( 1000 );
 
 			var current_state = await RU.getKey( redis , R_STATE );
 			var wMulti = [ [ "set" , R_PREVIOUS , current_state ] ];
