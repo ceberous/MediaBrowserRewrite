@@ -49,10 +49,12 @@ function INITIALIZATION() {
 			// Otherwise , if an error is found , we should clear first , and then call this
 			// to build from scratch
 			var ek = await RU.getKeysFromPattern( redis , "HARD_DRIVE.*" );
-			if ( ek.length > 1 ) { 
-				GLOBAL_INSTANCE_MOUNT_POINT = await RU.getKey( redis , "HARD_DRIVE.MOUNT_POINT" );
-				resolve( "already in redis" ); 
-				return; 
+			if ( ek ) {
+				if ( ek.length > 1 ) { 
+					GLOBAL_INSTANCE_MOUNT_POINT = await RU.getKey( redis , "HARD_DRIVE.MOUNT_POINT" );
+					resolve( "already in redis" ); 
+					return; 
+				}
 			}
 			// Cleanse and Prepare Mount_Point
 			//await RU.deleteMultiplePatterns( RC.BASE + "*" );

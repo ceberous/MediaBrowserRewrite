@@ -104,6 +104,10 @@ module.exports = {
 	} ,
 
 	REDIS: {
+		HOST: "localhost" ,
+		// PORT: "8443" , 
+		// DATABASE_NUM: 3 , 
+		PORT: "6379" ,
 		DATABASE_NUM: 0 ,
 		CONSTANTS: R_CONSTANTS ,
 		SET_KEYS: {

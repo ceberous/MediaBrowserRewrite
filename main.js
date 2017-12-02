@@ -24,6 +24,12 @@ const ip = require("ip");
 
 const WebSocket = require( "ws" );
 
+
+// sudo leafpad /etc/xdg/lxsession/LXDE/autostart
+// xrandr -q
+// @xrandr --auto --output HDMI1 --primary --mode 1920x1080+0+0 --right-of eDP1
+// @xrandr --auto --output eDP1 --primary --mode 1366x768+0+0 --left-of HDMI1
+
 function wcl( wSTR ) { console.log( colors.green.bgBlack( "[MAIN] --> " + wSTR ) ); }
 function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
@@ -104,8 +110,8 @@ function loadHandlers() {
 	fs.writeFileSync( path.join( __dirname , "client" , "js" , "webSocketServerAddress.js" ) , wSIP );
 	
 	redis = REDIS.createClient({ 
-		host: "localhost" ,
-		port: "8443" ,
+		host: R_INIT_CONFIG[ "HOST" ] ,
+		port: R_INIT_CONFIG[ "PORT" ] ,
 		db: R_INIT_CONFIG[ "DATABASE_NUM" ] ,
 		retry_strategy: function ( options ) {
 	        if (options.error && options.error.code === 'ECONNREFUSED') {

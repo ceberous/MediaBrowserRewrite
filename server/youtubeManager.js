@@ -99,36 +99,38 @@ function enumerateStandardFollowers() {
 				var wFeedURL = ytXML_Base + channelID;
 				wcl( wFeedURL );
 				var req = request( wFeedURL );
-				req.on( "error" , function ( error ) { console.log(error); } );
+				req.on( "error" , function ( error ) { console.log(error); resolve(); return; } );
 				req.on( "response" , function ( res ) {
-					if ( res.statusCode !== 200 ) { /*reject( res.statusCode ); */ }
+					if ( res.statusCode !== 200 ) { /*reject( res.statusCode ); */  resolve(); return; }
 					else { this.pipe( feedparser ); }
 				});
 				feedparser.on( "error" , function ( error ) { console.log( error ); } );
 				feedparser.on( "readable" , function () { var item; while ( item = this.read() ) { wResults.push( item ); } } );
 				feedparser.on( "end" , parseResults );
 				function parseResults() {
-					for ( var i = 0; i < wResults.length; ++i ) {
-						var xID = wResults[i]["yt:videoid"]["#"];
-						if ( !final_results[ channelID ][ xID ] ) {
-							var t1 = new Date( wResults[ i ].pubdate );
-							var t2 = Math.round( t1.getTime() / 1000 );
-							final_ids.push( xID );
-							final_results[ channelID ][ xID ] = {
-								title: wResults[i].title ,
-								pubdate: t2 ,
-								completed: false ,
-								skipped: false ,
-								current_time: 0 ,
-								remaining_time: 0 ,
-								duration: 0 ,
-							};
+					if ( wResults ) {
+						for ( var i = 0; i < wResults.length; ++i ) {
+							var xID = wResults[i]["yt:videoid"]["#"];
+							if ( !final_results[ channelID ][ xID ] ) {
+								var t1 = new Date( wResults[ i ].pubdate );
+								var t2 = Math.round( t1.getTime() / 1000 );
+								final_ids.push( xID );
+								final_results[ channelID ][ xID ] = {
+									title: wResults[i].title ,
+									pubdate: t2 ,
+									completed: false ,
+									skipped: false ,
+									current_time: 0 ,
+									remaining_time: 0 ,
+									duration: 0 ,
+								};
+							}
 						}
 					}
 					resolve();
 				}
 			}
-			catch( error ) { console.log( error ); reject( error ); }
+			catch( error ) { console.log( error ); resolve(); }
 		});
 	}
 	function filterOldVideos( wTimeLimit ) {
@@ -150,8 +152,12 @@ function enumerateStandardFollowers() {
 			// Gather Data
 			current_followers = await RU.getFullSet( redis , RC.STANDARD.FOLLOWERS );
 			current_blacklist = await RU.getFullSet( redis , RC.STANDARD.BLACKLIST );
-			await map( current_followers , userId => fetchFollowerXML( userId ) );	
-			filterOldVideos( wMonth );
+			if ( current_followers ) {
+				await map( current_followers , userId => fetchFollowerXML( userId ) );
+				if ( current_blacklist ) {
+					filterOldVideos( wMonth );
+				}
+			}
 
 			final_ids = final_ids.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
 			await RU.setSetFromArray( redis , RC.STANDARD.LATEST , final_ids );
