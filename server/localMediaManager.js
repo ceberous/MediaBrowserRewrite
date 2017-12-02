@@ -62,6 +62,7 @@ function INITIALIZATION() {
 			var mp = null;
 			if ( MP_CONFIG[ "UUID" ] ) {
 				mp = await require( "./utils/localMedia_Util" ).findAndMountUSB_From_UUID( MP_CONFIG[ "UUID" ] );
+				mp = mp + "MEDIA_MANAGER/";
 			}
 			else if ( MP_CONFIG[ "LOCAL_PATH" ] ) {
 				mp = MP_CONFIG[ "LOCAL_PATH" ];
