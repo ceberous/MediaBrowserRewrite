@@ -85,7 +85,7 @@ function INITIALIZATION() {
 				await RU.setMulti( redis , [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
 				redis.rpush.apply( redis , [ LSS_SK_U ].concat( x1Shows ) );
 				for ( var wShow in x1[ wGenre ] ) { // Each Show in Genre
-					var wShow_R_KEY = RC.BASE + wGenre + ".FP." + wShow;
+					var wShow_R_KEY = h1 + wGenre + ".FP." + wShow;
 					for ( var j = 0; j < x1[ wGenre ][ wShow ].length; ++j ) {
 						var wSeason_R_KEY = wShow_R_KEY + "." + j.toString();
 						if ( x1[ wGenre ][ wShow ][ j ].length > 0 ) { // <-- Has Episodes Stored in Season Folders
