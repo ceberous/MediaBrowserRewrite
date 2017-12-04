@@ -84,7 +84,12 @@ function REDIS_REMOVE_MATCHING_FROM_SET( rInstance , wSetKey , wMatchKey ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-
+function REDIS_TRIM_LIST( rInstance , wKey , wStart , wEnd ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.ltrim( wKey , wStart , wEnd , function( err , key ) { resolve( key ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.llen( wKey , function( err , key ) { resolve( key ); }); }
@@ -94,7 +99,7 @@ function REDIS_GET_LIST_LENGTH( rInstance , wKey ) {
 function REDIS_GET_FULL_LIST( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.lrange( wKey , 0 , -1 , function( err , values ) { resolve( values ); }); }
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve( "list probably doesn't even exist" ); }
 	});
 }
 function REDIS_GET_FULL_SET( rInstance , wKey ) {
@@ -175,6 +180,7 @@ module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
 module.exports.delKey = REDIS_DELETE_KEY;
+module.exports.trimList = REDIS_TRIM_LIST;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
 module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
 module.exports.removeMatchingFromSet = REDIS_REMOVE_MATCHING_FROM_SET;

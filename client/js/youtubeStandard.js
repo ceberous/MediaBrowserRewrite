@@ -71,7 +71,7 @@ var YTIFrameManager = {
 				break;
 			case 0:
 				console.log(" video is over ");
-				socket.send( "YTStandardVideoOver" );
+				socket.send( JSON.stringify( { message: "YTStandardVideoOver" } ) );
 				//socket.send( "youtubeLiveStatus" , { status: "over" , id: wID } );
 				break;
 			case 1:
@@ -102,7 +102,8 @@ var YTIFrameManager = {
 			//YTIFrameManager.wPlayer.setShuffle( true );
 			//YTIFrameManager.wPlayer.setLoop(true);
 			//if ( YTIFrameManager.muted ) { YTIFrameManager.wPlayer.mute(); }
-			socket.send( "youtubeReadyForFullScreenGlitch" );
+			//socket.send( "youtubeReadyForFullScreenGlitch" );
+			socket.send( JSON.stringify( { message: "youtubeReadyForFullScreenGlitch" } ) );
 			//$( ".ytp-fullscreen-button.ytp-button" ).click();
 		} , 1000 );
 	},

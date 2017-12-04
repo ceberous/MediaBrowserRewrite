@@ -66,4 +66,8 @@ app.use( "/peerCall" , function( req , res , next ) {
 	res.render( "peerCall.html" );
 });
 
+app.use( "/instagram" , function( req , res , next ) {
+	res.render( "instagram.html" );
+});
+
 module.exports = app;

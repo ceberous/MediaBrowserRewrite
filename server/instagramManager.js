@@ -133,24 +133,59 @@ function SEARCH_FOLLOWER( wUserName ) {
 	});
 }
 
-function GET_LATEST_FOLLOWER_MEDIA() {
+function UPDATE_LATEST_FOLLOWER_MEDIA() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var current_followers = await RU.getFullSet( redis , RC.FOLLOWERS );
+			const current_followers = await RU.getFullSet( redis , RC.FOLLOWERS );
 			var latest = null;
-			if ( current_followers.length > 0 ) {
-				latest = await map( current_followers , userId => SEARCH_FOLLOWER( userId ) );				
+			if ( current_followers ) {
+				if ( current_followers.length > 0 ) {
+					latest = await map( current_followers , userId => SEARCH_FOLLOWER( userId ) );				
+				}
 			}
 			latest = [].concat.apply( [] , latest );
-			latest = latest.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
-			//await RU.setSetFromArray( redis , RC.LIVE.LATEST , live_videos );			
+
+			var latest_codes = latest.map( x => x.code );
+			const already_watched = await RU.getFullList( redis , RC.ALREADY_WATCHED );
+			var skipped = null;
+			if ( already_watched ) {
+				if ( already_watched.length > 0 ) {
+					skipped = latest_codes.filter( function( val ) { return already_watched.indexOf( val ) !== -1; } );
+				}
+			}
+			if ( skipped !== null ) {
+				latest = latest.filter( function( val ) { return skipped.indexOf( val[ "code" ] ) === -1; } );
+				latest_codes = latest.map( x => x.code );
+			}
+			var wMulti = [];
+			for ( var i = 0; i < latest.length; ++i ) {
+				wMulti.push( latest[ i ][ "code" ] , latest[ i ][ "display_src" ] );
+			}
+
+			if ( wMulti.length > 0 ) {
+				wMulti = wMulti.filter( function( x ) { return x === undefined || x === "undefined" } );
+				await RU.setHashMulti( redis , RC.MEDIA , wMulti );
+			}
+
+			//latest = latest.map( function( x ) { return { code: x["code"] , url: x["display_src"] }; } );
 			resolve( latest );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 
-module.exports.getLatestFollowerMedia = GET_LATEST_FOLLOWER_MEDIA;
+function UPDATE_WATCHED_MEDIA( wCode_ID ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+module.exports.updateLatestFollowerMedia = UPDATE_LATEST_FOLLOWER_MEDIA;
+module.exports.updateWatchedMedia = UPDATE_WATCHED_MEDIA;
 
 // ( async ()=> {
 // 	await RU.selectDatabase( redis , 3 ); // testing

@@ -30,7 +30,7 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 			}
 		}
 	}
-	EMAIL_MAN.sendEmail( x2 , x1 );
+	//EMAIL_MAN.sendEmail( x2 , x1 );
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {

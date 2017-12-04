@@ -79,7 +79,7 @@ var YTIFrameManager = {
 				break;
 			case 2:
 				console.log(" video is paused ");
-				socket.send( "youtubeLiveStatus" , { status: "paused" , id: wID } );
+				socket.send( JSON.stringify( { message: "youtubeLiveStatus" , status: "paused" , id: wID } ) );
 				break;
 			case 3:
 				console.log(" video is buffering ");
@@ -101,7 +101,7 @@ var YTIFrameManager = {
 			YTIFrameManager.wPlayer.setShuffle( true );
 			YTIFrameManager.wPlayer.setLoop(true);
 			if ( YTIFrameManager.muted ) { YTIFrameManager.wPlayer.mute(); }
-			socket.send( "youtubeReadyForFullScreenGlitch" );
+			socket.send( JSON.stringify( { message: "youtubeReadyForFullScreenGlitch" } ) );
 			//$( ".ytp-fullscreen-button.ytp-button" ).click();
 		} , 1000 );
 	},
@@ -138,7 +138,7 @@ $(document).ready( function() {
 	socket.onopen = function () {
 		console.log( socket.id );
 		$("#wPlaceHolder").hide();
-		socket.send( "pong" );
+		socket.send( JSON.stringify( { message: "pong" } ) );
 	};
 
 	socket.onmessage = function ( message ) {
@@ -146,7 +146,7 @@ $(document).ready( function() {
 		console.log( x1 );
 		switch( x1.message ) {
 			case "ping":
-				socket.send( "pong" );
+				socket.send( JSON.stringify( { message: "pong" } ) );
 				break;
 			case "YTLiveBackground":
 				waitForYoutubeReady( x1 );

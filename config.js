@@ -52,7 +52,11 @@ const R_CONSTANTS = {
 	} ,
 	INSTAGRAM: {
 		BASE: INSTAGRAM ,
-		FOLLOWERS: INSTAGRAM + "FOLLOWERS"
+		FOLLOWERS: INSTAGRAM + "FOLLOWERS" ,
+		MEDIA: INSTAGRAM + "MEDIA" ,
+		PLACEHOLDER: INSTAGRAM + "PLACEHOLDER" ,
+		LATEST: INSTAGRAM + "LATEST" ,
+		ALREADY_WATCHED: INSTAGRAM + "ALREADY_WATCHED" ,
 	} ,
 	LOCAL_MEDIA: {
 		BASE: LOCAL_MEDIA_B ,
@@ -79,8 +83,8 @@ const ALERT_EMAILS = require( "./personal.js" ).peerCallNames;
 module.exports = {
 
 	MEDIA_MOUNT_POINT: {
-		UUID: "2864E38A64E358D8" ,
-		//LOCAL_PATH: "/home/morpheous/TMP2/EMULATED_MOUNT_PATH" ,
+		//UUID: "2864E38A64E358D8" ,
+		LOCAL_PATH: "/home/morpheous/TMP2/EMULATED_MOUNT_PATH" ,
 	} ,
 
 	BUTTON_MAP: {
@@ -105,22 +109,27 @@ module.exports = {
 
 	REDIS: {
 		HOST: "localhost" ,
-		// PORT: "8443" , 
-		// DATABASE_NUM: 3 , 
-		PORT: "6379" ,
-		DATABASE_NUM: 0 ,
+		
+		// Purple
+		// PORT: "6379" ,
+		// DATABASE_NUM: 0 ,
+		
+		// Here
+		PORT: "8443" , 
+		DATABASE_NUM: 3 ,
+
 		CONSTANTS: R_CONSTANTS ,
-		SET_KEYS: {
-			"CONFIG.ARRIVED_HOME": "false" ,
-			"MOPIDY.STATE": "stopped" ,
-			"YOU_TUBE.LIVE.FOLLOWERS" : [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ] ,
-			"YOU_TUBE.LIVE.BLACKLIST" : [ "9zMpeUh6DXs" , "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , 
-			"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
-			"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
-			"YOU_TUBE.STANDARD.BLACKLIST": [] ,
-			"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
-		} ,
-		RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
+		// SET_KEYS: {
+		// 	"CONFIG.ARRIVED_HOME": "false" ,
+		// 	"MOPIDY.STATE": "stopped" ,
+		// 	"YOU_TUBE.LIVE.FOLLOWERS" : [ "UCnM5iMGiKsZg-iOlIO2ZkdQ" , "UCakgsb0w7QB0VHdnCc-OVEA" , "UCZvXaNYIcapCEcaJe_2cP7A" ] ,
+		// 	"YOU_TUBE.LIVE.BLACKLIST" : [ "9zMpeUh6DXs" , "bNc7rGEBrMA" , "Mk9gQcHueeE" , "uyTAj1sbThg" , "cdKLSA2ke24" , "SwS3qKSZUuI" , "ddFvjfvPnqk" , "MFH0i0KcE_o" , 
+		// 	"nzkns8GfV-I" , "qyEzsAy4qeU" , "KIyJ3KBvNjA" , "FZvR0CCRNJg" , "q_4YW_RbZBw" , "pwiYt6R_kUQ" , "T9Cj0GjIEbw" ] ,
+		// 	"YOU_TUBE.STANDARD.FOLLOWERS": [ "UCk0UErv9b4Hn5ucNNjqD1UQ" , "UCKbVtAdWFNw5K7u2MZMLKIw"  ] ,
+		// 	"YOU_TUBE.STANDARD.BLACKLIST": [] ,
+		// 	"INSTAGRAM.FOLLOWERS": [ "ceberous" ]
+		// } ,
+		// RESETS: [ "YOU_TUBE.LIVE.LATEST*" , "YOU_TUBE.STANDARD.LATEST*" ]
 	} ,
 
 	SCHEDULES: {
@@ -139,13 +148,13 @@ module.exports = {
 		// Paths Must be **relative** to scheduleManager.js
 		UPDATES: {
 			gmusicPlaylistCache: {
-				startPattern: "0 */3 * * *" , // every 3 hours
+				startPattern: "01 */3 * * *" , // every 3 hours
 				startConditions: { "MOPIDY.STATE": "stopped" } ,
 				functionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 				functionName: "updateCache" ,
 			} ,
 			youtubeStandardList: {
-				startPattern: "0 */9 * * *" , // every 9 hours
+				startPattern: "01 */9 * * *" , // every 9 hours
 				startConditions: {} ,
 				functionPath: [ "youtubeManager.js" ] ,
 				functionName: "updateStandard" ,

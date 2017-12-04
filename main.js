@@ -60,7 +60,10 @@ function loadHandlers() {
 		wcl( "New WebSocket Client Connected @@@ " + ip );
 		sendStagedWebSocketMessage();
 		socket.on( "message" ,  function( message ) {
-			switch( message ) {
+			try { message = JSON.parse( message ); }
+			catch( e ) { var a = message; message = {"message": a}; }
+			
+			switch( message.message ) {
 				case "pong":
 					//console.log( "inside pong()" );
 					this.isAlive = true;
@@ -74,6 +77,8 @@ function loadHandlers() {
 				case "YTStandardVideoOver":
 					clientManager.pressButtonMaster( 9 ); // next
 					break;
+				case "InstagramMediaOver":
+					require( "./server/instagramManager.js" ).updateWatchedMedia( message.options )
 				default:
 					break;
 			}
