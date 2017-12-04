@@ -110,10 +110,11 @@ function GLOBAL_INITIALIZE() {
 	});
 }
 
+module.exports.shutdown = GLOBAL_SHUTDOWN;
 
-process.on( "SIGINT" , async function () {
-	wcl( "Shutting Down" );
-	await GLOBAL_SHUTDOWN();
-	await sleep( 1000 );
-	process.exit(1);
-});
+// process.on( "SIGINT" , async function () {
+// 	wcl( "Shutting Down" );
+// 	await GLOBAL_SHUTDOWN();
+// 	// await sleep( 1000 );
+// 	// process.exit(1);
+// });

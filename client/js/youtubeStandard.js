@@ -164,6 +164,7 @@ $(document).ready( function() {
 				}
 				break;				
 			case "next":
+				console.log( "next video === " + x1.options );
 				YTIFrameManager.wPlayer.loadVideoById( x1.options );
 				break;
 			case "previous":

@@ -118,7 +118,7 @@ function calculatePrevious( lastPlayed , config ) {
 			F_Episode_IDX = previousEpisode;
 			const R_Previous_Base = R_N_BASE + "FP." + F_ShowName;
 			const R_Previous_EP = R_Previous_Base + "." + F_Season_IDX;
-			previousEpisode = await RU.getFromSetByIndex( redis , R_Previous_EP , previousEpisode );
+			previousEpisode = await RU.getFromListByIndex( redis , R_Previous_EP , previousEpisode );
 			//console.log( "next episode === " + previousEpisode );
 
 			if ( previousEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
@@ -133,7 +133,7 @@ function calculatePrevious( lastPlayed , config ) {
 				F_Episode_IDX = await RU.getListLength( redis , R_Previous_Season );
 				F_Episode_IDX = ( F_Episode_IDX - 1 );
 
-				F_FP = await RU.getFromSetByIndex( redis , R_Previous_Season , F_Episode_IDX );
+				F_FP = await RU.getFromListByIndex( redis , R_Previous_Season , F_Episode_IDX );
 
 			}
 			else { F_FP = previousEpisode; }
@@ -189,11 +189,11 @@ function calculateNext( lastPlayed , config ) {
 				//console.log( "inside Advance-Next-Show" );
 				F_UNEQ_IDX = ( F_UNEQ_IDX + 1 );
 				const R_NextShow = R_N_BASE + "META.UNEQ";
-				F_ShowName = await RU.getFromSetByIndex( redis , R_NextShow , F_UNEQ_IDX );
+				F_ShowName = await RU.getFromListByIndex( redis , R_NextShow , F_UNEQ_IDX );
 				if ( F_ShowName === null ) { //  IF Advanced Past Total-UNEQ-aka-Unique Shows in Genre
 					//console.log( "inside show-in-genre reset" );
 					F_UNEQ_IDX = 0;
-					F_ShowName = await RU.getFromSetByIndex( redis , R_NextShow , F_UNEQ_IDX );
+					F_ShowName = await RU.getFromListByIndex( redis , R_NextShow , F_UNEQ_IDX );
 				}
 
 				// Check if Show Already Has a Previous Position
@@ -222,7 +222,7 @@ function calculateNext( lastPlayed , config ) {
 						nextEpisode = ( F_Episode_IDX + 1 );
 						F_Episode_IDX = nextEpisode;
 						const R_Next_EP = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
-						nextEpisode = await RU.getFromSetByIndex( redis , R_Next_EP , nextEpisode );
+						nextEpisode = await RU.getFromListByIndex( redis , R_Next_EP , nextEpisode );
 						//console.log( "next episode === " + nextEpisode );
 
 						if ( nextEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
@@ -230,12 +230,12 @@ function calculateNext( lastPlayed , config ) {
 							F_Episode_IDX = 0;
 							F_Season_IDX = ( F_Season_IDX + 1 );
 							var R_Next_Season = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
-							var intermediaryNext_Episode = await RU.getFromSetByIndex( redis , R_Next_Season , 0 );
+							var intermediaryNext_Episode = await RU.getFromListByIndex( redis , R_Next_Season , 0 );
 							if ( intermediaryNext_Episode === null ) { // IF Advanced Past Total-Seasons in Show Boundry
 								//console.log( "inside season reset" );
 								F_Season_IDX = 0;
 								R_Next_Season = R_N_BASE + "FP." + F_ShowName + "." + F_Season_IDX;
-								F_FP = await RU.getFromSetByIndex( redis , R_Next_Season , 0 );
+								F_FP = await RU.getFromListByIndex( redis , R_Next_Season , 0 );
 							}
 							else { F_FP = intermediaryNext_Episode; }
 						}
@@ -335,9 +335,9 @@ function wPlay( skipping , previous ) {
 			else if ( liveLastPlayed === null ) { // IF - Nothing ever watched in Genre
 				//console.log( "genre is FRESH !!" );
 				const R_FirstShow = h1 + liveConfig[ 0 ] + ".META.UNEQ";
-				const showName = await RU.getFromSetByIndex( redis , R_FirstShow , 0 );
+				const showName = await RU.getFromListByIndex( redis , R_FirstShow , 0 );
 				const R_FirstEpisodeFP = h1 + liveConfig[ 0 ] + ".FP." + showName + ".0";
-				const firstEpisode = await RU.getFromSetByIndex( redis , R_FirstEpisodeFP , 0 );
+				const firstEpisode = await RU.getFromListByIndex( redis , R_FirstEpisodeFP , 0 );
 				const firstEpFullPath = GLOBAL_INSTANCE_MOUNT_POINT + "/" + liveConfig[ 0 ] + "/" + showName + "/01/" + firstEpisode;
 				FinalNowPlaying = { 
 					genre: liveConfig[ 0 ] , uneq_idx: 0 , show_name: showName ,
@@ -424,12 +424,20 @@ module.exports.stop 			= wStop;
 module.exports.next 			= wNext;
 module.exports.previous			= wPrevious;
 
-process.on( "SIGINT" , async function () {
-	await wStop();
-	await wSleep( 3000 );
-	redis.quit();
-});
 
+function SHUTDOWN_ALL() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await wStop();
+			await wSleep( 3000 );
+			redis.quit();			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+module.exports.shutdown = SHUTDOWN_ALL;
 
 
 module.exports.testUpdateScheduleFunction = function() {

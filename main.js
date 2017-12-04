@@ -167,8 +167,11 @@ function loadHandlers() {
 	wcl( "SERVER READY" );
 })();
 
-process.on( "SIGINT" , function () {
-	wEmitter.emit( "closeEverything" );
+process.on( "SIGINT" , async function () {
+	//wEmitter.emit( "closeEverything" );
+	await clientManager.pressButtonMaster( 6 );
+	await require( "./server/mopidyManager.js" ).shutdown();
+	await require( "./server/localMediaManager.js" ).shutdown();
 	setTimeout( ()=> {
 		exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
 		exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );

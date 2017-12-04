@@ -177,7 +177,7 @@ function UPDATE_LATEST_FOLLOWER_MEDIA() {
 function UPDATE_WATCHED_MEDIA( wCode_ID ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-
+			// https://redis.io/commands/ltrim
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

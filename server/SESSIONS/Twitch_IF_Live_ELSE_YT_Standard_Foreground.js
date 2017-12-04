@@ -87,7 +87,7 @@ function wStart() {
 			current_live = await require( "../utils/twitchAPI_Utils.js" ).updateLiveUsers( resetOverride );
 			if ( current_live.length > 0 ) {
 				
-				ACTIVE_TWITCH_USER_NAME = await RU.getFromSetByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
+				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
 				if ( ACTIVE_TWITCH_USER_NAME === null ) { await RESTART_AS_YOUTUBE(); }
 				else {
 					wMulti.push( [ "set" , R_STATE , R_STATE_NAME_TWITCH ] );
@@ -137,7 +137,7 @@ function wNext() {
 				await wsleep( 1000 );
 				var c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
 				console.log( "c_index === " + c_index );
-				ACTIVE_TWITCH_USER_NAME = await RU.getFromSetByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
+				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
 				if ( ACTIVE_TWITCH_USER_NAME !== null ) {
 					await CUR_MAN.next( ACTIVE_TWITCH_USER_NAME );
 				}
@@ -165,7 +165,7 @@ function wPrevious() {
 				else {
 					await RU.decrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX );
 					c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
-					ACTIVE_TWITCH_USER_NAME = await RU.getFromSetByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
+					ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
 					await CUR_MAN.previous( ACTIVE_TWITCH_USER_NAME );
 				}
 				

@@ -38,7 +38,7 @@ function REDIS_GET_KEY( rInstance , wKey ) {
 		catch( error ) { console.log( error ); resolve( "null" ); }
 	});
 }
-function REDIS_GET_FROM_SET_BY_INDEX( rInstance , wKey , wIndex ) {
+function REDIS_GET_FROM_LIST_BY_INDEX( rInstance , wKey , wIndex ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.lindex( wKey , wIndex , function( err , key ) { resolve( key ); }); }
 		catch( error ) { console.log( error ); reject( error ); }
@@ -127,7 +127,12 @@ function REDIS_INCREMENT_INTEGER( rInstance , wKey ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-
+function REDIS_LIST_R_POP( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.rpop( wKey , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 function REDIS_DECREMENT_INTEGER( rInstance , wKey ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.decr( wKey , function( err , values ) { resolve( values ); }); }
@@ -182,7 +187,7 @@ module.exports.getKey = REDIS_GET_KEY;
 module.exports.delKey = REDIS_DELETE_KEY;
 module.exports.trimList = REDIS_TRIM_LIST;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
-module.exports.getFromSetByIndex = REDIS_GET_FROM_SET_BY_INDEX;
+module.exports.getFromListByIndex = REDIS_GET_FROM_LIST_BY_INDEX;
 module.exports.removeMatchingFromSet = REDIS_REMOVE_MATCHING_FROM_SET;
 module.exports.getMultiKeys = REDIS_GET_MULTI_KEY;
 module.exports.getFullList = REDIS_GET_FULL_LIST;
@@ -195,6 +200,7 @@ module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
 module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;
 module.exports.setHashMulti = REDIS_SET_HASH_MULTI;
 module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;
+module.exports.listRPOP = REDIS_LIST_R_POP;
 module.exports.incrementInteger = REDIS_INCREMENT_INTEGER;
 module.exports.decrementInteger = REDIS_DECREMENT_INTEGER;
 module.exports.deleteMultiplePatterns = REDIS_DELETE_MULTIPLE_PATTERNS;
