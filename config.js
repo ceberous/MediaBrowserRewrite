@@ -87,7 +87,7 @@ module.exports = {
 
 	MEDIA_MOUNT_POINT: {
 		UUID: "2864E38A64E358D8" ,
-		LOCAL_PATH: "/home/morpheous/TMP2/EMULATED_MOUNT_PATH" ,
+		//LOCAL_PATH: "/home/morpheous/TMP2/EMULATED_MOUNT_PATH" ,
 	} ,
 
 	BUTTON_MAP: {

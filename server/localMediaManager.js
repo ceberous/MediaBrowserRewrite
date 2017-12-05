@@ -377,7 +377,7 @@ function wPlay( skipping , previous ) {
 			G_R_NP_ShowName_Backup = R_NP_ShowName_BackupKey;
 
 
-			wcl( "\nSTARTING --> MPLAYER" );	
+			//wcl( "\nSTARTING --> MPLAYER" );	
 			await MPLAYER_MAN.playFilePath( FinalNowPlaying.fp );
 			if ( FinalNowPlaying.cur_time > 1 ) {
 				await wSleep( 1000 );

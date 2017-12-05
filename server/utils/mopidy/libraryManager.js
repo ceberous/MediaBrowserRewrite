@@ -83,7 +83,7 @@ function UPDATE_CACHE() {
 			console.log( "TIME.NOW = " + timeNow.toString() );
 			var lastUpdatedTime = await RU.getKey( redis , R_LAST_UPDATE_TIME );
 			console.log( "lastUpdatedTime = " + lastUpdatedTime );
-			var wDiff = 0;
+			var wDiff = HOUR;
 			if ( !lastUpdatedTime ) { lastUpdatedTime = "NEVER"; }
 			else if ( lastUpdatedTime === null || lastUpdatedTime === undefined ) { lastUpdatedTime = "NEVER"; }
 			else { wDiff = ( timeNow - parseInt( lastUpdatedTime ) ); }
