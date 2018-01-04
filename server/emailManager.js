@@ -2,7 +2,7 @@ require("shelljs/global");
 const path = require("path");
 const notifier = require( "mail-notifier" );
 
-const redis = require( "../main.js" ).redis;
+const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 const wEmailCREDS = require( "../personal.js" ).emailServer;
@@ -86,6 +86,9 @@ function parseEmail( wMail ) {
       parsePeerCall( wMail );
       break;
     case wPeerCallListenEmails[ 1 ]:
+      parsePeerCall( wMail );
+      break;
+    case wPeerCallListenEmails[ 2 ]:
       parsePeerCall( wMail );
       break;
     default:

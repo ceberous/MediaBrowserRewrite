@@ -6,21 +6,21 @@ const wEmitter	= require("../main.js").wEmitter;
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
-const redis = require( "../main.js" ).redis;
+const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
 
 const CEC_MAN		= require( "./utils/cecClientManager.js" );
-const EMAIL_MAN 	= require( "./emailManager.js" );
+//const EMAIL_MAN 	= require( "./emailManager.js" );
 
 var CURRENT_STATE = null;
 var BTN_MAP = require( "../config.js" ).BUTTON_MAP;
 
 const R_ARRIVE_HOME = "CONFIG.ARRIVED_HOME";
 async function wSendButtonPressNotificationEmail( wButtonNum ) {
-	const x1 = "MB-Pressed--" + wButtonNum.toString();
+	const x1 = wButtonNum.toString();
 	const dNow = new Date();
 	var dHours = dNow.getHours(); 
-	const x2 = dNow.getMonth() + '-' + dNow.getDate() + '-' + dNow.getFullYear() + '--' + dHours + '-' + dNow.getMinutes();
+	const x2 = ( dNow.getMonth() + 1 ) + '/' + dNow.getDate() + '/' + dNow.getFullYear() + '--' + dHours + ':' + dNow.getMinutes();
 	wcl( x2 + " " + x1 );
 	if ( parseInt( dHours ) === 15 ) {
 		const already_home = await RU.getKey( redis , R_ARRIVE_HOME );
@@ -30,7 +30,13 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 			}
 		}
 	}
-	EMAIL_MAN.sendEmail( x2 , x1 );
+	var x3 = undefined;
+	if ( BTN_MAP[ wButtonNum ][ "label" ] ){ x3 = BTN_MAP[ wButtonNum ][ "label" ]; }
+	else if ( BTN_MAP[ wButtonNum ][ "session" ] ) { x3 = BTN_MAP[ wButtonNum ][ "session" ]; } 
+	else if ( BTN_MAP[ wButtonNum ][ "state" ] ) { x3 = BTN_MAP[ wButtonNum ][ "state" ]; }
+
+	//EMAIL_MAN.sendEmail( x2 , x1 );
+	require( "./slackManager.js" ).post( ( x2 + " @@ " + x3 + "()" ) , "#media_box" );
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {

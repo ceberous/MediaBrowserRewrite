@@ -1,6 +1,6 @@
-const redis = require("../../main.js").redis;
+const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
-const RC = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE;
+const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE;
 
 const wEmitter = require( "../../main.js" ).wEmitter;
 

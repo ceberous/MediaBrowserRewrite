@@ -2,7 +2,7 @@ const wEmitter = require( "../../main.js" ).wEmitter;
 
 const redis = require( "../../main.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
-const RC = require( "../../config.js" ).REDIS.CONSTANTS.YOU_TUBE;
+const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE;
 
 function GET_NEXT_VIDEO() {
 	return new Promise( async function( resolve , reject ) {

@@ -15,9 +15,9 @@ const { map } = require( "p-iteration" );
 const request = require("request");
 const resolver = require("resolver");
 //const cheerio = require("cheerio");
-const redis = require( "../main.js" ).redis;
+const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
-const RC = require( "../config.js" ).REDIS.CONSTANTS.INSTAGRAM;
+const RC = require( "../CONSTANTS/redis.js" ).INSTAGRAM;
 
 function RESOLVE_SHORT_LINK( wURL ) {
 	return new Promise( function( resolve , reject ) {
@@ -70,7 +70,7 @@ function GET_REAL_VIDEO_URL( wCode ) {
 				if ( err ) { console.log( err ); reject( err ); return; }
 				try { var $ = cheerio.load( body ); }
 				catch(err) { reject( "cheerio load failed" ); return; }
-				$( '<video></video>' ).each( function () {
+				$( "<video></video>" ).each( function () {
 					var wID = $( this ).attr( "src" );
 					console.log( wID );
 					wResults.push( wID );

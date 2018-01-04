@@ -1,4 +1,4 @@
-const redis = require( "../../../main" ).redis;
+const redis = require( "../../utils/redisManager.js" ).redis;
 const RU = require( "../redis_Utils.js" );
 const mopidy = require( "../../mopidyManager.js" ).mopidy;
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }

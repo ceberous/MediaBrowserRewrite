@@ -1,6 +1,6 @@
 const wEmitter	= require("../main.js").wEmitter;
 
-const redis = require( "../main.js" ).redis;
+const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 

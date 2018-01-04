@@ -1,6 +1,6 @@
 const path = require("path");
 const schedule = require( "node-schedule" );
-const redis = require( "../main.js" ).redis;
+const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 const colors	= require( "colors" );

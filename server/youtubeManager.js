@@ -8,12 +8,12 @@ const { map } = require( "p-iteration" );
 
 const wEmitter	= require("../main.js").wEmitter;
 
-const redis = require( "../main.js" ).redis;
+const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
-const RC = require( "../config.js" ).REDIS.CONSTANTS.YOU_TUBE;
+const RC = require( "./CONSTANTS/redis.js" ).YOU_TUBE;
 
 function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_MAN] --> " + wSTR ) ); }
-function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+const wSleep = require( "./utils/generic.js" ).wSleep;
 
 
 function INITIALIZE() {

@@ -1,30 +1,9 @@
-
+require( "shelljs/global" );
 const FS = require( "fs" );
 const PATH = require( "path" );
-require( "shelljs/global" );
-
-function fixPathSpace( wFP ) {
-	var fixSpace = new RegExp( " " , "g" );
-	wFP = wFP.replace( fixSpace , String.fromCharCode(92) + " " );
-	wFP = wFP.replace( ")" , String.fromCharCode(92) + ")" );
-	wFP = wFP.replace( "(" , String.fromCharCode(92) + "(" );
-	wFP = wFP.replace( "'" , String.fromCharCode(92) + "'" );
-	return wFP;
-}
-
-function wGetDuration( wFP ) {
-	try {
-		wFP = fixPathSpace( wFP );
-		var z1 = "ffprobe -v error -show_format -i " + wFP;
-		var x1 = exec( z1 , { silent: true , async: false } );
-		if ( x1.stderr ) { return( x1.stderr ); }
-		var wMatched = x1.stdout.match( /duration="?(\d*\.\d*)"?/ );
-		var f1 = Math.floor( wMatched[1] );
-		return f1;
-	}
-	catch( error ) { console.log( error ); }
-}
-
+const colors	= require( "colors" );
+function wcl( wSTR ) { console.log( colors.magenta.bgBlack( "[HARD_DRIVE_UTIL] --> " + wSTR ) ); }
+const wSleep = require( "../generic.js" ).wSleep;
 
 function FIND_USB_STORAGE_PATH_FROM_UUID( wUUID ) {
 	function getPath() {
@@ -97,9 +76,72 @@ async function BUILD_HD_REF( wMountPoint ) {
 	return fr;
 }
 
-
-
-module.exports.fixPathSpace = fixPathSpace;
-module.exports.getDuration = wGetDuration;
 module.exports.findAndMountUSB_From_UUID = FIND_USB_STORAGE_PATH_FROM_UUID;
 module.exports.buildHardDriveReference = BUILD_HD_REF;
+
+const redis = require( "../redisManager.js" ).redis;
+const RU = require( "../redis_Utils.js" );
+const RC = require( "../../CONSTANTS/redis.js" ).LOCAL_MEDIA;
+const MOUNT_CONFIG = require( "../../../config.js" ).MEDIA_MOUNT_POINT;
+
+function REBUILD_REDIS_MOUNT_POINT_REFERENCE( wMountPoint ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			// Scan Mount_Point
+			const x1 = await BUILD_HD_REF( wMountPoint );
+			console.log( x1 );
+			// Store Info into Redis ... why
+			for ( var wGenre in x1 ) {
+				var x1Shows = Object.keys( x1[ wGenre ] );
+				if ( x1Shows.length < 1 ) { continue; }
+				const LSS_SK_B = RC.BASE + wGenre + ".META.";
+				const LSS_SK_U = LSS_SK_B + "UNEQ";
+				const LSS_SK_T = LSS_SK_B + "TOTAL";
+				const LSS_SK_C = LSS_SK_B + "CURRENT_INDEX";
+				await RU.setMulti( redis , [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
+				redis.rpush.apply( redis , [ LSS_SK_U ].concat( x1Shows ) );
+				for ( var wShow in x1[ wGenre ] ) { // Each Show in Genre
+					const wShow_R_KEY = RC.HD_BASE + wGenre + ".FP." + wShow;
+					for ( var j = 0; j < x1[ wGenre ][ wShow ].length; ++j ) {
+						const wSeason_R_KEY = wShow_R_KEY + "." + j.toString();
+						if ( x1[ wGenre ][ wShow ][ j ].length > 0 ) { // <-- Has Episodes Stored in Season Folders
+							redis.rpush.apply( redis , [ wSeason_R_KEY ].concat( x1[ wGenre ][ wShow ][ j ] ) );
+						}
+					}
+				}
+			}
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function REINITIALIZE_MOUNT_POINT() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			// 1.) Lookup mount point to see if valid , else build reference
+			var wLiveMountPoint = await RU.getKey( redis , RC.MOUNT_POINT );
+			if ( !wLiveMountPoint ) {
+				wcl( "No Media Reference Found , Trying to Rebuild from --> " );
+				if ( MOUNT_CONFIG[ "UUID" ] ) {
+					wcl( "UUID: " + MOUNT_CONFIG[ "UUID" ] );
+					wLiveMountPoint = await FIND_USB_STORAGE_PATH_FROM_UUID( MOUNT_CONFIG[ "UUID" ] );
+					wLiveMountPoint = wLiveMountPoint + "MEDIA_MANAGER/";
+				}
+				else if ( MOUNT_CONFIG[ "LOCAL_PATH" ] ) {
+					wcl( "LOCAL_PATH: " + MOUNT_CONFIG[ "LOCAL_PATH" ] );
+					wLiveMountPoint = MOUNT_CONFIG[ "LOCAL_PATH" ];
+				}
+				else { wcl( "We Were Not Told Where to Find any Local Media" ); resolve( "no_local_media" ); return; }
+				// Cleanse and Prepare Mount_Point
+				await RU.deleteMultiplePatterns( redis , [ ( RC.BASE + "*" ) , "HARD_DRIVE.*" , "LAST_SS.LOCAL_MEDIA.*" ] );
+				//await wSleep( 2000 );
+				await REBUILD_REDIS_MOUNT_POINT_REFERENCE( wLiveMountPoint );
+				await RU.setKey( redis , RC.MOUNT_POINT , wLiveMountPoint );
+			}		
+			resolve( wLiveMountPoint );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.reinitializeMountPoint = REINITIALIZE_MOUNT_POINT;

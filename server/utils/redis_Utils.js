@@ -169,9 +169,11 @@ function REDIS_DELETE_MULTIPLE_PATTERNS( rInstance , wKeyPatterns ) {
 			console.log( "\ndeleteing these keys --> \n" );
 			console.log( del_keys );
 			
-			if ( del_keys.length > 0 ) {
-				del_keys = del_keys.map( x => [ "del" , x  ] );
-				await REDIS_SET_MULTI( rInstance , del_keys );
+			if ( del_keys ) {
+				if ( del_keys.length > 0 ) {
+					del_keys = del_keys.map( x => [ "del" , x  ] );
+					await REDIS_SET_MULTI( rInstance , del_keys );
+				}
 			}
 
 			console.log( "done CLEANSING all R_KEYS" );

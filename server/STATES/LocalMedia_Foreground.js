@@ -1,6 +1,6 @@
-const redis = require("../../main.js").redis;
+const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
-const RC = require( "../../config.js" ).REDIS.CONSTANTS.LOCAL_MEDIA;
+const RC = require( "../CONSTANTS/redis.js" ).LOCAL_MEDIA;
 
 function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
@@ -20,7 +20,7 @@ function wStart( wOptions ) {
 				[ "set" , RC.CONFIG.SPECIFIC_SHOW , wOptions.specific_show ] ,
 				[ "set" , RC.CONFIG.SPECIFIC_EPISODE , wOptions.specific_episode ] ,
 			]);
-			await require( "../localMediaManager.js" ).play();
+			await require( "../localMediaManager.js" ).play( wOptions );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

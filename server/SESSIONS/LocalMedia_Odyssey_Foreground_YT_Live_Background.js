@@ -1,4 +1,4 @@
-const redis = require("../../main.js").redis;
+const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 const R_STATE_BASE = "LAST_SS.STATE."
