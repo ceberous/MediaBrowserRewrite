@@ -1,0 +1,53 @@
+{
+    "LIVE": {
+        "FOLLOWERS": [
+            {
+                "name": "",
+                "id": "UCnM5iMGiKsZg-iOlIO2ZkdQ"
+            },
+            {
+                "name": "",
+                "id": "UCakgsb0w7QB0VHdnCc-OVEA"
+            },
+            {
+                "name": "",
+                "id": "UCZvXaNYIcapCEcaJe_2cP7A"
+            },
+            {
+                "name": "",
+                "id": "UCUPn5IEQugMf_JeNJOV9p2A"
+            }
+        ],
+        "BLACKLIST": [
+            "N5UUv-tgyDg",
+            "9zMpeUh6DXs",
+            "bNc7rGEBrMA",
+            "Mk9gQcHueeE",
+            "uyTAj1sbThg",
+            "cdKLSA2ke24",
+            "SwS3qKSZUuI",
+            "ddFvjfvPnqk",
+            "MFH0i0KcE_o",
+            "nzkns8GfV-I",
+            "qyEzsAy4qeU",
+            "KIyJ3KBvNjA",
+            "FZvR0CCRNJg",
+            "q_4YW_RbZBw",
+            "pwiYt6R_kUQ",
+            "T9Cj0GjIEbw"
+        ]
+    },
+    "STANDARD": {
+        "FOLLOWERS": [
+            {
+                "name": "",
+                "id": "UCk0UErv9b4Hn5ucNNjqD1UQ"
+            },
+            {
+                "name": "",
+                "id": "UCKbVtAdWFNw5K7u2MZMLKIw"
+            }
+        ],
+        "BLACKLIST": []
+    }
+}

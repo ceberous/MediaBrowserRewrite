@@ -1,0 +1,7 @@
+{
+    "CONNECTION": {
+        "HOST": "localhost",
+        "PORT": "6379",
+        "DATABASE_NUM": 3
+    }
+}

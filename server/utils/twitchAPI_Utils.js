@@ -6,7 +6,7 @@ const wTwitchKeys = require( "../../personal.js" ).twitch;
 //console.log( wSES );
 
 
-const redis = require( "../../main.js" ).redis;
+const redis = require( "./redisManager.js" ).redis;
 const RU = require( "./redis_Utils.js" );
 
 function followUserName( wUserNameToFollow  ) {

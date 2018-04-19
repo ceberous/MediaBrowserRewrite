@@ -26,3 +26,29 @@ function GET_DURATION( wFP ) {
 	catch( error ) { console.log( error ); }
 }
 module.exports.getDuration = GET_DURATION;
+
+function SET_STAGED_FF_CLIENT_TASK( wOptions ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions );
+			const redis = require( "./redisManager.js" ).redis;
+			await require( "./redis_Utils.js" ).setKey( redis , "STAGED_FF_TASK" , STAGED_FF_CLIENT_TASK );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.setStagedFFClientTask = SET_STAGED_FF_CLIENT_TASK;
+
+function GET_STAGED_FF_CLIENT_TASK( wDontParse ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const redis = require( "./redisManager.js" ).redis;
+			var STAGED_FF_CLIENT_TASK = await require( "./redis_Utils.js" ).getKey( redis , "STAGED_FF_TASK" );
+			if ( !wDontParse ) { STAGED_FF_CLIENT_TASK = JSON.parse( STAGED_FF_CLIENT_TASK ); }
+			resolve( STAGED_FF_CLIENT_TASK );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.getStagedFFClientTask = GET_STAGED_FF_CLIENT_TASK;

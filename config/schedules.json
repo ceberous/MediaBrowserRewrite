@@ -1,0 +1,28 @@
+{
+    "STATE_TRANSITIONS": {
+        "arriveHome": {
+            "startPattern": "01 16 * * 1,2,3,5",
+            "endPattern": "01 18 * * 1,2,3,5",
+            "state": 13,
+            "stateOptions": null,
+            "startConditions": {
+                "CONFIG.ARRIVED_HOME": "false"
+            },
+            "stopConditions": null
+        }
+    },
+    "UPDATES": {
+        "gmusicPlaylistCache": {
+            "startPattern": "01 */3 * * *",
+            "startConditions": {
+                "MOPIDY.STATE": "stopped"
+            },
+            "functionPath": [
+                "utils",
+                "mopidy",
+                "libraryManager.js"
+            ],
+            "functionName": "updateCache"
+        }
+    }
+}

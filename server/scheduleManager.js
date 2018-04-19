@@ -7,14 +7,18 @@ const colors	= require( "colors" );
 function wcl( wSTR ) { console.log( colors.yellow.bgGreen( "[SCHEDULE_MAN] --> " + wSTR ) ); }
 
 const wButtonMaster = require( "./clientManager.js" ).pressButtonMaster;
-var SCHEDULE = require( "../config.js" ).SCHEDULES;
-var STATE_TRANSITIONS = SCHEDULE.STATE_TRANSITIONS;
-var UPDATE_JOBS = SCHEDULE.UPDATES;
 
+var SCHEDULE = STATE_TRANSITIONS = UPDATE_JOBS = null;
 var ACTIVE_SCHEDULES = [];
 
 // Initialize State Transition Schedules
 ( async ()=> {
+
+	wcl( "syncing schedules" );
+	SCHEDULE = require( "../config/schedules.json" );
+	STATE_TRANSITIONS = SCHEDULE.STATE_TRANSITIONS;
+	UPDATE_JOBS = SCHEDULE.UPDATES;
+
 	wcl( "setting up state transition schedules" );
 	for ( var job in STATE_TRANSITIONS ) {
 		

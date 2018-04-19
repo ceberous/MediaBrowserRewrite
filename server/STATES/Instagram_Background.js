@@ -8,7 +8,7 @@ function wStart() {
 		try {
 			var latest_media = await require( "../instagramManager.js" ).updateLatestFollowerMedia();
 			console.log( latest_media );
-			await require( "../../main.js" ).setStagedFFClientTask( { message: "Instagram" , playlist: latest_media , nextMediaTime: 5000 } );
+			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "Instagram" , playlist: latest_media , nextMediaTime: 5000 } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/instagram" );
 			//await RU.setMulti( redis , [ [ "set" , "LAST_SS.STATE.ACTIVE" , "INSTAGRAM_BACKGROUND" ] , [ "set" , R_PREVIOUS , current_state ] ] );			
 			resolve();

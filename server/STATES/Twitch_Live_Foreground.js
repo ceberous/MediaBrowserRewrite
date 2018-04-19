@@ -18,7 +18,7 @@ function wStart( wUser ) {
 			}
 			if ( current_live.length > 0 ) {
 				var current_state = await RU.getKey( redis , R_STATE );
-				await require( "../../main.js" ).setStagedFFClientTask( { message: "TwitchLiveForeground" , playlist: current_live } );
+				await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "TwitchLiveForeground" , playlist: current_live } );
 				await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/twitchLive" );
 				await RU.setMulti( redis , [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
 			}

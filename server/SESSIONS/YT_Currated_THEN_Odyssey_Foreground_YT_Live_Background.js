@@ -46,7 +46,7 @@ function wStart() {
 			var next_video = await TRY_FOR_NEXT_VIDEO();
 			if ( next_video === "null" ) { await RESTART_IN_YOU_TUBE_LIVE_MODE(); }
 			else {
-				await require( "../../main.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
+				await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
 				await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
 				await RU.setMulti( redis , [ 
 					[ "sadd" , RC.ALREADY_WATCHED , next_video ] ,

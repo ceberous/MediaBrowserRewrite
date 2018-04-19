@@ -1,10 +1,9 @@
-const fs	= require( "fs" );
 const path	= require( "path" );
 const colors	= require( "colors" );
+function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 
 const wEmitter	= require("../main.js").wEmitter;
-function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
-function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+const wSleep = require( "./utils/generic.js" ).wSleep;
 
 const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
@@ -13,7 +12,7 @@ const CEC_MAN		= require( "./utils/cecClientManager.js" );
 //const EMAIL_MAN 	= require( "./emailManager.js" );
 
 var CURRENT_STATE = null;
-var BTN_MAP = require( "../config.js" ).BUTTON_MAP;
+var BTN_MAP = require( "../config/buttons.json" );
 
 const R_ARRIVE_HOME = "CONFIG.ARRIVED_HOME";
 async function wSendButtonPressNotificationEmail( wButtonNum ) {
@@ -36,7 +35,8 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 	else if ( BTN_MAP[ wButtonNum ][ "state" ] ) { x3 = BTN_MAP[ wButtonNum ][ "state" ]; }
 
 	//EMAIL_MAN.sendEmail( x2 , x1 );
-	require( "./slackManager.js" ).post( ( x2 + " @@ " + x3 + "()" ) , "#media_box" );
+	//require( "./slackManager.js" ).post( ( x2 + " @@ " + x3 + "()" ) , "#media_box" );
+	require( "./discordManager.js" ).log( ( x2 + " @@ " + x3 + "()" ) );
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {

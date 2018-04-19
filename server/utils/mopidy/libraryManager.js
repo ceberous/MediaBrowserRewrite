@@ -17,6 +17,8 @@ function GET_PLAYLISTS() {
 			var BTN_CLASSICS = await RU.getFullSet( redis , R_BUTTON_CLASSIC );
 			var BTN_EDM = await RU.getFullSet( redis , R_BUTTON_EDM );
 
+			if ( !mopidy ) { resolve( "mopidy offline" ); return; }
+
 			mopidy.playlists.getPlaylists().then( async function( playlists ) {
 
 				var R_MULTI = [];

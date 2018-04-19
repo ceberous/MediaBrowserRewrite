@@ -22,7 +22,7 @@ function INITIALIZE() {
 		try {
 			// 1.) Load Mount Point
 			const GLOBAL_INSTANCE_MOUNT_POINT = await require( "./utils/local-media/hardDrive.js" ).reinitializeMountPoint();
-			if ( !GLOBAL_INSTANCE_MOUNT_POINT ) { resolve( "no local media" ); return; }
+			if ( !GLOBAL_INSTANCE_MOUNT_POINT ) { await RU.setKey( redis , "STATE.LOCAL_MEDIA" , "OFFLINE" );  resolve( "no local media" ); return; }
 			wcl( "Live Mount Point === " + GLOBAL_INSTANCE_MOUNT_POINT );
 
 			wEmitter.on( "MPlayerOVER" , async function( wResults ) {

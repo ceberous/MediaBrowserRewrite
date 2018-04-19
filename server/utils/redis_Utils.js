@@ -38,6 +38,16 @@ function REDIS_GET_KEY( rInstance , wKey ) {
 		catch( error ) { console.log( error ); resolve( "null" ); }
 	});
 }
+function REDIS_GET_KEY_DE_JSON( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.get( wKey , function( err , key ) {
+			try { key = JSON.parse( key ); }
+			catch( err ) {}
+			resolve( key ); });
+		}
+		catch( error ) { console.log( error ); resolve( "null" ); }
+	});
+}
 function REDIS_GET_FROM_LIST_BY_INDEX( rInstance , wKey , wIndex ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.lindex( wKey , wIndex , function( err , key ) { resolve( key ); }); }
@@ -183,9 +193,18 @@ function REDIS_DELETE_MULTIPLE_PATTERNS( rInstance , wKeyPatterns ) {
 	});
 }
 
+function REDIS_KEY_EXISTS( rInstance , wKey ) {
+	return new Promise( async function( resolve , reject ) {
+		try { rInstance.exists( wKey , function( err , answer ) { resolve( answer ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+module.exports.exists = REDIS_KEY_EXISTS;
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
 module.exports.getKey = REDIS_GET_KEY;
+module.exports.getKeyDeJSON = REDIS_GET_KEY_DE_JSON;
 module.exports.delKey = REDIS_DELETE_KEY;
 module.exports.trimList = REDIS_TRIM_LIST;
 module.exports.getListLength = REDIS_GET_LIST_LENGTH;
