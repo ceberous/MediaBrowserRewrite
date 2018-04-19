@@ -2,13 +2,10 @@ const path	= require( "path" );
 const colors	= require( "colors" );
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
 
-const wEmitter	= require("../main.js").wEmitter;
 const wSleep = require( "./utils/generic.js" ).wSleep;
 
 const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
-
-const CEC_MAN		= require( "./utils/cecClientManager.js" );
 
 var CURRENT_STATE = null;
 var BTN_MAP = require( "../config/buttons.json" );
@@ -18,7 +15,7 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 	const x1 = wButtonNum.toString();
 	const dNow = new Date();
 	var dHours = dNow.getHours(); 
-	const x2 = ( dNow.getMonth() + 1 ) + '/' + dNow.getDate() + '/' + dNow.getFullYear() + '--' + dHours + ':' + dNow.getMinutes();
+	const x2 = ( dNow.getMonth() + 1 ) + "/" + dNow.getDate() + "/" + dNow.getFullYear() + "--" + dHours + ":" + dNow.getMinutes();
 	wcl( x2 + " " + x1 );
 	if ( parseInt( dHours ) === 15 ) {
 		const already_home = await RU.getKey( redis , R_ARRIVE_HOME );
@@ -48,7 +45,7 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 			await CURRENT_STATE.stop(); 
 			await wSleep( 1000 ); 
 		}
-		CEC_MAN.activate();
+		require( "./utils/cecClientManager.js" ).activate();
 		if ( BTN_MAP[ wButtonNum ][ "session" ] ) {
 			launching_fp = path.join( __dirname , "SESSIONS" ,  BTN_MAP[ wButtonNum ][ "session" ] + ".js" );
 		}
