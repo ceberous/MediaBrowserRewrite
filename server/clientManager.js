@@ -9,7 +9,6 @@ const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
 
 const CEC_MAN		= require( "./utils/cecClientManager.js" );
-//const EMAIL_MAN 	= require( "./emailManager.js" );
 
 var CURRENT_STATE = null;
 var BTN_MAP = require( "../config/buttons.json" );
@@ -34,8 +33,6 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 	else if ( BTN_MAP[ wButtonNum ][ "session" ] ) { x3 = BTN_MAP[ wButtonNum ][ "session" ]; } 
 	else if ( BTN_MAP[ wButtonNum ][ "state" ] ) { x3 = BTN_MAP[ wButtonNum ][ "state" ]; }
 
-	//EMAIL_MAN.sendEmail( x2 , x1 );
-	//require( "./slackManager.js" ).post( ( x2 + " @@ " + x3 + "()" ) , "#media_box" );
 	require( "./discordManager.js" ).log( ( x2 + " @@ " + x3 + "()" ) );
 }
 
@@ -77,8 +74,6 @@ module.exports.pressButtonMaster = wPressButtonMaster;
 // ======================================================================
 // ======================================================================
 const BTN_MAN 			= require( "./buttonManager.js" );
-	// Currently Importing These here ONLY for Their Initialization Blocks
-//const LOCAL_MEDIA_MAN 	= require( "./localMediaManager.js" ); 
 const MOPIDY_MAN 		= require( "./mopidyManager.js" );
 const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 // ======================================================================
