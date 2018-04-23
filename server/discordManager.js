@@ -1,3 +1,8 @@
+// https://qeled.github.io/discordie/#/docs/GettingStarted.md?_k=n7hmct
+// https://qeled.github.io/discordie/#/docs/IDirectMessageChannel?_k=658zxz
+
+// https://support.discordapp.com/hc/en-us/articles/225977308--Windows-Discord-Hotkeys
+
 const Eris = require("eris");
 var discordBot = null;
 var discordCreds = null;

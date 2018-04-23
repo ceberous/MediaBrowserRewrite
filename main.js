@@ -68,9 +68,6 @@ function SEND_STAGED_WS_MESSAGE() {
 	
 	wcl( "LOADED FF-Client Web-Socket Stuff" );
 
-	//await require( "./server/slackManager.js" ).initialize();
-	//wcl( "LOADED Slack-Client" );
-
 	await require( "./server/discordManager.js" ).intitialize();
 	await require( "./server/utils/generic.js" ).wSleep( 2000 );
 	wcl( "LOADED Discord-Client" );
@@ -84,7 +81,6 @@ function SEND_STAGED_WS_MESSAGE() {
 	});
 
 	process.on( "unhandledRejection" , async function( reason , p ) {
-	    //require( "./server/slackManager.js" ).postError( reason );
 	    await require( "./server/discordManager.js" ).error( reason );
 	});
 	process.on( "uncaughtException" , async function( err ) {
@@ -104,5 +100,7 @@ function SEND_STAGED_WS_MESSAGE() {
 		} , 2000 );
 	});
 
+	await require( "./server/utils/generic.js" ).getStatusReport();
 	wcl( "SERVER READY" );
+
 })();

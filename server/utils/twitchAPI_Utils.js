@@ -45,8 +45,13 @@ function getFollowers() {
 		try {
 			var wURL = "https://api.twitch.tv/kraken/streams/followed?client_id=" +
 			wTwitchKeys.client_id + "&oauth_token=" + wTwitchKeys.oauth_token + "&on_site=1";
-			request( wURL , function ( err , response , body ) {
-		        if ( err ) { console.log( err ); reject( err ); return; }
+			request( wURL , async function ( err , response , body ) {
+		        if ( err ) { 
+		        	console.log( err );
+		        	await RU.setKey( redis , "STATUS.TWITCH" , "OFFLINE" );
+		        	reject( err ); 
+		        	return; 
+		        }
 				resolve( JSON.parse( body ) );
 			});
 		}

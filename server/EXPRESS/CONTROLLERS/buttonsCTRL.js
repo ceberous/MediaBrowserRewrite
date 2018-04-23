@@ -18,4 +18,4 @@ module.exports.press12 = function( req , res ) { wPressButtonMaster( 12 ); sendJ
 module.exports.press13 = function( req , res ) { wPressButtonMaster( 13 ); sendJSONResponse( res , 200 , { buttonPress: "YT_STD_Currated_THEN_Odyssey_And_YT_Live" } ); };
 module.exports.press14 = function( req , res ) { wPressButtonMaster( 14 ); sendJSONResponse( res , 200 , { buttonPress: "YT_Standard_Foreground" } ); };
 module.exports.press15 = function( req , res ) { wPressButtonMaster( 15 ); sendJSONResponse( res , 200 , { buttonPress: "Instagram_Background" } ); };
-module.exports.press16 = function( req , res ) { wPressButtonMaster( 16 ); sendJSONResponse( res , 200 , { buttonPress: "PeerCall Recieved Call" } ); };
+module.exports.press16 = function( req , res ) { wPressButtonMaster( 16 ); sendJSONResponse( res , 200 , { buttonPress: "YT_Playlist_Foreground" } ); };

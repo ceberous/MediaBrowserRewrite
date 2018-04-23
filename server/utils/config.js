@@ -5,14 +5,9 @@ var SET_KEYS = {
 	
 	"MOPIDY.STATE": "stopped" ,
 	"STAGED_FF_TASK": "null" ,
+};
 
-	"STATUS.USB_BUTTONS": "OFFLINE" ,
-	"STATUS.LOCAL_MEDIA": "OFFLINE" ,
-	"STATUS.YT_LIVE": "OFFLINE" ,
-	"STATUS.TY_STANDARD": "OFFLINE" ,
-	"STATUS.TWITCH": "OFFLINE" ,
-	"STATUS.SKYPE": "OFFLINE" ,
-	"STATUS.MOPIDY": "OFFLINE" ,
+const SET_IF_NOT_EXIST_KEYS = {
 };
 
 function SAVE_CONFIG_TO_REDIS() {
@@ -20,6 +15,7 @@ function SAVE_CONFIG_TO_REDIS() {
 		try {
 			const redis = require( "./redisManager.js" ).redis;
 
+			// 0.) Bring in physical config
 			const YT = require( "../../config/youtube.json" );
 			SET_KEYS[ "YOU_TUBE.LIVE.FOLLOWERS" ] = YT.LIVE.FOLLOWERS.map( x => x[ "id" ] );
 			SET_KEYS[ "YOU_TUBE.LIVE.BLACKLIST" ] = YT.LIVE.BLACKLIST;
@@ -38,11 +34,28 @@ function SAVE_CONFIG_TO_REDIS() {
 			SET_KEYS[ "DISCORD.CALLE1" ] = DISCORD_CALLES[ 0 ];
 			SET_KEYS[ "DISCORD.CALLE2" ] = DISCORD_CALLES[ 1 ];
 
+			// 1.) Reset Anything that should be fresh
 			if ( RESETS ) {
 				await require( "./redis_Utils.js").deleteMultiplePatterns( redis , RESETS );
 			}
+			
+			var wMulti = [];
+			
+			// 2.) Initialize Status of Everything to Offline
+			const StatusKeys = require( "../CONSTANTS/redis.js" ).STATUS;
+			for ( var i = 0; i < StatusKeys.length; ++i ) {
+				wMulti.push( [ "set" , StatusKeys[ i ] , "OFFLINE" ] )
+			}
+
+			// 3.) Rebuild Skeloton-DB-Struct if 1st run , or somehow gone
+			if ( SET_IF_NOT_EXIST_KEYS ) {
+				for ( var wKey in SET_IF_NOT_EXIST_KEYS ) {
+					wMulti.push( [ "setnx" , wKey , SET_IF_NOT_EXIST_KEYS[ wKey ] ] );
+				}
+			}
+
+			// 4.) Load "run-time" Config
 			if ( SET_KEYS ) {
-				var wMulti = [];
 				for ( var wKey in SET_KEYS ) {
 					if ( Array.isArray( SET_KEYS[ wKey ] ) ) {
 						for ( var i = 0; i < SET_KEYS[ wKey ].length; ++i ) {
@@ -53,9 +66,10 @@ function SAVE_CONFIG_TO_REDIS() {
 						wMulti.push( [ "set" , wKey , SET_KEYS[ wKey ] ] );
 					}
 				}
-				console.log( wMulti );
-				await require( "./redis_Utils.js" ).setMulti( redis , wMulti );
 			}
+			
+			console.log( wMulti );
+			await require( "./redis_Utils.js" ).setMulti( redis , wMulti );
 
 			resolve();
 		}

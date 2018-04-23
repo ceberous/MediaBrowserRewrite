@@ -6,6 +6,7 @@
             "state": 13,
             "stateOptions": null,
             "startConditions": {
+                "STATUS.LOCAL_MEDIA": "ONLINE",
                 "CONFIG.ARRIVED_HOME": "false"
             },
             "stopConditions": null
@@ -15,6 +16,7 @@
         "gmusicPlaylistCache": {
             "startPattern": "01 */3 * * *",
             "startConditions": {
+                "STATUS.MOPIDY": "ONLINE",
                 "MOPIDY.STATE": "stopped"
             },
             "functionPath": [

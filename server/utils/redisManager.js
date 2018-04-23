@@ -6,7 +6,7 @@ function LOAD_REDIS() {
 			redis = await REDIS.createClient({ 
 				host: R_INIT_CONFIG[ "CONNECTION" ][ "HOST" ] ,
 				port: R_INIT_CONFIG[ "CONNECTION" ][ "PORT" ] ,
-				db: R_INIT_CONFIG[ "DATABASE_NUM" ] ,
+				db: R_INIT_CONFIG[ "CONNECTION" ][ "DATABASE_NUM" ] ,
 				retry_strategy: function ( options ) {
 			        if ( options.error && options.error.code === "ECONNREFUSED" ) {
 			            // End reconnecting on a specific error and flush all commands with

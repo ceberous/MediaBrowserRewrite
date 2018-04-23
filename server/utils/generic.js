@@ -1,3 +1,4 @@
+const request = require( "request" );
 require( "shelljs/global" );
 
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -52,3 +53,108 @@ function GET_STAGED_FF_CLIENT_TASK( wDontParse ) {
 	});
 }
 module.exports.getStagedFFClientTask = GET_STAGED_FF_CLIENT_TASK;
+
+function GET_STATUS_REPORT() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const redis = require( "./redisManager.js" ).redis;
+			const StatusKeys = require( "../CONSTANTS/redis.js" ).STATUS;
+			console.log( StatusKeys.join( "," ) );
+			var wStatusReport = await require( "./redis_Utils.js" ).getMultiKeys( redis , StatusKeys.join( "," ) );
+			console.log( "\n\nSTATUS REPORT ====\n" );
+			console.log( wStatusReport )
+			resolve( wStatusReport );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.getStatusReport = GET_STATUS_REPORT;
+
+
+function CHECK_STATUS( wComponent ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const redis = require( "./redisManager.js" ).redis;
+			var isComponentLive = await require( "./redis_Utils.js" ).getKey( redis , "STATUS." + wComponent );
+			var answer = false;
+			if ( isComponentLive ) {
+				if ( isComponentLive === "ONLINE" ) { answer = true; }
+			}
+			resolve( answer );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.checkStatus = CHECK_STATUS;
+
+function SET_STATUS( wComponent , wStatus ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const redis = require( "./redisManager.js" ).redis;
+			await require( "./redis_Utils.js" ).setKey( redis , "STATUS." + wComponent , wStatus );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.setStatus = SET_STATUS;
+
+
+function REBOOT_ROUTER() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var wURL = "http://192.168.0.1/goform/login";
+			var wBody = "loginUsername=admin&loginPassword=admin";
+			console.log( wURL );
+			request.post({
+			  headers: { "content-type": "application/x-www-form-urlencoded" },
+			  url:     wURL ,
+			  body:    wBody ,
+			}, function( error, response, body){
+				console.log( body );
+			  	var w1URL = "http://192.168.0.1/goform/RgSecurity";
+				var w1Body = "UserId=&OldPassword=&Password=&PasswordReEnter=&ResRebootYes=0x01&RestoreFactoryNo=0x00&RgRouterBridgeMode=1";
+				console.log( w1URL );
+				request.post({
+				  headers: { "content-type" : "application/x-www-form-urlencoded" },
+				  url:     w1URL ,
+				  body:    w1Body ,
+				}, function( w1error, w1response, w1body){
+				  console.log( w1body );
+				  resolve();
+				});
+
+			});	
+
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+module.exports.rebootRouter = REBOOT_ROUTER;
+
+
+function RESTART_PM2() {
+	return new Promise( function( resolve , reject ) {
+		try {
+			exec( "pm2 restartAll" , { silent: true , async: false } );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.restartPM2 = RESTART_PM2;
+
+
+function OS_COMMAND( wTask ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			var result = null;
+			var x1 = exec( wTask , { silent: true , async: false } );
+			if ( x1.stderr ) { result = x1.stderr }
+			else { result = x1.stdout.trim() }
+			resolve( result );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.osCommand = OS_COMMAND;

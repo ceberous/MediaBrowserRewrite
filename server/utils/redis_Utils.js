@@ -67,7 +67,12 @@ function REDIS_SET_KEY( rInstance , wKey , wVal ) {
 		catch( error ) { console.log( error ); resolve( "error" ); }
 	});
 }
-
+function REDIS_SET_IF_NOT_EXISTS_KEY( rInstance , wKey , wVal ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.set( wKey , wVal , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); resolve( "error" ); }
+	});
+}
 function REDIS_SET_HASH_MULTI( rInstance , ...args ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.hmset( ...args , function( err , values ) { resolve( values ); }); }
@@ -195,7 +200,13 @@ function REDIS_DELETE_MULTIPLE_PATTERNS( rInstance , wKeyPatterns ) {
 
 function REDIS_KEY_EXISTS( rInstance , wKey ) {
 	return new Promise( async function( resolve , reject ) {
-		try { rInstance.exists( wKey , function( err , answer ) { resolve( answer ); }); }
+		try {
+			rInstance.exists( wKey , function( err , answer ) {
+				var wFinal = false;
+				if ( answer === 1 || answer === "1" ) { wFinal = true; }
+				resolve( wFinal );
+			});
+		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
@@ -216,6 +227,7 @@ module.exports.getFullSet = REDIS_GET_FULL_SET;
 module.exports.getRandomSetMembers = REDIS_GET_RANDOM_SET_MEMBERS;
 module.exports.popRandomSetMembers = REDIS_POP_RANDOM_SET_MEMBERS;
 module.exports.setKey= REDIS_SET_KEY;
+module.exports.setKeyIfNotExists = REDIS_SET_IF_NOT_EXISTS_KEY;
 module.exports.setMulti = REDIS_SET_MULTI;
 module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
 module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;

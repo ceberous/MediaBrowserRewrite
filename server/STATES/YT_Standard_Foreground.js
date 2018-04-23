@@ -1,6 +1,6 @@
 const wEmitter = require( "../../main.js" ).wEmitter;
 
-const redis = require( "../../main.js" ).redis;
+const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE;
 
@@ -17,7 +17,7 @@ function GET_NEXT_VIDEO() {
 			else {
 				console.log( "no videos are left in MAIN_LIST" );
 				finalMode = "STANDARD";
-				finalVideo = await RU.popRandomSetMembers( redis , RC.STANDARD.LATEST , 1 );
+				finalVideo = await RU.popRandomSetMembers( redis , RC.STANDARD.QUE , 1 );
 				if ( finalVideo.length < 1 ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve(); return; }
 				else { finalVideo = finalVideo[0]; }
 			}
@@ -26,7 +26,7 @@ function GET_NEXT_VIDEO() {
 			// WutFace https://stackoverflow.com/questions/17060672/ttl-for-a-set-member
 			await RU.setMulti( redis , [ 
 				[ "sadd" , RC.ALREADY_WATCHED , finalVideo ] ,
-				[ "set" , RC.NOW_PLAYING_KEY , finalVideo ] , 
+				[ "set" , RC.NOW_PLAYING_ID , finalVideo ] , 
 				[ "set" , RC.NOW_PLAYING_MODE , finalMode ] 
 			]);			
 			resolve( finalVideo );
@@ -35,11 +35,11 @@ function GET_NEXT_VIDEO() {
 	});
 }
 
-function wStart() {
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			//await require( "../youtubeManager.js" ).updateStandard();
-			var final_vid = await GET_NEXT_VIDEO();
+			var final_vid = await GET_NEXT_VIDEO( wOptions );
 			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ final_vid ]  } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
 			resolve();

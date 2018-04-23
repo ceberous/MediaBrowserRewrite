@@ -16,13 +16,30 @@ function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_MAN] --> " + w
 const wSleep = require( "./utils/generic.js" ).wSleep;
 
 
+// function BUILD_REDIS_SKELETON() {
+// 	return new Promise( async function( resolve , reject ) {
+// 		try {
+// 			var wMulti = [];
+// 			for ( var wKey in R_SKELETON ) {
+// 				wMulti.push( [ "setnx" , wKey , R_SKELETON[ wKey ] ] );
+// 			}
+// 			console.log( wMulti );
+// 			await RU.setMulti( redis , wMulti );			
+// 			resolve();
+// 		}
+// 		catch( error ) { console.log( error ); reject( error ); }
+// 	});
+// }
+
+
 function INITIALIZE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-
+			//await BUILD_REDIS_SKELETON();
 			//await enumerateLiveFollowers();
+			await RU.setKey( redis , "STATUS.YT_LIVE" , "ONLINE" );
 			await enumerateStandardFollowers();
-
+			await RU.setKey( redis , "STATUS.YT_STANDARD" , "ONLINE" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -160,10 +177,34 @@ function enumerateStandardFollowers() {
 			}
 
 			final_ids = final_ids.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
-			await RU.setSetFromArray( redis , RC.STANDARD.LATEST , final_ids );
-			await RU.setDifferenceStore( redis , RC.PLACEHOLDER , RC.STANDARD.LATEST , RC.ALREADY_WATCHED );
-			await RU.setStoreUnion( redis , RC.UNWATCHED , RC.PLACEHOLDER , RC.UNWATCHED )
-			await RU.delKey( redis , RC.PLACEHOLDER );
+			
+			const wQueExists = await RU.exists( redis , RC.STANDARD.QUE );
+			if ( !wQueExists ) {
+				console.log( "Que Doesn't Exist , just setting to latest videos" );
+				console.log( RC.STANDARD.QUE );
+				await RU.setSetFromArray( redis , RC.STANDARD.QUE , final_ids );
+			}
+			else {
+				const wAlreadyWatchedList = await RU.exists( redis , RC.STANDARD.WATCHED );
+				if ( wAlreadyWatchedList ) {
+					await RU.setSetFromArray( redis , RC.STANDARD.LATEST , final_ids );
+					await RU.setDifferenceStore( redis , RC.STANDARD.PLACEHOLDER , RC.STANDARD.LATEST , RC.STANDARD.WATCHED );
+					await RU.setStoreUnion( redis , RC.STANDARD.QUE , RC.STANDARD.PLACEHOLDER , RC.STANDARD.QUE );
+					await RU.delKey( redis , RC.STANDARD.PLACEHOLDER );
+				}
+				else {
+					console.log( "ALREADY_WATCHED Doesn't Exist" );
+					await RU.setSetFromArray( redis , RC.STANDARD.QUE , final_ids );
+				}
+			}
+			
+			// const wQue = await RU.getFullSet( redis , RC.STANDARD.QUE );
+			// console.log( "\n\nYOUTUBE STANARD QUE ==== " );
+			// console.log( wQue );
+
+			// const wQue = await RU.getFullSet( redis , RC.STANDARD.QUE );
+			// console.log( "\n\nYOUTUBE STANARD QUE ==== " );
+			// console.log( wQue );
 
 			// If you wanted a detailed hash for some reason
 			//var wMultis = [];
@@ -203,7 +244,7 @@ function enumerateStandardFollowers() {
 			// await RU.setMulti( redis , final_vid_keys );
 			// ============================================================================================================================
 
-			resolve( final_ids );
+			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -212,3 +253,49 @@ function enumerateStandardFollowers() {
 module.exports.initialize = INITIALIZE;
 module.exports.updateLive = enumerateLiveFollowers;
 module.exports.updateStandard = enumerateStandardFollowers;
+
+
+
+
+// FILTER Example
+
+// const R_SCIENCE_DIRECT_ARTICLE_HASH = "SCIENCE_DIRECT.ARTICLES";
+// const R_SCIENCE_DIRECT_ARTICLES = "SCANNERS_SCIENCE_DIRECT.ALREADY_TRACKED";
+// function FILTER_ALREADY_TRACKED_SD_ARTICLE_IDS( wResults ) {
+// 	return new Promise( async function( resolve , reject ) {
+// 		try {
+// 			var wArticleIDS = wResults.map( x => x[ "sdAID" ] );
+// 			//console.log( wArticleIDS );
+
+// 			// 1.) Generate Random-Temp Key
+// 			var wTempKey = Math.random().toString(36).substring(7);
+// 			var R_PLACEHOLDER = "SCANNERS." + wTempKey + ".PLACEHOLDER";
+// 			var R_NEW_TRACKING = "SCANNERS." + wTempKey + ".NEW_TRACKING";
+
+// 			await RU.setSetFromArray( redis , R_PLACEHOLDER , wArticleIDS );
+// 			await RU.setDifferenceStore( redis , R_NEW_TRACKING , R_PLACEHOLDER , R_SCIENCE_DIRECT_ARTICLES );
+// 			await RU.delKey( redis , R_PLACEHOLDER );
+// 			//await RU.setSetFromArray( redis , R_GLOBAL_ALREADY_TRACKED_DOIS , wArticleIDS );
+
+// 			const wNewTracking = await RU.getFullSet( redis , R_NEW_TRACKING );
+// 			if ( !wNewTracking ) { 
+// 				await RU.delKey( redis , R_NEW_TRACKING ); 
+// 				console.log( "nothing new found" ); 
+// 				PrintNowTime(); 
+// 				resolve( [] );
+// 				return;
+// 			}
+// 			if ( wNewTracking.length < 1 ) {
+// 				await RU.delKey( redis , R_NEW_TRACKING );
+// 				console.log( "nothing new found" ); 
+// 				PrintNowTime();
+// 				resolve( [] );
+// 				return;
+// 			}
+// 			wResults = wResults.filter( x => wNewTracking.indexOf( x[ "sdAID" ] ) !== -1 );
+// 			await RU.delKey( redis , R_NEW_TRACKING );
+// 			resolve( wResults );
+// 		}
+// 		catch( error ) { console.log( error ); reject( error ); }
+// 	});
+// }

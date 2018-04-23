@@ -1,7 +1,7 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
-var adminPanel = require( "../CONTROLLERS/adminPanelCTRL.js" );
+const adminPanel = require( "../CONTROLLERS/adminPanelCTRL.js" );
 
 router.get( '/getstatus/' , adminPanel.getStatus );
 

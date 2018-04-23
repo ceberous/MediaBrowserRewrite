@@ -1,16 +1,16 @@
-var express = require("express");
-var path = require("path");
-var bodyParser = require("body-parser");
-var ejs = require("ejs");
+const express = require( "express" );
+const path = require( "path" );
+const bodyParser = require( "body-parser" );
+const ejs = require( "ejs" );
 
-var app = express();
-var server = require("http").createServer(app);
-var port = process.env.PORT || 6969;
+const app = express();
+const server = require( "http" ).createServer(app);
+const port = process.env.PORT || 6969;
 
 // View Engine Setup
 app.set( "views" , path.join( __dirname , "../../client" , "views" ) );
-app.set( "view engine" , 'ejs' );
-app.engine( 'html' , require('ejs').renderFile );
+app.set( "view engine" , "ejs" );
+app.engine( "html" , require( "ejs" ).renderFile );
 
 // Set Static Folder
 app.use( express.static( path.join( __dirname , "../../client"  ) ) );
@@ -34,15 +34,15 @@ app.get( "/" , function( req , res , next ) {
 	res.render( 'index.html' );
 });
 
-var specialRoutes = require( "./ROUTES/specialRTR.js" );
+const specialRoutes = require( "./ROUTES/specialRTR.js" );
 app.use( "/special/" , specialRoutes );
 
-var adminPanelRoutes = require( "./ROUTES/adminPanelRTR.js" );
+const adminPanelRoutes = require( "./ROUTES/adminPanelRTR.js" );
 app.use( "/admin/v1/" , adminPanelRoutes );
 app.get( "/admin" , function( req , res , next ) {
 	res.render( 'adminPanel.html' );
 });
-var buttonsRoutes = require( "./ROUTES/buttonsRTR.js" );
+const buttonsRoutes = require( "./ROUTES/buttonsRTR.js" );
 app.use('/buttonpress/' , buttonsRoutes );
 
 // Youtube-Routes
@@ -52,14 +52,14 @@ app.get( "/youtubeStandard" , function( req , res , next ) {
 app.get( "/youtubeLiveBackground" , function( req , res , next ) {
 	res.render( "youtubeLiveBackground.html" );
 });
-var youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
+const youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
 app.use( "/youtube/" , youtubeRoutes );
 
 // Twitch-Routes
 app.get( "/twitchLive" , function( req , res , next ) {
 	res.render( "twitchLive.html" );
 });
-var twitchRoutes = require( "./ROUTES/twitchRTR.js" );
+const twitchRoutes = require( "./ROUTES/twitchRTR.js" );
 app.use( "/twitch/" , twitchRoutes );
 
 app.use( "/peerCall" , function( req , res , next ) {

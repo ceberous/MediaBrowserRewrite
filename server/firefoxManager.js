@@ -189,6 +189,7 @@ module.exports.exitTwitch = EXIT_TWITCH
 module.exports.openURL = function( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			wcl( wURL );
 			
 			if ( ffWrapper.isFFOpen() ) {
 				wEmitter.emit( "sendFFClientMessage" , "shutdown" );

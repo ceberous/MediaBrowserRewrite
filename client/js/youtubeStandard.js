@@ -1,4 +1,3 @@
-
 var YTIFrameManager = {
 
 	"wPlayer" : null,
@@ -9,7 +8,6 @@ var YTIFrameManager = {
 	init: function() {
 		console.log( "inside init()" );
 		//YTIFrameManager.playlist = YTIFrameManager.buildPlaylistArray( true );
-		if ( YTIFrameManager.playlist.length > 1 ) { YTIFrameManager.usingPlaylist = true; }
 		YTIFrameManager.showVideo();
 		//if ( nextVideoTime > 0 ) { YTIFrameManager.startNextVideoInterval(); }
 
@@ -45,9 +43,9 @@ var YTIFrameManager = {
 	showVideo: function(wVideo) {
 
 		if ( !wVideo ){ var wVideo = { id: "o2Qmc8Sb6Ws" }; } 
-
 		var wThis = $(window);
-		var wOptions = { version: 3 , height: wThis.height() , width: wThis.width() , videoId: YTIFrameManager.playlist[0] , loop: 1 };
+		var wOptions = { version: 3 , height: wThis.height() , width: wThis.width() , loop: 1 , videoId: wVideo };
+		if ( YTIFrameManager.playlist ) { wOptions.videoId = YTIFrameManager.playlist[0] }
 		wOptions.events = {
 			'onReady': YTIFrameManager.onPlayerReady,
 			'onStateChange': YTIFrameManager.onPlayerStateChange,
@@ -95,7 +93,14 @@ var YTIFrameManager = {
 
 	onPlayerReady: function(event) {
 		console.log("player is supposedly ready");
-		if ( YTIFrameManager.usingPlaylist ) { 
+		if ( YTIFrameManager.playlist_id ) {
+			console.log( "Loading youtube playlist id === " + YTIFrameManager.playlist_id[ 0 ] );
+			YTIFrameManager.wPlayer.loadPlaylist({
+				list: YTIFrameManager.playlist_id[ 0 ]  ,
+				listType: "playlist"
+			});
+		}
+		else {
 			YTIFrameManager.wPlayer.cuePlaylist( YTIFrameManager.playlist );
 		}
 		setTimeout( function() {
@@ -125,7 +130,8 @@ function waitForYoutubeReady( x1 ) {
 	function readyYoutube(){
 		if( ( typeof YT !== "undefined" ) && YT && YT.Player ) {
 			nextVideoTime = x1.nextVideoTime;
-			YTIFrameManager.playlist = x1.playlist;;
+			if ( x1.playlist_id ) { YTIFrameManager.playlist_id = x1.playlist_id }
+			else { YTIFrameManager.playlist = x1.playlist; }
 			YTIFrameManager.init();
 		}
 		else{ setTimeout( readyYoutube , 100 ); }
@@ -164,8 +170,11 @@ $(document).ready( function() {
 				}
 				break;				
 			case "next":
-				console.log( "next video === " + x1.options );
-				YTIFrameManager.wPlayer.loadVideoById( x1.options );
+				if ( x1.options ) {
+					console.log( "next video === " + x1.options );
+					YTIFrameManager.wPlayer.loadVideoById( x1.options );
+				}
+				else { YTIFrameManager.wPlayer.nextVideo(); }
 				break;
 			case "previous":
 				YTIFrameManager.wPlayer.previousVideo();

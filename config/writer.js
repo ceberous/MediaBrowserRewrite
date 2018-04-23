@@ -28,7 +28,8 @@ const BUTTONS = {
 		13: { session: "YT_Currated_THEN_Odyssey_Foreground_YT_Live_Background" , options: {} } ,
 		14: { state: "YT_Standard_Foreground" , options: {} } ,
 		15: { state: "Instagram_Background" , options: {} } ,
-		16: { state: "PeerCall_Foreground" , options: { alertEmails: [] , recievedCall: true } } ,
+		//16: { state: "YT_Playlist_Foreground" , options: { playlist: "https://www.youtube.com/playlist?list=PLcW8xNfZoh7cxWFftCwzHJA3foHba1SzF" } } ,
+		16: { state: "YT_Playlist_Foreground" , options: { playlist_id: "PLcW8xNfZoh7cxWFftCwzHJA3foHba1SzF" } } ,
 };
 
 
@@ -54,7 +55,7 @@ const SCHEDULES = {
 			endPattern: "01 18 * * 1,2,3,5" ,
 			state: 13,
 			stateOptions: null ,
-			startConditions: { "CONFIG.ARRIVED_HOME": "false" } ,
+			startConditions: { "STATUS.LOCAL_MEDIA": "ONLINE" , "CONFIG.ARRIVED_HOME": "false" } ,
 			stopConditions: null ,
 		} ,
 	} ,
@@ -63,7 +64,7 @@ const SCHEDULES = {
 	UPDATES: {
 		gmusicPlaylistCache: {
 			startPattern: "01 */3 * * *" , // every 3 hours
-			startConditions: { "MOPIDY.STATE": "stopped" } ,
+			startConditions: { "STATUS.MOPIDY": "ONLINE" , "MOPIDY.STATE": "stopped" } ,
 			functionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 			functionName: "updateCache" ,
 		} ,

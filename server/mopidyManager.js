@@ -90,7 +90,8 @@ function GLOBAL_SHUTDOWN() {
 				tryIgnoreError( mopidy.off );
 			}
 			mopidy = null;
-			wcl( "CLOSED" );			
+			wcl( "CLOSED" );
+			await RU.setKey( redis , "STATUS.MOPIDY" , "OFFLINE" );	
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -104,6 +105,7 @@ function GLOBAL_INITIALIZE() {
 			await require( "./utils/mopidy/playbackManager.js" ).initialize();
 			await require( "./utils/mopidy/tracklistManager.js" ).initialize();
 			wcl( "CONNECTED !!!" );
+			await RU.setKey( redis , "STATUS.MOPIDY" , "ONLINE" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
