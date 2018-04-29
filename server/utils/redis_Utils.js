@@ -6,6 +6,13 @@ function REDIS_GET_KEYS_FROM_PATTERN( rInstance , wPattern ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+function REDIS_SET_LIST_FROM_ARRAY_BEGINNING( rInstance , wKey , wArray ) {
+	console.log( "Here in set to beginnign list" );
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.lpush.apply( rInstance , [ wKey ].concat( wArray ).concat( function( err , keys ){ resolve( keys ); })); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 function REDIS_SET_LIST_FROM_ARRAY( rInstance , wKey , wArray ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.rpush.apply( rInstance , [ wKey ].concat( wArray ).concat( function( err , keys ){ resolve( keys ); })); }
@@ -22,7 +29,7 @@ function REDIS_SET_SET_FROM_ARRAY( rInstance , wKey , wArray ) {
 // Possibly limit to 10-20 at a time
 function REDIS_DEL_KEYS( rInstance , wKeys ) {
 	return new Promise( function( resolve , reject ) {
-		try { rInstance.del.apply( rInstance , wKeys , function( err , results ){ if ( err ) { console.log( err ); } else { console.log( results ) } });  }
+		try { rInstance.del.apply( rInstance , wKeys , function( err , results ){ if ( err ) { console.log( err ); } else { console.log( results ); resolve(); } });  }
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
@@ -230,6 +237,7 @@ module.exports.setKey= REDIS_SET_KEY;
 module.exports.setKeyIfNotExists = REDIS_SET_IF_NOT_EXISTS_KEY;
 module.exports.setMulti = REDIS_SET_MULTI;
 module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
+module.exports.setListFromArrayBeginning = REDIS_SET_LIST_FROM_ARRAY_BEGINNING;
 module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;
 module.exports.setHashMulti = REDIS_SET_HASH_MULTI;
 module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;
