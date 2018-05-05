@@ -5,6 +5,7 @@ var SET_KEYS = {
 	
 	"MOPIDY.STATE": "stopped" ,
 	"STAGED_FF_TASK": "null" ,
+	"YOU_TUBE.ODYSSEY_PRELIM_TOTAL": 8 ,
 };
 
 const SET_IF_NOT_EXIST_KEYS = {

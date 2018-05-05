@@ -26,20 +26,24 @@ function RESTART_IN_YOU_TUBE_LIVE_MODE(){
 function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
+			const next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
 			if ( !next_video ) {
 				await RESTART_IN_YOU_TUBE_LIVE_MODE();
 				resolve();
 				return;
 			}
-			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
-			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
+			var limit = await RU.getKey( redis , RC.ODYSSEY_PRELIM_TOTAL );
+			limit = parseInt( limit );
 			await RU.setMulti( redis , [ 
 				[ "set" , RC.NOW_PLAYING_ID , next_video[ 0 ] ] ,
 				[ "rpush" , RC.NP_SESSION_LIST , next_video[ 0 ] ] ,
 				[ "set" , RC.NP_SESSION_INDEX , 0 ] ,
 				[ "set" , RC.MODE , "CURRATED" ] ,
+				[ "set" , RC.PRELIM_COUNT , limit ] ,
 			]);
+
+			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
+			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -48,37 +52,43 @@ function wStart() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const current_index = await RU.getKey( redis , RC.NP_SESSION_INDEX );
-			const session_length = await RU.getListLength( redis , RC.NP_SESSION_LIST );
-			console.log( "INDEX === " + current_index.toString() );
+			// 1.) Assume Last Video Was "completed" 
+			const completed_id = await RU.getKey( redis , RC.NOW_PLAYING_ID );
+			if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
+			
+			// 2.) Determine Place In Session
+			await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
+			var current_index = await RU.getKey( redis , RC.NP_SESSION_INDEX );
+			var session_length = await RU.getListLength( redis , RC.NP_SESSION_LIST );
+			console.log( "\nINDEX === " + current_index.toString() );
 			console.log( "LENGTH === " + session_length.toString() );
+			
+			// 4.) Get Next Video
 			var next_video = null;
-			if ( parseInt( current_index ) < ( parseInt( session_length ) - 1 ) ) {
-				next_video = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , ( current_index + 1 ) );
-				await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
-				await RU.setMulti( redis , [ 
-					[ "set" , RC.NOW_PLAYING_ID , next_video ] ,
-					[ "incr" , RC.NP_SESSION_INDEX ] ,
-				]);
-			}
-			else {
-				const completed_id = await RU.getKey( redis , RC.NOW_PLAYING_ID );
-				if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
-
+			// if we are still at the head of the list and havn't navigated via previous button
+			if ( parseInt( current_index ) > ( parseInt( session_length ) - 1 ) ) {
 				next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
 				if ( !next_video ) {
 					await RESTART_IN_YOU_TUBE_LIVE_MODE();
 					resolve();
 					return;
 				}
+				
+				// Respect Watch Limit of Videos , Else , Go to Youtube Live Mode
+				await RU.decrementInteger( redis , RC.PRELIM_COUNT );
+				var watched_count = await RU.getKey( redis , RC.PRELIM_COUNT );
+				watched_count = parseInt( watched_count );
+				if ( watched_count < 1 ) { RESTART_IN_YOU_TUBE_LIVE_MODE(); resolve(); return; }				
+				
 				next_video = next_video[ 0 ];
-				console.log( "Next Video === " + next_video );
-				await RU.setMulti( redis , [ 
-					[ "set" , RC.NOW_PLAYING_ID , next_video ] ,
-					[ "rpush" , RC.NP_SESSION_LIST , next_video ] ,
-					[ "incr" , RC.NP_SESSION_INDEX ] ,
-				]);		
+				await RU.listRPUSH( redis , RC.NP_SESSION_LIST , next_video );
 			}
+			else {
+				console.log( "Somebody used the previous button" );
+				next_video = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , current_index );
+			}
+			console.log( next_video );
+			console.log( "Next Video === " + next_video );
 			wEmitter.emit( "sendFFClientMessage" , "next" , next_video );
 			resolve();
 		}
@@ -93,8 +103,9 @@ function wPrevious() {
 			previous_index = parseInt( previous_index );
 			console.log( "previous_index === " + previous_index.toString() );
 			if ( previous_index < 0 ) {
-				previous_index = await RU.getListLength( redis , RC.NP_SESSION_LIST );
-				previous_index = parseInt( previous_index ) - 1;
+				var list_lenth = await RU.getListLength( redis , RC.NP_SESSION_LIST );
+				console.log( "list_lenth === " + list_lenth.toString() );
+				previous_index = parseInt( list_lenth ) - 1;
 				await RU.setKey( redis , RC.NP_SESSION_INDEX , previous_index );
 				console.log( "List Index Now Set to --> " + previous_index.toString() );
 			}

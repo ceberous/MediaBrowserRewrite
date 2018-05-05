@@ -240,6 +240,45 @@ function REDIS_SET_REMOVE( rInstance , wKey , wValue ) {
 	});
 }
 
+function REDIS_NEXT_IN_CIRCLULAR_LIST( rInstance , wKey ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			// 1.) Get Length
+			var circle_length = await REDIS_GET_LIST_LENGTH( rInstance , wKey );
+			if (  !circle_length ) { resolve( "Nothing in Circle List" ); return; }
+			//if ( circle_length === 0 ) { resolve( "Nothing in Circle List" ); return; }
+			else { circle_length = parseInt( circle_length ); }
+			console.log( "Circle Length === " + circle_length.toString() );
+
+			// 2.) Get Next and Recycle if Necessary
+			var next_index = await REDIS_GET_KEY( rInstance , wKey + ".INDEX" );
+			console.log( "Keys Current Index === " + next_index.toString() );
+			if ( !next_index ) { next_index = 0; }
+			else { 
+				next_index = ( parseInt( next_index ) + 1 );
+				await REDIS_INCREMENT_INTEGER( rInstance , wKey + ".INDEX" );
+			}
+			if ( next_index > ( circle_length - 1 ) ) {
+				next_index = 0;
+				console.log( "Recycling to Beginning of List" );
+			}
+			console.log( "Keys NEXT Index === " + next_index.toString() );
+
+			const next_in_circle = await REDIS_GET_FROM_LIST_BY_INDEX( rInstance , wKey , next_index );
+			resolve( next_in_circle );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function REDIS_LIST_R_PUSH( rInstance , wKey , wValue ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.rpush( wKey , wValue , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+
 module.exports.exists = REDIS_KEY_EXISTS;
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
@@ -266,12 +305,13 @@ module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;
 module.exports.setHashMulti = REDIS_SET_HASH_MULTI;
 module.exports.popRandomFromSet = REDIS_POP_RANDOM_FROM_SET;
 module.exports.listRPOP = REDIS_LIST_R_POP;
+module.exports.listRPUSH = REDIS_LIST_R_PUSH;
 module.exports.incrementInteger = REDIS_INCREMENT_INTEGER;
 module.exports.decrementInteger = REDIS_DECREMENT_INTEGER;
 module.exports.deleteMultiplePatterns = REDIS_DELETE_MULTIPLE_PATTERNS;
 module.exports.setDifferenceStore = REDIS_SET_DIFFERENCE_STORE;
 module.exports.setStoreUnion = REDIS_SET_STORE_UNION;
 module.exports.hashGetAll = REDIS_HASH_GET_ALL;
-
+module.exports.nextInCircleList = REDIS_NEXT_IN_CIRCLULAR_LIST;
 
 module.exports.selectDatabase = REDIS_SELECT_DATABASE;
