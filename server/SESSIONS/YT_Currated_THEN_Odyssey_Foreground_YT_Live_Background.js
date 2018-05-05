@@ -23,37 +23,23 @@ function RESTART_IN_YOU_TUBE_LIVE_MODE(){
 	});
 }
 
-function TRY_FOR_NEXT_VIDEO() {
-	return new Promise( async function( resolve , reject ) {
-		try {
-			var next_video = await RU.popRandomFromSet( redis , RC.CURRATED.MAIN_LIST );
-			if ( next_video ) {
-				resolve( next_video );
-				return;
-			}
-			else {
-				resolve( "null" );
-				return;
-			}
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
-
 function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var next_video = await TRY_FOR_NEXT_VIDEO();
-			if ( next_video === "null" ) { await RESTART_IN_YOU_TUBE_LIVE_MODE(); }
-			else {
-				await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
-				await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
-				await RU.setMulti( redis , [ 
-					[ "sadd" , RC.ALREADY_WATCHED , next_video ] ,
-					[ "lpush" , RC.NP_SESSION_LIST , next_video ] ,
-					[ "set" , RC.NP_SESSION_INDEX , 0 ] ,
-				]);
+			var next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
+			if ( !next_video ) {
+				await RESTART_IN_YOU_TUBE_LIVE_MODE();
+				resolve();
+				return;
 			}
+			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
+			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
+			await RU.setMulti( redis , [ 
+				[ "set" , RC.NOW_PLAYING_ID , next_video[ 0 ] ] ,
+				[ "rpush" , RC.NP_SESSION_LIST , next_video[ 0 ] ] ,
+				[ "set" , RC.NP_SESSION_INDEX , 0 ] ,
+				[ "set" , RC.MODE , "CURRATED" ] ,
+			]);
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -62,45 +48,38 @@ function wStart() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			const current_index = await RU.getKey( redis , RC.NP_SESSION_INDEX );
+			const session_length = await RU.getListLength( redis , RC.NP_SESSION_LIST );
+			console.log( "INDEX === " + current_index.toString() );
+			console.log( "LENGTH === " + session_length.toString() );
 			var next_video = null;
-			var current_index = await RU.getKey( redis , RC.NP_SESSION_INDEX );
-			var list_length = await RU.getListLength( redis , RC.NP_SESSION_LIST );
-			if ( list_length && current_index ) {
-				list_length = parseInt( list_length );
-				current_index = parseInt( current_index );
-				list_length = ( list_length - 1 );
-				if ( current_index < list_length ) {
-					//console.log( "somebody must of pressed the 'previous' button" );
-					current_index = ( current_index + 1 );
-					next_video = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , current_index );
-					if ( !next_video ) {
-						await RESTART_IN_YOU_TUBE_LIVE_MODE();
-						resolve();
-						return;
-					}
-					else {
-						wEmitter.emit( "sendFFClientMessage" , "next" , next_video );
-						await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
-						resolve();
-						return;
-					}
-				}
-				else {
-					next_video = await TRY_FOR_NEXT_VIDEO();
-					if ( next_video === "null" ) { console.log( "level - 5" ); await RESTART_IN_YOU_TUBE_LIVE_MODE(); }
-					else {
-						wEmitter.emit( "sendFFClientMessage" , "next" , next_video );
-						await RU.setMulti( redis , [ 
-							[ "sadd" , RC.ALREADY_WATCHED , next_video ] ,
-							[ "rpush" , RC.NP_SESSION_LIST , next_video ] ,
-							[ "incr" , RC.NP_SESSION_INDEX ] , 
-						]);
-					}
+			if ( parseInt( current_index ) < ( parseInt( session_length ) - 1 ) ) {
+				next_video = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , ( current_index + 1 ) );
+				await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
+				await RU.setMulti( redis , [ 
+					[ "set" , RC.NOW_PLAYING_ID , next_video ] ,
+					[ "incr" , RC.NP_SESSION_INDEX ] ,
+				]);
+			}
+			else {
+				const completed_id = await RU.getKey( redis , RC.NOW_PLAYING_ID );
+				if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
+
+				next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
+				if ( !next_video ) {
+					await RESTART_IN_YOU_TUBE_LIVE_MODE();
 					resolve();
 					return;
 				}
-				console.log( "level - 7" );
+				next_video = next_video[ 0 ];
+				console.log( "Next Video === " + next_video );
+				await RU.setMulti( redis , [ 
+					[ "set" , RC.NOW_PLAYING_ID , next_video ] ,
+					[ "rpush" , RC.NP_SESSION_LIST , next_video ] ,
+					[ "incr" , RC.NP_SESSION_INDEX ] ,
+				]);		
 			}
+			wEmitter.emit( "sendFFClientMessage" , "next" , next_video );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -113,9 +92,20 @@ function wPrevious() {
 			var previous_index = await RU.decrementInteger( redis , RC.NP_SESSION_INDEX );
 			previous_index = parseInt( previous_index );
 			console.log( "previous_index === " + previous_index.toString() );
+			if ( previous_index < 0 ) {
+				previous_index = await RU.getListLength( redis , RC.NP_SESSION_LIST );
+				previous_index = parseInt( previous_index ) - 1;
+				await RU.setKey( redis , RC.NP_SESSION_INDEX , previous_index );
+				console.log( "List Index Now Set to --> " + previous_index.toString() );
+			}
+			
 			var now_playing = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , previous_index );
 			if ( now_playing ) {
+				await RU.setKey( redis , RC.NOW_PLAYING_ID , now_playing );
 				wEmitter.emit( "sendFFClientMessage" , "next" , now_playing );
+			}
+			else {
+				RESTART_IN_YOU_TUBE_LIVE_MODE();
 			}
 			resolve();
 		}
@@ -126,9 +116,8 @@ function wPrevious() {
 function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await require( "../firefoxManager.js" ).terminateFFWithClient();
+			await require( "../firefoxManager.js" ).terminateFFWithClient();	
 			await RU.delKey( redis , RC.NP_SESSION_LIST );
-			console.log( "we did delete the key ??" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

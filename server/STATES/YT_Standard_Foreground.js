@@ -11,11 +11,11 @@ function GET_NEXT_VIDEO() {
 
 			// Precedance Order Unless Otherwise Segregated into Sub-States
 			// 1.) Check inside redis-Personal-Store for custom youtube.com/playlists
-			var finalVideo = await RU.popRandomSetMembers( redis , RC.CURRATED.MAIN_LIST , 1 );
-			if ( finalVideo.length > 0 ) { finalMode = "MAIN_LIST"; finalVideo = finalVideo[0]; }
+			var finalVideo = await RU.popRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
+			if ( finalVideo.length > 0 ) { finalMode = "QUE"; finalVideo = finalVideo[0]; }
 			// 2.) If none exist , build a mini playlist of Standard Followers Latest Videos this Month
 			else {
-				console.log( "no videos are left in MAIN_LIST" );
+				console.log( "no videos are left in QUE" );
 				finalMode = "STANDARD";
 				finalVideo = await RU.popRandomSetMembers( redis , RC.STANDARD.QUE , 1 );
 				if ( finalVideo.length < 1 ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve(); return; }
@@ -38,7 +38,6 @@ function GET_NEXT_VIDEO() {
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			//await require( "../youtubeManager.js" ).updateStandard();
 			var final_vid = await GET_NEXT_VIDEO( wOptions );
 			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ final_vid ]  } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );

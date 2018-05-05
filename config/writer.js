@@ -71,8 +71,8 @@ const SCHEDULES = {
 		// youtubeStandardList: {
 		// 	startPattern: "01 */9 * * *" , // every 9 hours
 		// 	startCondeitions: {} ,
-		// 	functionPath: [ "youtubeManager.js" ] ,
-		// 	functionName: "updateStandard" ,
+		// 	functionPath: [ "/YOUTUBE/standard.js" ] ,
+		// 	functionName: "update" ,
 		// } ,
 	}
 

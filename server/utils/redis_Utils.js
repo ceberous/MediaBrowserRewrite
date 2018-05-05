@@ -218,6 +218,28 @@ function REDIS_KEY_EXISTS( rInstance , wKey ) {
 	});
 }
 
+
+function REDIS_HASH_GET_ALL( rInstance , wKey ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.hgetall( wKey , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function REDIS_SET_ADD( rInstance , wKey , wValue ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.sadd( wKey , wValue , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function REDIS_SET_REMOVE( rInstance , wKey , wValue ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.srem( wKey , wValue , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 module.exports.exists = REDIS_KEY_EXISTS;
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
@@ -236,6 +258,8 @@ module.exports.popRandomSetMembers = REDIS_POP_RANDOM_SET_MEMBERS;
 module.exports.setKey= REDIS_SET_KEY;
 module.exports.setKeyIfNotExists = REDIS_SET_IF_NOT_EXISTS_KEY;
 module.exports.setMulti = REDIS_SET_MULTI;
+module.exports.setAdd = REDIS_SET_ADD;
+module.exports.setRemove = REDIS_SET_REMOVE;
 module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
 module.exports.setListFromArrayBeginning = REDIS_SET_LIST_FROM_ARRAY_BEGINNING;
 module.exports.setSetFromArray = REDIS_SET_SET_FROM_ARRAY;
@@ -247,6 +271,7 @@ module.exports.decrementInteger = REDIS_DECREMENT_INTEGER;
 module.exports.deleteMultiplePatterns = REDIS_DELETE_MULTIPLE_PATTERNS;
 module.exports.setDifferenceStore = REDIS_SET_DIFFERENCE_STORE;
 module.exports.setStoreUnion = REDIS_SET_STORE_UNION;
+module.exports.hashGetAll = REDIS_HASH_GET_ALL;
 
 
 module.exports.selectDatabase = REDIS_SELECT_DATABASE;

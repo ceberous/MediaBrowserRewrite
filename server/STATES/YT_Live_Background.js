@@ -12,7 +12,7 @@ async function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			var current_state = await RU.getKey( redis , R_STATE );
-			var live_vids = await require( "../youtubeManager.js" ).updateLive();
+			var live_vids = await require( "../YOUTUBE/live.js" ).getLiveVideos();
 			//console.log( live_vids );
 			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTLiveBackground" , playlist: live_vids , nextVideoTime: 180000 } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeLiveBackground" );

@@ -7,6 +7,7 @@ const wSleep = require( "./utils/generic.js" ).wSleep;
 const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
 
+var cached_launching_fp = null;
 var CURRENT_STATE = null;
 var BTN_MAP = require( "../config/buttons.json" );
 
@@ -40,18 +41,23 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 	wSendButtonPressNotificationEmail( wButtonNum );
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
-		if ( CURRENT_STATE || CURRENT_STATE !== null ) { 
-			wcl( "stopping CURRENT_STATE" ); 
-			await CURRENT_STATE.stop(); 
-			await wSleep( 1000 ); 
-		}
-		require( "./utils/cecClientManager.js" ).activate();
 		if ( BTN_MAP[ wButtonNum ][ "session" ] ) {
 			launching_fp = path.join( __dirname , "SESSIONS" ,  BTN_MAP[ wButtonNum ][ "session" ] + ".js" );
 		}
 		else {
 			launching_fp = path.join( __dirname , "STATES" ,  BTN_MAP[ wButtonNum ][ "state" ] + ".js" );
 		}
+		if ( launching_fp === cached_launching_fp ) {
+			return;
+		}
+		if ( CURRENT_STATE ) {
+			if ( CURRENT_STATE !== null ) {
+				wcl( "stopping CURRENT_STATE" ); 
+				await CURRENT_STATE.stop(); 
+				await wSleep( 1000 );
+			}
+		}
+		require( "./utils/cecClientManager.js" ).activate();		
 		wcl( "LAUNCHING STATE--->" );
 		wcl( launching_fp );
 		try { delete require.cache[ CURRENT_STATE ]; }
@@ -59,10 +65,11 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 		CURRENT_STATE = null;
 		await wSleep( 1000 );
 		CURRENT_STATE = require( launching_fp );
+		cached_launching_fp = launching_fp;
 		wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
 		await CURRENT_STATE.start( wOptions );
 	}
-	else { if ( CURRENT_STATE ) { wcl( "STATE ACTION --> " + BTN_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_MAP[ wButtonNum ][ "label" ] ](); } }
+	else { if ( CURRENT_STATE ) { wcl( "STATEf ACTION --> " + BTN_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_MAP[ wButtonNum ][ "label" ] ](); } }
 }
 module.exports.pressButtonMaster = wPressButtonMaster;
 
@@ -78,7 +85,6 @@ const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 
 ( async ()=> {
 	wcl( "Initializing stuff" );
-	await require( "./youtubeManager.js" ).initialize();
 	await require( "./localMediaManager.js" ).initialize();
 	wcl( "we are done with Initialization" );
 })();
