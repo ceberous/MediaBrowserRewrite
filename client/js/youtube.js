@@ -52,7 +52,7 @@ var YTIFrameManager = {
 			'onError': YTIFrameManager.errorHandler,
 		};
 
-		YTIFrameManager.wPlayer = new YT.Player( 'player', wOptions );
+		YTIFrameManager.wPlayer = new YT.Player( "player" , wOptions );
 
 	},
 
@@ -104,9 +104,14 @@ var YTIFrameManager = {
 			YTIFrameManager.wPlayer.cuePlaylist( YTIFrameManager.playlist );
 		}
 		setTimeout( function() {
-			//YTIFrameManager.wPlayer.setShuffle( true );
-			//YTIFrameManager.wPlayer.setLoop(true);
-			//if ( YTIFrameManager.muted ) { YTIFrameManager.wPlayer.mute(); }
+			if ( YTIFrameManager.position === "BACKGROUND" ) {
+				YTIFrameManager.wPlayer.mute();
+			}
+			if ( YTIFrameManager.mode === "LIVE" ) {
+				YTIFrameManager.wPlayer.setShuffle( true );
+				YTIFrameManager.wPlayer.setLoop(true);
+				YTIFrameManager.startNextVideoInterval();
+			}
 			//socket.send( "youtubeReadyForFullScreenGlitch" );
 			socket.send( JSON.stringify( { message: "youtubeReadyForFullScreenGlitch" } ) );
 			//$( ".ytp-fullscreen-button.ytp-button" ).click();
@@ -124,7 +129,7 @@ var YTIFrameManager = {
 
 var socket = null;
 var webSocketConnectionString = "ws://" + socketServerAddress + ":" + socketPORT;
-var nextVideoTime = null;
+var nextVideoTime = 40000;
 
 function waitForYoutubeReady( x1 ) {
 	function readyYoutube(){
@@ -132,6 +137,8 @@ function waitForYoutubeReady( x1 ) {
 			nextVideoTime = x1.nextVideoTime;
 			if ( x1.playlist_id ) { YTIFrameManager.playlist_id = x1.playlist_id }
 			else { YTIFrameManager.playlist = x1.playlist; }
+			YTIFrameManager.mode = x1.mode;
+			YTIFrameManager.position = x1.position;
 			YTIFrameManager.init();
 		}
 		else{ setTimeout( readyYoutube , 100 ); }
@@ -157,8 +164,8 @@ $(document).ready( function() {
 			case "ping":
 				socket.send( "pong" );
 				break;
-			case "YTStandardForeground":
-				waitForYoutubeReady( x1 );
+			case "Youtube":
+				waitForYoutubeReady( x1 );				
 				break;
 			case "pause":
 				var cur_state = parseInt( YTIFrameManager.wPlayer.getPlayerState() );

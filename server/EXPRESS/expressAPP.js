@@ -46,8 +46,8 @@ const buttonsRoutes = require( "./ROUTES/buttonsRTR.js" );
 app.use('/buttonpress/' , buttonsRoutes );
 
 // Youtube-Routes
-app.get( "/youtubeStandard" , function( req , res , next ) {
-	res.render( "youtubeStandard.html" );
+app.get( "/youtube" , function( req , res , next ) {
+	res.render( "youtube.html" );
 });
 app.get( "/youtubeLiveBackground" , function( req , res , next ) {
 	res.render( "youtubeLiveBackground.html" );

@@ -7,7 +7,6 @@ function wcl( wSTR ) { console.log( colors.rainbow( "[WebSocket] --> " + wSTR ) 
 
 function BROADCAST_TO_ALL_CLIENTS( wsClient , wMessage , wOptions ) {
 	wsClient.clients.forEach( function each( ws ) { 
-		wOptions = wOptions || "none"; 
 		ws.send( JSON.stringify( { message: wMessage , options: wOptions } ) ); 
 	});
 }

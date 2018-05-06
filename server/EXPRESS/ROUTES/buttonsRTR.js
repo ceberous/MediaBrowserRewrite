@@ -20,5 +20,6 @@ router.get( '/13/' , buttonsCTRL.press13 );
 router.get( '/14/' , buttonsCTRL.press14 );
 router.get( '/15/' , buttonsCTRL.press15 );
 router.get( '/16/' , buttonsCTRL.press16 );
+router.get( '/17/' , buttonsCTRL.press17 );
 
 module.exports = router;

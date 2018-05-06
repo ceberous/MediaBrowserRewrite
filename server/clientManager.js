@@ -8,6 +8,7 @@ const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
 
 var cached_launching_fp = null;
+var cached_mode = null;
 var CURRENT_STATE = null;
 var BTN_MAP = require( "../config/buttons.json" );
 
@@ -26,18 +27,14 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 			}
 		}
 	}
-	var x3 = undefined;
-	if ( BTN_MAP[ wButtonNum ][ "label" ] ){ x3 = BTN_MAP[ wButtonNum ][ "label" ]; }
-	else if ( BTN_MAP[ wButtonNum ][ "session" ] ) { x3 = BTN_MAP[ wButtonNum ][ "session" ]; } 
-	else if ( BTN_MAP[ wButtonNum ][ "state" ] ) { x3 = BTN_MAP[ wButtonNum ][ "state" ]; }
-
-	require( "./discordManager.js" ).log( ( x2 + " @@ " + x3 + "()" ) );
+	require( "./discordManager.js" ).log( ( x2 + " @@ " + BTN_MAP[ wButtonNum ][ "name" ] ) );
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {
 	wcl( "wPressButtonMaster( " + wButtonNum.toString() + " )" );
 	var wBTN_I = parseInt( wButtonNum );
-	if ( wBTN_I > 16 || wBTN_I < 0 ) { return "out of range"; }
+	if ( wBTN_I > 17 || wBTN_I < 0 ) { return "out of range"; }
+	wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
 	wSendButtonPressNotificationEmail( wButtonNum );
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
@@ -48,7 +45,13 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 			launching_fp = path.join( __dirname , "STATES" ,  BTN_MAP[ wButtonNum ][ "state" ] + ".js" );
 		}
 		if ( launching_fp === cached_launching_fp ) {
-			return;
+			if ( wOptions ) {
+				if ( wOptions.mode ) {
+					if ( wOptions.mode === cached_mode ) { return; }
+				}
+				else { return; }
+			}
+			else { return; }
 		}
 		if ( CURRENT_STATE ) {
 			if ( CURRENT_STATE !== null ) {
@@ -66,10 +69,10 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 		await wSleep( 1000 );
 		CURRENT_STATE = require( launching_fp );
 		cached_launching_fp = launching_fp;
-		wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
+		if ( wOptions.mode ) { cached_mode = wOptions.mode; }
 		await CURRENT_STATE.start( wOptions );
 	}
-	else { if ( CURRENT_STATE ) { wcl( "STATEf ACTION --> " + BTN_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_MAP[ wButtonNum ][ "label" ] ](); } }
+	else { if ( CURRENT_STATE ) { wcl( "STATE ACTION --> " + BTN_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_MAP[ wButtonNum ][ "label" ] ](); } }
 }
 module.exports.pressButtonMaster = wPressButtonMaster;
 

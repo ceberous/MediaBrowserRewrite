@@ -19,3 +19,4 @@ module.exports.press13 = function( req , res ) { wPressButtonMaster( 13 ); sendJ
 module.exports.press14 = function( req , res ) { wPressButtonMaster( 14 ); sendJSONResponse( res , 200 , { buttonPress: "YT_Standard_Foreground" } ); };
 module.exports.press15 = function( req , res ) { wPressButtonMaster( 15 ); sendJSONResponse( res , 200 , { buttonPress: "Instagram_Background" } ); };
 module.exports.press16 = function( req , res ) { wPressButtonMaster( 16 ); sendJSONResponse( res , 200 , { buttonPress: "YT_Playlist_Foreground" } ); };
+module.exports.press17 = function( req , res ) { wPressButtonMaster( 17 ); sendJSONResponse( res , 200 , { buttonPress: "Watch Youtube Followers Videos" } ); };

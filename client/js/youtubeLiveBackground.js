@@ -122,7 +122,7 @@ function waitForYoutubeReady( x1 ) {
 	function readyYoutube(){
 		if( ( typeof YT !== "undefined" ) && YT && YT.Player ) {
 			nextVideoTime = x1.nextVideoTime;
-			YTIFrameManager.playlist = x1.playlist;;
+			YTIFrameManager.playlist = x1.playlist;
 			YTIFrameManager.init();
 		}
 		else{ setTimeout( readyYoutube , 100 ); }

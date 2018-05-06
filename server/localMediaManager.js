@@ -66,6 +66,9 @@ function LOCAL_MPLAY_WRAP( wFilePath , wCurrentTime ) {
 function PLAY( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			var online_status = await RU.getKey( redis , "STATUS.LOCAL_MEDIA" );
+			if ( !online_status ) { resolve( "Local Media Offline" ); return; }
+			if ( online_status !== "ONLINE" ) { resolve( "Local Media Offline" ); return; }
 			wcl( "play()" );
 			const FinalNowPlaying = await require( "./utils/local-media/calculate.js" ).next( wOptions );
 			await LOCAL_MPLAY_WRAP( FinalNowPlaying.fp , FinalNowPlaying.cur_time );
@@ -80,6 +83,7 @@ function PAUSE( wOptions ) {
 	return new Promise( function( resolve , reject ) {
 		try {
 			wcl( "pause()" );
+			MPLAYER_MAN.pause();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -91,6 +95,7 @@ function RESUME( wOptions ) {
 	return new Promise( function( resolve , reject ) {
 		try {
 			wcl( "resume()" );
+			MPLAYER_MAN.pause();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
