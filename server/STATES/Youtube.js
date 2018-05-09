@@ -4,6 +4,13 @@ const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE;
 
+const MODE_MAP = {
+	LIVE: "../YOUTUBE/live.js" ,
+	STANDARD: "../YOUTUBE/standard.js" ,
+	CURRATED: "../YOUTUBE/currated.js" ,
+	RELAX: "../YOUTUBE/relax.js"
+};
+
 function GET_NEXT_VIDEO( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -76,16 +83,13 @@ function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			const current_mode = await RU.getKey( redis , RC.MODE );
-			
 			if( current_mode === "LIVE" ) {
 				wEmitter.emit( "sendFFClientMessage" , "next" );
 				resolve();
 				return;
 			}
 
-			// 1.) Assume Last Video Was "completed" 
 			const completed_id = await RU.getKey( redis , RC.NOW_PLAYING_ID );
-			if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
 			
 			// 2.) Determine Place In Session
 			await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
@@ -97,17 +101,28 @@ function wNext() {
 			// 4.) Get Next Video
 			var next_video = null;
 			// if we are still at the head of the list and havn't navigated via previous button
-			if ( parseInt( current_index ) > ( parseInt( session_length ) - 1 ) ) {
-				var final_vid = await GET_NEXT_VIDEO();
-				next_video = final_vid[ 0 ];
-				await RU.listRPUSH( redis , RC.NP_SESSION_LIST , next_video );
-			}
-			else {
+			if ( parseInt( current_index ) < ( parseInt( session_length ) - 1 ) ) {
 				console.log( "Somebody used the previous button" );
 				next_video = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , current_index );
 			}
-			console.log( next_video );
-			console.log( "Next Video === " + next_video );
+			else {
+
+				if ( current_mode === "CURRATED" ) {
+					if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
+				}
+				else if ( current_mode === "RELAX" ) {
+					if ( completed_id ) { await RU.setRemove( redis , RC.RELAX.QUE , completed_id ); }
+
+				}
+				else if ( current_mode === "STANDARD" ) {
+
+				}
+
+				console.log( next_video );
+				console.log( "Next Video === " + next_video );
+				await RU.listRPUSH( redis , RC.NP_SESSION_LIST , next_video );
+			}
+
 			wEmitter.emit( "sendFFClientMessage" , "next" , next_video );
 			resolve();
 		}

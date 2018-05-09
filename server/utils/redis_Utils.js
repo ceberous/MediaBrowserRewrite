@@ -279,6 +279,45 @@ function REDIS_LIST_R_PUSH( rInstance , wKey , wValue ) {
 }
 
 
+// Adds an Array of Potential New Items to a set ,
+// But compares them first to a filter set before adding
+function REDIS_ADD_ARRAY_TO_SET_WITH_SET_FILTER( rInstance , wDestinationKey , wFilterSetKey , wArray ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const filter_key_exists = await REDIS_KEY_EXISTS( rInstance , wFilterSetKey );
+			if ( !filter_key_exists ) { console.log( wFilterSetKey + " is empty or DNE" ); resolve( wArray ); }
+
+			const wTempKey = "TMP_KEY_1." + Math.random().toString(36).substring(7);
+			const wTempKey2 = "TMP_KEY_2." + Math.random().toString(36).substring(7);
+
+			// 1.) Store NewVideos into Temp-Random Key
+			await REDIS_SET_SET_FROM_ARRAY( rInstance , wTempKey , wArray );
+
+			// 2.) Redis StoreDifference
+			await REDIS_SET_ADD( rInstance , wTempKey2  , "GARBAGE" );
+			await REDIS_SET_DIFFERENCE_STORE( rInstance , wTempKey2 , wTempKey , wFilterSetKey );
+			await REDIS_SET_REMOVE( rInstance , wTempKey2 , "GARBAGE" );
+
+			// 3.) Retrieve The Filtered List
+			const filtered_items = await REDIS_GET_FULL_SET( rInstance , wTempKey2 );
+
+			// 4.) Add to Destination Set
+			if ( filtered_items ) {
+				if ( filtered_items.length > 0 ) {
+					await REDIS_SET_SET_FROM_ARRAY( rInstance , wDestinationKey , filtered_items );
+				}
+			}
+
+			// 5.) Cleanup TempKeys
+			await REDIS_DELETE_KEY( rInstance , wTempKey );
+			await REDIS_DELETE_KEY( rInstance , wTempKey2 );
+			resolve( filtered_items );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+
 module.exports.exists = REDIS_KEY_EXISTS;
 module.exports.getKeysFromPattern = REDIS_GET_KEYS_FROM_PATTERN;
 module.exports.delKeys = REDIS_DEL_KEYS;
@@ -313,5 +352,6 @@ module.exports.setDifferenceStore = REDIS_SET_DIFFERENCE_STORE;
 module.exports.setStoreUnion = REDIS_SET_STORE_UNION;
 module.exports.hashGetAll = REDIS_HASH_GET_ALL;
 module.exports.nextInCircleList = REDIS_NEXT_IN_CIRCLULAR_LIST;
+module.exports.setSetFromArrayWithSetFilter = REDIS_ADD_ARRAY_TO_SET_WITH_SET_FILTER;
 
 module.exports.selectDatabase = REDIS_SELECT_DATABASE;

@@ -26,7 +26,7 @@ function RESTART_IN_YOU_TUBE_LIVE_MODE(){
 function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
+			const next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
 			if ( !next_video ) {
 				await RESTART_IN_YOU_TUBE_LIVE_MODE();
 				resolve();
@@ -54,7 +54,7 @@ function wNext() {
 		try {
 			// 1.) Assume Last Video Was "completed" 
 			const completed_id = await RU.getKey( redis , RC.NOW_PLAYING_ID );
-			if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
+			if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.QUE , completed_id ); }
 			
 			// 2.) Determine Place In Session
 			await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
@@ -67,7 +67,7 @@ function wNext() {
 			var next_video = null;
 			// if we are still at the head of the list and havn't navigated via previous button
 			if ( parseInt( current_index ) > ( parseInt( session_length ) - 1 ) ) {
-				next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
+				next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
 				if ( !next_video ) {
 					await RESTART_IN_YOU_TUBE_LIVE_MODE();
 					resolve();

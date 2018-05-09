@@ -104,6 +104,6 @@ module.exports.curratedDeleteFromList = async function( req , res ) {
 };
 
 module.exports.curratedImportPlaylistID = async function( req , res ) {
-	await require( "../../YOUTUBE/currated.js" ).importFromPlaylistID( req.params.wID );
-	sendJSONResponse( res , 200 , { status: "success" } ); 
+	const added_items = await require( "../../YOUTUBE/currated.js" ).importFromPlaylistID( req.params.wID );
+	sendJSONResponse( res , 200 , { status: "success" , added_ids: added_items } ); 
 };
