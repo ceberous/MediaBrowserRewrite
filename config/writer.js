@@ -34,6 +34,8 @@ const BUTTONS = {
 		15: { name: "Look at Instagram Followers Photos" , state: "Instagram_Background" , options: {} } ,
 		16: { name: "Watch Official Youtube Playlist ID" , state: "Youtube" , options: { mode: "PLAYLIST" , position: "FOREGROUND" ,  playlist_id: "PLcW8xNfZoh7cxWFftCwzHJA3foHba1SzF" } } ,
 		17: { name: "Watch Youtube Followers Videos" , state: "Youtube" , options: { mode: "STANDARD" , position: "FOREGROUND" } } ,
+		18: { name: "Watch Youtube Currated Videos" , state: "Youtube" , options: { mode: "CURRATED" , position: "FOREGROUND" } } ,
+		19: { name: "Watch Youtube Relaxing Videos" , state: "Youtube" , options: { mode: "RELAX" , position: "FOREGROUND" } } ,
 };
 
 

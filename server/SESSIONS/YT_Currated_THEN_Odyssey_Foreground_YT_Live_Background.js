@@ -23,7 +23,7 @@ function RESTART_IN_YOU_TUBE_LIVE_MODE(){
 	});
 }
 
-function wStart() {
+function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			const next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
@@ -42,8 +42,10 @@ function wStart() {
 				[ "set" , RC.PRELIM_COUNT , limit ] ,
 			]);
 
-			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "YTStandardForeground" , playlist: [ next_video ]  } );
-			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeStandard" );
+			const wMode = wOptions.mode || "CURRATED";
+			const wPosition = wOptions.position || "FOREGROUND";
+			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "Youtube" , playlist: [ next_video ] , mode: wMode , position: wPosition } );
+			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtube" );			
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});

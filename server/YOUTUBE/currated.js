@@ -6,7 +6,7 @@ const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE.CURRATED;
 
 function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_CURRATED] --> " + wSTR ) ); }
 
-function GET_LIST() {
+function GET_QUE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			const list = await RU.getFullSet( redis , RC.QUE );
@@ -15,9 +15,9 @@ function GET_LIST() {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-module.exports.getList = GET_LIST;
+module.exports.getQue = GET_QUE;
 
-function ADD_TO_LIST( wVideoID ) {
+function ADD_TO_QUE( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await RU.setAdd( redis , RC.QUE , wVideoID );
@@ -26,9 +26,9 @@ function ADD_TO_LIST( wVideoID ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-module.exports.addToList = ADD_TO_LIST;
+module.exports.addToQue = ADD_TO_QUE;
 
-function REMOVE_FROM_LIST( wVideoID ) {
+function REMOVE_FROM_QUE( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await RU.setRemove( redis , RC.QUE , wVideoID );
@@ -37,7 +37,7 @@ function REMOVE_FROM_LIST( wVideoID ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-module.exports.removeFromList = REMOVE_FROM_LIST;
+module.exports.removeFromQue = REMOVE_FROM_QUE;
 
 
 function IMPORT_FROM_PLAYLIST_ID( wPlaylistID ) {
@@ -57,7 +57,7 @@ function IMPORT_FROM_PLAYLIST_ID( wPlaylistID ) {
 module.exports.importFromPlaylistID = IMPORT_FROM_PLAYLIST_ID;
 
 
-function GET_NEXT_IN_QUE( wPlaylistID ) {
+function GET_NEXT_IN_QUE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			var next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.QUE , 1 );

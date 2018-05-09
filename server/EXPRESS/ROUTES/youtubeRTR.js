@@ -24,11 +24,11 @@ router.get( "/standard/blacklist/" , youtubeCTRL.standardGetBlacklist );
 router.get( "/standard/blacklist/add/:wID/" , youtubeCTRL.standardAddBlacklist );
 router.get( "/standard/blacklist/remove/:wID/" , youtubeCTRL.standardRemoveBlacklist );
 
-router.get( "/currated/que/" , youtubeCTRL.curratedGetList );
-router.get( "/currated/list/" , youtubeCTRL.curratedGetList );
-router.get( "/currated/videos/" , youtubeCTRL.curratedGetList );
-router.get( "/currated/add/:wID" , youtubeCTRL.curratedAddToList );
-router.get( "/currated/delete/:wID" , youtubeCTRL.curratedDeleteFromList );
+router.get( "/currated/que/" , youtubeCTRL.curratedGetQue );
+router.get( "/currated/list/" , youtubeCTRL.curratedGetQue );
+router.get( "/currated/videos/" , youtubeCTRL.curratedGetQue );
+router.get( "/currated/add/:wID" , youtubeCTRL.curratedAddToQue );
+router.get( "/currated/delete/:wID" , youtubeCTRL.curratedDeleteFromQue );
 router.get( "/currated/import-playlist/:wID" , youtubeCTRL.curratedImportPlaylistID );
 
 module.exports = router;

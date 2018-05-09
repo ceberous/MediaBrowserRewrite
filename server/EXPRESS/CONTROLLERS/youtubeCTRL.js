@@ -88,18 +88,18 @@ module.exports.standardRemoveBlacklist = async function( req , res ) {
 
 
 // Currated
-module.exports.curratedGetList = async function( req , res ) {
-	const x1 = await require( "../../YOUTUBE/currated.js" ).getList();
+module.exports.curratedGetQue = async function( req , res ) {
+	const x1 = await require( "../../YOUTUBE/currated.js" ).getQue();
 	sendJSONResponse( res , 200 , x1 ); 
 };
 
-module.exports.curratedAddToList = async function( req , res ) {
-	await require( "../../YOUTUBE/currated.js" ).addToList( req.params.wID );
+module.exports.curratedAddToQue = async function( req , res ) {
+	await require( "../../YOUTUBE/currated.js" ).addToQue( req.params.wID );
 	sendJSONResponse( res , 200 , { status: "success" } ); 
 };
 
-module.exports.curratedDeleteFromList = async function( req , res ) {
-	await require( "../../YOUTUBE/currated.js" ).removeFromList( req.params.wID );
+module.exports.curratedDeleteFromQue = async function( req , res ) {
+	await require( "../../YOUTUBE/currated.js" ).removeFromQue( req.params.wID );
 	sendJSONResponse( res , 200 , { status: "success" } ); 
 };
 

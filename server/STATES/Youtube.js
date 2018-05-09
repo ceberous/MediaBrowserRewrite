@@ -11,29 +11,6 @@ const MODE_MAP = {
 	RELAX: "../YOUTUBE/relax.js"
 };
 
-function GET_NEXT_VIDEO( wOptions ) {
-	return new Promise( async function( resolve , reject ) {
-		try {
-			var current_mode = wOptions.mode || await RU.getKey( redis , RC.MODE );
-			
-			var final_playlist = [];
-			if ( current_mode === "LIVE" ) {
-				final_playlist = await require( "../YOUTUBE/live.js" ).getLiveVideos();
-			}
-			if ( current_mode === "CURRATED" ) {
-				var item = await RU.getRandomSetMembers( redis , RC.CURRATED.LIST , 1 );
-				if ( !item ) { current_mode = "STANDARD"; }
-				else { final_playlist.push( item ); }
-			}
-			if ( current_mode === "STANDARD" ) {
-				var item = await RU.listRPOP( redis , RC.STANDARD.QUE , 1 );
-				final_playlist.push( item );
-			}
-			resolve( final_playlist );
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
 
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
@@ -41,7 +18,22 @@ function wStart( wOptions ) {
 			// 1.) Store Mode
 			const wMode = wOptions.mode || "LIVE";
 
-			var final_playlist = await GET_NEXT_VIDEO( wOptions );
+			var final_playlist = [];
+			if ( current_mode === "LIVE" ) {
+				final_playlist = await require( "../YOUTUBE/live.js" ).getLiveVideos();
+			}
+			else if ( current_mode === "CURRATED" ) {
+				var item = await RU.getRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
+				if ( !item ) { current_mode = "STANDARD"; }
+				else { final_playlist.push( item[ 0 ] ); }
+			}
+			if ( current_mode === "STANDARD" ) {
+				var item = await RU.listRPOP( redis , RC.STANDARD.QUE , 1 );
+				final_playlist.push( item );
+			}
+			else if ( current_mode === "RELAX" ) {
+
+			}
 
 			await RU.setMulti( redis , [ 
 				[ "set" , RC.NOW_PLAYING_ID , final_playlist[ 0 ] ] ,
@@ -82,7 +74,9 @@ function wStop() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+
 			const current_mode = await RU.getKey( redis , RC.MODE );
+			console.log( "CURRENT YOUTUBE MODE === " + current_mode );
 			if( current_mode === "LIVE" ) {
 				wEmitter.emit( "sendFFClientMessage" , "next" );
 				resolve();
@@ -90,6 +84,7 @@ function wNext() {
 			}
 
 			const completed_id = await RU.getKey( redis , RC.NOW_PLAYING_ID );
+			await RU.setAdd( redis , RC.WATCHED , completed_id );
 			
 			// 2.) Determine Place In Session
 			await RU.incrementInteger( redis , RC.NP_SESSION_INDEX );
@@ -106,16 +101,16 @@ function wNext() {
 				next_video = await RU.getFromListByIndex( redis , RC.NP_SESSION_LIST , current_index );
 			}
 			else {
-
 				if ( current_mode === "CURRATED" ) {
-					if ( completed_id ) { await RU.setRemove( redis , RC.CURRATED.LIST , completed_id ); }
+					await RU.setRemove( redis , RC.CURRATED.LIST , completed_id );
+					next_video = await require( "../YOUTUBE/currated.js" ).getNextInQue();
 				}
 				else if ( current_mode === "RELAX" ) {
-					if ( completed_id ) { await RU.setRemove( redis , RC.RELAX.QUE , completed_id ); }
+					await RU.setRemove( redis , RC.RELAX.QUE , completed_id );
 
 				}
 				else if ( current_mode === "STANDARD" ) {
-
+					next_video = await require( "../YOUTUBE/standard.js" ).getNextVideo();
 				}
 
 				console.log( next_video );
