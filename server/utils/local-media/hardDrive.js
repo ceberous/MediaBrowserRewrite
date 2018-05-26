@@ -1,5 +1,6 @@
 require( "shelljs/global" );
 const FS = require( "fs" );
+const exfs = require("extfs");
 const PATH = require( "path" );
 const colors	= require( "colors" );
 function wcl( wSTR ) { console.log( colors.magenta.bgBlack( "[HARD_DRIVE_UTIL] --> " + wSTR ) ); }
@@ -82,7 +83,7 @@ module.exports.buildHardDriveReference = BUILD_HD_REF;
 const redis = require( "../redisManager.js" ).redis;
 const RU = require( "../redis_Utils.js" );
 const RC = require( "../../CONSTANTS/redis.js" ).LOCAL_MEDIA;
-const MOUNT_CONFIG = require( "../../../config.js" ).MEDIA_MOUNT_POINT;
+
 
 function REBUILD_REDIS_MOUNT_POINT_REFERENCE( wMountPoint ) {
 	return new Promise( async function( resolve , reject ) {
@@ -123,6 +124,7 @@ function REINITIALIZE_MOUNT_POINT() {
 			var wLiveMountPoint = await RU.getKey( redis , RC.MOUNT_POINT );
 			if ( !wLiveMountPoint ) {
 				wcl( "No Media Reference Found , Trying to Rebuild from --> " );
+				const MOUNT_CONFIG = await RU.getKeyDeJSON( redis , "CONFIG.MOINT_POINT" );
 				if ( MOUNT_CONFIG[ "UUID" ] ) {
 					wcl( "UUID: " + MOUNT_CONFIG[ "UUID" ] );
 					wLiveMountPoint = await FIND_USB_STORAGE_PATH_FROM_UUID( MOUNT_CONFIG[ "UUID" ] );
@@ -133,6 +135,10 @@ function REINITIALIZE_MOUNT_POINT() {
 					wLiveMountPoint = MOUNT_CONFIG[ "LOCAL_PATH" ];
 				}
 				else { wcl( "We Were Not Told Where to Find any Local Media" ); resolve( "no_local_media" ); return; }
+				const dirExists = FS.existsSync( wLiveMountPoint );
+				if ( !dirExists ) { wcl( "Local Media Folder Doesn't Exist" ); resolve( "no_local_media" ); return; }
+				const isEmpty = await exfs.isEmpty( wLiveMountPoint );
+				if ( isEmpty ) { wcl( "Local Media Folder is Empty" ); resolve( "no_local_media" ); return; }
 				// Cleanse and Prepare Mount_Point
 				await RU.deleteMultiplePatterns( redis , [ ( RC.BASE + "*" ) , "HARD_DRIVE.*" , "LAST_SS.LOCAL_MEDIA.*" ] );
 				//await wSleep( 2000 );

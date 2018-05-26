@@ -1,26 +1,23 @@
-const fs	= require( "fs" );
 const path	= require( "path" );
 const colors	= require( "colors" );
-
-const wEmitter	= require("../main.js").wEmitter;
 function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + wSTR ) ); }
-function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+
+const wSleep = require( "./utils/generic.js" ).wSleep;
 
 const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
 
-const CEC_MAN		= require( "./utils/cecClientManager.js" );
-//const EMAIL_MAN 	= require( "./emailManager.js" );
-
+var cached_launching_fp = null;
+var cached_mode = null;
 var CURRENT_STATE = null;
-var BTN_MAP = require( "../config.js" ).BUTTON_MAP;
+var BTN_MAP = require( "../config/buttons.json" );
 
 const R_ARRIVE_HOME = "CONFIG.ARRIVED_HOME";
 async function wSendButtonPressNotificationEmail( wButtonNum ) {
 	const x1 = wButtonNum.toString();
 	const dNow = new Date();
 	var dHours = dNow.getHours(); 
-	const x2 = ( dNow.getMonth() + 1 ) + '/' + dNow.getDate() + '/' + dNow.getFullYear() + '--' + dHours + ':' + dNow.getMinutes();
+	const x2 = ( dNow.getMonth() + 1 ) + "/" + dNow.getDate() + "/" + dNow.getFullYear() + "--" + dHours + ":" + dNow.getMinutes();
 	wcl( x2 + " " + x1 );
 	if ( parseInt( dHours ) === 15 ) {
 		const already_home = await RU.getKey( redis , R_ARRIVE_HOME );
@@ -30,34 +27,40 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 			}
 		}
 	}
-	var x3 = undefined;
-	if ( BTN_MAP[ wButtonNum ][ "label" ] ){ x3 = BTN_MAP[ wButtonNum ][ "label" ]; }
-	else if ( BTN_MAP[ wButtonNum ][ "session" ] ) { x3 = BTN_MAP[ wButtonNum ][ "session" ]; } 
-	else if ( BTN_MAP[ wButtonNum ][ "state" ] ) { x3 = BTN_MAP[ wButtonNum ][ "state" ]; }
-
-	//EMAIL_MAN.sendEmail( x2 , x1 );
-	require( "./slackManager.js" ).post( ( x2 + " @@ " + x3 + "()" ) , "#media_box" );
+	require( "./discordManager.js" ).log( ( x2 + " @@ " + BTN_MAP[ wButtonNum ][ "name" ] ) );
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {
 	wcl( "wPressButtonMaster( " + wButtonNum.toString() + " )" );
 	var wBTN_I = parseInt( wButtonNum );
-	if ( wBTN_I > 16 || wBTN_I < 0 ) { return "out of range"; }
+	if ( wBTN_I > 20 || wBTN_I < 0 ) { return "out of range"; }
+	wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
 	wSendButtonPressNotificationEmail( wButtonNum );
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
-		if ( CURRENT_STATE || CURRENT_STATE !== null ) { 
-			wcl( "stopping CURRENT_STATE" ); 
-			await CURRENT_STATE.stop(); 
-			await wSleep( 1000 ); 
-		}
-		CEC_MAN.activate();
 		if ( BTN_MAP[ wButtonNum ][ "session" ] ) {
 			launching_fp = path.join( __dirname , "SESSIONS" ,  BTN_MAP[ wButtonNum ][ "session" ] + ".js" );
 		}
 		else {
 			launching_fp = path.join( __dirname , "STATES" ,  BTN_MAP[ wButtonNum ][ "state" ] + ".js" );
 		}
+		if ( launching_fp === cached_launching_fp ) {
+			if ( wOptions ) {
+				if ( wOptions.mode ) {
+					if ( wOptions.mode === cached_mode ) { return; }
+				}
+				else { return; }
+			}
+			else { return; }
+		}
+		if ( CURRENT_STATE ) {
+			if ( CURRENT_STATE !== null ) {
+				wcl( "stopping CURRENT_STATE" ); 
+				await CURRENT_STATE.stop(); 
+				await wSleep( 1000 );
+			}
+		}
+		require( "./utils/cecClientManager.js" ).activate();		
 		wcl( "LAUNCHING STATE--->" );
 		wcl( launching_fp );
 		try { delete require.cache[ CURRENT_STATE ]; }
@@ -65,7 +68,8 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 		CURRENT_STATE = null;
 		await wSleep( 1000 );
 		CURRENT_STATE = require( launching_fp );
-		wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
+		cached_launching_fp = launching_fp;
+		if ( wOptions.mode ) { cached_mode = wOptions.mode; }
 		await CURRENT_STATE.start( wOptions );
 	}
 	else { if ( CURRENT_STATE ) { wcl( "STATE ACTION --> " + BTN_MAP[ wButtonNum ][ "label" ] + "()" ); CURRENT_STATE[ BTN_MAP[ wButtonNum ][ "label" ] ](); } }
@@ -77,8 +81,6 @@ module.exports.pressButtonMaster = wPressButtonMaster;
 // ======================================================================
 // ======================================================================
 const BTN_MAN 			= require( "./buttonManager.js" );
-	// Currently Importing These here ONLY for Their Initialization Blocks
-//const LOCAL_MEDIA_MAN 	= require( "./localMediaManager.js" ); 
 const MOPIDY_MAN 		= require( "./mopidyManager.js" );
 const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 // ======================================================================
@@ -86,7 +88,6 @@ const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 
 ( async ()=> {
 	wcl( "Initializing stuff" );
-	await require( "./youtubeManager.js" ).initialize();
 	await require( "./localMediaManager.js" ).initialize();
 	wcl( "we are done with Initialization" );
 })();
