@@ -1,4 +1,3 @@
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).INSTAGRAM;
 
@@ -10,7 +9,7 @@ function wStart() {
 			console.log( latest_media );
 			await require( "../../main.js" ).setStagedFFClientTask( { message: "Instagram" , playlist: latest_media , nextMediaTime: 5000 } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/instagram" );
-			//await RU.setMulti( redis , [ [ "set" , "LAST_SS.STATE.ACTIVE" , "INSTAGRAM_BACKGROUND" ] , [ "set" , R_PREVIOUS , current_state ] ] );			
+			//await RU.setMulti( [ [ "set" , "LAST_SS.STATE.ACTIVE" , "INSTAGRAM_BACKGROUND" ] , [ "set" , R_PREVIOUS , current_state ] ] );			
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

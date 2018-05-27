@@ -1,4 +1,3 @@
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 const R_BASE = "LAST_SS.STATE.";
@@ -12,10 +11,10 @@ function recieveCall( wOptions ) {
 		try {
 			//{ alertEmails: [] , recievedCall: true , url: wExtendedCapture } 
 			if ( wOptions.url ) {
-				var current_state = await RU.getKey( redis , R_STATE );
+				var current_state = await RU.getKey( R_STATE );
 				await require( "../../main.js" ).setStagedFFClientTask( { message: "PeerCall" , url:  wOptions.url } );
 				await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/peerCall" );
-				await RU.setMulti( redis , [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
+				await RU.setMulti( [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
 			}
 			if ( wOptions.alertEmails ) {
 				for ( var i = 0; i < wOptions.alertEmails.length; ++i ) {
@@ -43,10 +42,10 @@ function placeCall( wOptions ) {
 		try {
 			var wCall_URL = generateRandomCallURL();
 			var wFull_Call_URL = "https://peercalls.com/call/" + wCall_URL;
-			var current_state = await RU.getKey( redis , R_STATE );
+			var current_state = await RU.getKey( R_STATE );
 			await require( "../../main.js" ).setStagedFFClientTask( { message: "PeerCall" , url: wCall_URL } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/peerCall" );
-			await RU.setMulti( redis , [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
+			await RU.setMulti( [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
 
 			for ( var i = 0; i < wOptions.alertEmails.length; ++i ) {
 				await require( "../emailManager.js" ).sendEmail( wFull_Call_URL  , "HALEY_IS_CALLING_YOU" , wOptions.alertEmails[ i ] )

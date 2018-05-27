@@ -1,4 +1,3 @@
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 const R_BASE = "LAST_SS.STATE.";
@@ -25,8 +24,8 @@ function RESTART_AS_YOUTUBE() {
 			if ( CUR_MAN ) { await CUR_MAN.stop(); }
 			CUR_MAN = null;
 			CURRENT_MAN_NAME = "youtube";
-			await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
-			await RU.setKey( redis , R_STATE , R_STATE_NAME_YOUTUBE );
+			await RU.setKey( R_TWITCH_LIVE_USERS_INDEX , 0 );
+			await RU.setKey( R_STATE , R_STATE_NAME_YOUTUBE );
 			try { delete require.cache[ CURRENT_MAN_NAME ]; }
 			catch ( e ) {}
 			CUR_MAN = null;
@@ -72,14 +71,14 @@ function wStart() {
 			//await require( "../utils/twitchAPI_Utils.js" ).followUserName( "lost_in_house" );
 			//await wsleep( 1000 );
 
-			var current_state = await RU.getKey( redis , R_STATE );
+			var current_state = await RU.getKey( R_STATE );
 			var wMulti = [ [ "set" , R_PREVIOUS , current_state ] ];
 			var current_live = [];
 
 			// If There are live twitch users , select the first one
 			// else , start youtube standard
 			var resetOverride = false;
-			var c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
+			var c_index = await RU.getKey( R_TWITCH_LIVE_USERS_INDEX );
 			console.log( "c_index === " + c_index );
 			c_index = parseInt( c_index );
 			if ( c_index !== 0 ) { resetOverride = true; }
@@ -87,7 +86,7 @@ function wStart() {
 			current_live = await require( "../utils/twitchAPI_Utils.js" ).updateLiveUsers( resetOverride );
 			if ( current_live.length > 0 ) {
 				
-				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
+				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( R_TWITCH_LIVE_USERS , c_index );
 				if ( ACTIVE_TWITCH_USER_NAME === null ) { await RESTART_AS_YOUTUBE(); }
 				else {
 					wMulti.push( [ "set" , R_STATE , R_STATE_NAME_TWITCH ] );
@@ -95,12 +94,12 @@ function wStart() {
 					CUR_MAN = require( "../STATES/Twitch_Live_Foreground.js" );
 					await CUR_MAN.start( ACTIVE_TWITCH_USER_NAME );
 					CHECK_LIVE_INT = setInterval( LIVE_CHECK_INT , 60000 );
-					//if ( c_index === 0 ) { await RU.incrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX ); }
+					//if ( c_index === 0 ) { await RU.incrementInteger( R_TWITCH_LIVE_USERS_INDEX ); }
 				}
 			}
 			else { await RESTART_AS_YOUTUBE(); }
 
-			await RU.setMulti( redis , wMulti );
+			await RU.setMulti( wMulti );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -120,7 +119,7 @@ function wPause() {
 function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
+			await RU.setKey( R_TWITCH_LIVE_USERS_INDEX , 0 );
 			await CUR_MAN.stop();
 			if ( CHECK_LIVE_INT ) { clearInterval( CHECK_LIVE_INT ); }
 			resolve();
@@ -133,11 +132,11 @@ function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			if ( CURRENT_MAN_NAME === "twitch" ) {
-				await RU.incrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX );
+				await RU.incrementInteger( R_TWITCH_LIVE_USERS_INDEX );
 				await wsleep( 1000 );
-				var c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
+				var c_index = await RU.getKey( R_TWITCH_LIVE_USERS_INDEX );
 				console.log( "c_index === " + c_index );
-				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
+				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( R_TWITCH_LIVE_USERS , c_index );
 				if ( ACTIVE_TWITCH_USER_NAME !== null ) {
 					await CUR_MAN.next( ACTIVE_TWITCH_USER_NAME );
 				}
@@ -158,14 +157,14 @@ function wPrevious() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			if ( CURRENT_MAN_NAME === "twitch" ) {
-				var c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
+				var c_index = await RU.getKey( R_TWITCH_LIVE_USERS_INDEX );
 				console.log( "c_index === " + c_index );
 				c_index = parseInt( c_index );
 				if ( c_index === 0 ) { await RESTART_AS_YOUTUBE(); resolve(); return; }
 				else {
-					await RU.decrementInteger( redis , R_TWITCH_LIVE_USERS_INDEX );
-					c_index = await RU.getKey( redis , R_TWITCH_LIVE_USERS_INDEX );
-					ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( redis , R_TWITCH_LIVE_USERS , c_index );
+					await RU.decrementInteger( R_TWITCH_LIVE_USERS_INDEX );
+					c_index = await RU.getKey( R_TWITCH_LIVE_USERS_INDEX );
+					ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( R_TWITCH_LIVE_USERS , c_index );
 					await CUR_MAN.previous( ACTIVE_TWITCH_USER_NAME );
 				}
 				

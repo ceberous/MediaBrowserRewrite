@@ -1,5 +1,3 @@
-
-const redis = require( "../../main.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 
@@ -11,7 +9,7 @@ function wStart( wButton_Genre_Type ) {
 		try {
 			wButton_Genre_Type = wButton_Genre_Type || "UNKNOWN";
 			wButton_Genre_Type = wButton_Genre_Type + ".TRACKS";
-			await RU.setKey( redis , R_CONTINUOUS_PLAY , wButton_Genre_Type );
+			await RU.setKey( R_CONTINUOUS_PLAY , wButton_Genre_Type );
 			await require( "../utils/mopidy/restartContinousPlay.js" ).restart();
 			resolve();
 		}
@@ -42,7 +40,7 @@ function wResume() {
 function wStop() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.setKey( redis , R_CONTINUOUS_PLAY , "STOPPED" );
+			await RU.setKey( R_CONTINUOUS_PLAY , "STOPPED" );
 			await require( "../utils/mopidy/playbackManager.js" ).stop();
 			resolve();
 		}

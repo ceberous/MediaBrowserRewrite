@@ -1,5 +1,4 @@
 const request = require( "request" );
-// const redis = require( "../../main.js" ).redis;
 // const RU = require( "./redis_Utils.js" );
 
 const DATA_API_KEY = require( "../../personal.js" ).YT_DATA_API_KEY;
@@ -12,9 +11,9 @@ var FINAL_PARSED = [];
 // 	return new Promise( async function( resolve , reject ) {
 // 		try {
 // 			var wKey = R_YT_STD_CURRATED + ENUMERATING_ID;
-// 			await RU.delKey( redis , wKey );
+// 			await RU.delKey( wKey );
 // 			var ids = FINAL_PARSED.map( x => x[ "videoId" ] );
-// 			await RU.setSetFromArray( redis , wKey ,  ids );
+// 			await RU.setSetFromArray( wKey ,  ids );
 // 			resolve();
 // 		}
 // 		catch( error ) { console.log( error ); reject( error ); }

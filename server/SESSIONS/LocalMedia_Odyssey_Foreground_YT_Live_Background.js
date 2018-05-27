@@ -1,4 +1,3 @@
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 const R_STATE_BASE = "LAST_SS.STATE."
@@ -8,7 +7,7 @@ const R_STATE_NAME = "LOCAL_MEDIA_ODYSSEY_FOREGROUND_YT_LIVE_BACKGROUND";
 function wStart( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var current_state = await RU.getKey( redis , R_STATE_ACTIVE );
+			var current_state = await RU.getKey( R_STATE_ACTIVE );
 			current_state = current_state || "null";
 			var LM_OPS = {
 				genre: "Odyssey" ,
@@ -18,7 +17,7 @@ function wStart( wOptions ) {
 			};
 			await require( "../STATES/LocalMedia_Foreground.js" ).start( LM_OPS );
 			await require( "../STATES/YT_Live_Background.js" ).start();
-			await RU.setMulti( redis , [ [ "set" , R_STATE_ACTIVE , R_STATE_NAME ] , [ "set" , R_STATE_PREVIOUS , current_state ] ] );
+			await RU.setMulti( [ [ "set" , R_STATE_ACTIVE , R_STATE_NAME ] , [ "set" , R_STATE_PREVIOUS , current_state ] ] );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

@@ -6,7 +6,6 @@ const wTwitchKeys = require( "../../personal.js" ).twitch;
 //console.log( wSES );
 
 
-const redis = require( "../../main.js" ).redis;
 const RU = require( "./redis_Utils.js" );
 
 function followUserName( wUserNameToFollow  ) {
@@ -59,7 +58,7 @@ const R_TWITCH_LIVE_USERS_INDEX = "TWITCH.LIVE_USERS_INDEX";
 function UPDATE_LIVE_USERS( wResetIndex ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.delKey( redis , R_TWITCH_LIVE_USERS );
+			await RU.delKey( R_TWITCH_LIVE_USERS );
 			var xR = null;
 			//var fR = [];
 			var wTMP = [];
@@ -87,9 +86,9 @@ function UPDATE_LIVE_USERS( wResetIndex ) {
 						}
 						if ( wTMP.length > 0 ) {
 							console.log( wTMP );
-							await RU.setListFromArray( redis , R_TWITCH_LIVE_USERS , wTMP );
-							//if ( !wResetIndex ) { await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 ); }
-							await RU.setKey( redis , R_TWITCH_LIVE_USERS_INDEX , 0 );
+							await RU.setListFromArray( R_TWITCH_LIVE_USERS , wTMP );
+							//if ( !wResetIndex ) { await RU.setKey( R_TWITCH_LIVE_USERS_INDEX , 0 ); }
+							await RU.setKey( R_TWITCH_LIVE_USERS_INDEX , 0 );
 						}
 						resolve2( wTMP );
 					}

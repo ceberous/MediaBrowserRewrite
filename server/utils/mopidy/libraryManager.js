@@ -1,4 +1,3 @@
-const redis = require( "../../utils/redisManager.js" ).redis;
 const RU = require( "../redis_Utils.js" );
 const mopidy = require( "../../mopidyManager.js" ).mopidy;
 //const resetRandom = require( "../../mopidyManager.js" ).resetRandom;
@@ -14,8 +13,8 @@ function GET_PLAYLISTS() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			var BTN_CLASSICS = await RU.getFullSet( redis , R_BUTTON_CLASSIC );
-			var BTN_EDM = await RU.getFullSet( redis , R_BUTTON_EDM );
+			var BTN_CLASSICS = await RU.getFullSet( R_BUTTON_CLASSIC );
+			var BTN_EDM = await RU.getFullSet( R_BUTTON_EDM );
 
 			mopidy.playlists.getPlaylists().then( async function( playlists ) {
 
@@ -52,11 +51,11 @@ function GET_PLAYLISTS() {
 				console.log( "Time.Now === " + timeNow.toString() );
 				R_MULTI.push( [ "set" , R_LAST_UPDATE_TIME , timeNow ] );
 				
-				await RU.setMulti( redis , R_MULTI );
+				await RU.setMulti( R_MULTI );
 				console.log( "finished setting multi-1" );
 				await sleep( 1000 );
 
-				await RU.setMulti( redis , R_MULTI2 );
+				await RU.setMulti( R_MULTI2 );
 				console.log( "finished setting multi-2" );
 
 				resolve( "done updating MOPIDY redis cache" );
@@ -81,7 +80,7 @@ function UPDATE_CACHE() {
 
 			var timeNow = new Date().getTime();
 			console.log( "TIME.NOW = " + timeNow.toString() );
-			var lastUpdatedTime = await RU.getKey( redis , R_LAST_UPDATE_TIME );
+			var lastUpdatedTime = await RU.getKey( R_LAST_UPDATE_TIME );
 			console.log( "lastUpdatedTime = " + lastUpdatedTime );
 			var wDiff = HOUR;
 			if ( !lastUpdatedTime ) { lastUpdatedTime = "NEVER"; }
@@ -92,14 +91,14 @@ function UPDATE_CACHE() {
 			
 			if ( wDiff < HOUR ) { return resolve( "Already Updated Cache This Hour" ); }
 
-			var ek = await RU.getKeysFromPattern( redis , "MOPIDY.CACHE*" );
+			var ek = await RU.getKeysFromPattern( "MOPIDY.CACHE*" );
 			//FORCED-CLEANSING
 			if ( ek.length > 0 ) {
 				// ek = ek.map( x => [ "del" , x  ] );
 				for ( var i = 0; i < ek.length; ++i ) {
 					ek[ i ] = [ "del" , ek[ i ] ];
 				}
-				await RU.setMulti( redis , ek );
+				await RU.setMulti( ek );
 				await sleep( 1000 );
 				console.log( "done cleansing instance" );
 			}

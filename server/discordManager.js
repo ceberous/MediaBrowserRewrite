@@ -67,7 +67,7 @@ function PostButtons( wChannelID ) {
 			for ( var state in state_names ) {
 				replay_string = replay_string + "!btn " + state + " === " + state_names[ state ][ "name" ] + "\n";
 			}
-			console.log( replay_string );
+			//console.log( replay_string );
 			await discordBot.createMessage( wChannelID , replay_string );
 			resolve();
 		}
@@ -109,6 +109,9 @@ function INITIALIZE() {
 				else if ( msg.content.startsWith( "!tvpower" ) ) {
 					require( "./utils/cecClientManager.js" ).activate();
 				}
+				else if ( msg.content.startsWith( "!relax" ) ) {
+					// Start Relaxing Youtube Playlists or something
+				}
 				else if ( msg.content.startsWith( "!od" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "11" );
 				}				
@@ -117,11 +120,11 @@ function INITIALIZE() {
 					if ( msg.content.includes( "yt live" ) || msg.content.includes( "youtube live" ) || msg.content.includes( "yt background" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "0" );
 					}
-					else if (  msg.content.includes( "yt standard" ) || msg.content.includes( "youtube standard" ) ) {
+					else if ( msg.content.includes( "yt standard" ) || msg.content.includes( "youtube standard" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "14" );
 					}
 
-					else if (  msg.content.includes( "music" ) || msg.content.includes( "mopidy" ) ) {
+					else if ( msg.content.includes( "music" ) || msg.content.includes( "mopidy" ) ) {
 						if ( msg.content.includes( "classic" ) ) {
 							require( "./clientManager.js" ).pressButtonMaster( "1" );
 						}
@@ -134,7 +137,7 @@ function INITIALIZE() {
 						else { require( "./clientManager.js" ).pressButtonMaster( "1" ); }
 					}
 
-					else if (  msg.content.includes( "twitch" ) ) {
+					else if ( msg.content.includes( "twitch" ) ) {
 						if ( msg.content.includes( "live" ) ) {
 							require( "./clientManager.js" ).pressButtonMaster( "3" );
 						}
@@ -144,7 +147,7 @@ function INITIALIZE() {
 						else { require( "./clientManager.js" ).pressButtonMaster( "3" ); }
 					}
 
-					else if (  msg.content.includes( "odyssey" ) ) {
+					else if ( msg.content.includes( "odyssey" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "11" );
 					}
 				}

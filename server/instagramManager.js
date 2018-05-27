@@ -15,7 +15,6 @@ const { map } = require( "p-iteration" );
 const request = require("request");
 const resolver = require("resolver");
 //const cheerio = require("cheerio");
-const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).INSTAGRAM;
 
@@ -136,7 +135,7 @@ function SEARCH_FOLLOWER( wUserName ) {
 function UPDATE_LATEST_FOLLOWER_MEDIA() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const current_followers = await RU.getFullSet( redis , RC.FOLLOWERS );
+			const current_followers = await RU.getFullSet( RC.FOLLOWERS );
 			var latest = null;
 			if ( current_followers ) {
 				if ( current_followers.length > 0 ) {
@@ -146,7 +145,7 @@ function UPDATE_LATEST_FOLLOWER_MEDIA() {
 			latest = [].concat.apply( [] , latest );
 
 			var latest_codes = latest.map( x => x.code );
-			const already_watched = await RU.getFullList( redis , RC.ALREADY_WATCHED );
+			const already_watched = await RU.getFullList( RC.ALREADY_WATCHED );
 			var skipped = null;
 			if ( already_watched ) {
 				if ( already_watched.length > 0 ) {
@@ -164,7 +163,7 @@ function UPDATE_LATEST_FOLLOWER_MEDIA() {
 
 			if ( wMulti.length > 0 ) {
 				wMulti = wMulti.filter( function( x ) { return x === undefined || x === "undefined" } );
-				await RU.setHashMulti( redis , RC.MEDIA , wMulti );
+				await RU.setHashMulti( RC.MEDIA , wMulti );
 			}
 
 			//latest = latest.map( function( x ) { return { code: x["code"] , url: x["display_src"] }; } );
@@ -188,7 +187,7 @@ module.exports.updateLatestFollowerMedia = UPDATE_LATEST_FOLLOWER_MEDIA;
 module.exports.updateWatchedMedia = UPDATE_WATCHED_MEDIA;
 
 // ( async ()=> {
-// 	await RU.selectDatabase( redis , 3 ); // testing
+// 	await RU.selectDatabase( 3 ); // testing
 // 	var final_results = await SEARCH_FOLLOWER( "ceberous" );
 // 	console.log( final_results );
 // })();

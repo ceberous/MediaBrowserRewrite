@@ -8,7 +8,6 @@ const { map } = require( "p-iteration" );
 
 const wEmitter	= require("../main.js").wEmitter;
 
-const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 const RC = require( "./CONSTANTS/redis.js" ).YOU_TUBE;
 
@@ -59,17 +58,17 @@ function enumerateLiveFollowers() {
 	}
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.delKey( redis , RC.LIVE.LATEST );
+			await RU.delKey( RC.LIVE.LATEST );
 
-			current_followers = await RU.getFullSet( redis , RC.LIVE.FOLLOWERS );
-			current_blacklist = await RU.getFullSet( redis , RC.LIVE.BLACKLIST );
+			current_followers = await RU.getFullSet( RC.LIVE.FOLLOWERS );
+			current_blacklist = await RU.getFullSet( RC.LIVE.BLACKLIST );
 			
 			var live_videos = await map( current_followers , userId => searchFollower( userId ) );
 
 			live_videos = [].concat.apply( [] , live_videos );
 			live_videos = live_videos.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
 			
-			await RU.setSetFromArray( redis , RC.LIVE.LATEST , live_videos );
+			await RU.setSetFromArray( RC.LIVE.LATEST , live_videos );
 			resolve( live_videos );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -150,8 +149,8 @@ function enumerateStandardFollowers() {
 		try {
 
 			// Gather Data
-			current_followers = await RU.getFullSet( redis , RC.STANDARD.FOLLOWERS );
-			current_blacklist = await RU.getFullSet( redis , RC.STANDARD.BLACKLIST );
+			current_followers = await RU.getFullSet( RC.STANDARD.FOLLOWERS );
+			current_blacklist = await RU.getFullSet( RC.STANDARD.BLACKLIST );
 			if ( current_followers ) {
 				await map( current_followers , userId => fetchFollowerXML( userId ) );
 				if ( current_blacklist ) {
@@ -160,10 +159,10 @@ function enumerateStandardFollowers() {
 			}
 
 			final_ids = final_ids.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
-			await RU.setSetFromArray( redis , RC.STANDARD.LATEST , final_ids );
-			await RU.setDifferenceStore( redis , RC.PLACEHOLDER , RC.STANDARD.LATEST , RC.ALREADY_WATCHED );
-			await RU.setStoreUnion( redis , RC.UNWATCHED , RC.PLACEHOLDER , RC.UNWATCHED )
-			await RU.delKey( redis , RC.PLACEHOLDER );
+			await RU.setSetFromArray( RC.STANDARD.LATEST , final_ids );
+			await RU.setDifferenceStore( RC.PLACEHOLDER , RC.STANDARD.LATEST , RC.ALREADY_WATCHED );
+			await RU.setStoreUnion( RC.UNWATCHED , RC.PLACEHOLDER , RC.UNWATCHED )
+			await RU.delKey( RC.PLACEHOLDER );
 
 			// If you wanted a detailed hash for some reason
 			//var wMultis = [];
@@ -183,7 +182,7 @@ function enumerateStandardFollowers() {
 			// 	}
 			// }
 			// console.log( wMultis );
-			// await RU.setMulti( redis , wMultis );
+			// await RU.setMulti( wMultis );
 			
 
 			// ============================================================================================================================
@@ -200,7 +199,7 @@ function enumerateStandardFollowers() {
 			// }
 			// console.log( final_vid_keys );
 			// Array.prototype.push.apply( wMultis , final_vid_keys );
-			// await RU.setMulti( redis , final_vid_keys );
+			// await RU.setMulti( final_vid_keys );
 			// ============================================================================================================================
 
 			resolve( final_ids );

@@ -4,7 +4,6 @@ function wcl( wSTR ) { console.log( colors.black.bgWhite( "[CLIENT_MAN] --> " + 
 
 const wSleep = require( "./utils/generic.js" ).wSleep;
 
-const redis = require( "./utils/redisManager.js" ).redis;
 const RU 	= require( "./utils/redis_Utils.js" );
 
 var cached_launching_fp = null;
@@ -20,10 +19,10 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 	const x2 = ( dNow.getMonth() + 1 ) + "/" + dNow.getDate() + "/" + dNow.getFullYear() + "--" + dHours + ":" + dNow.getMinutes();
 	wcl( x2 + " " + x1 );
 	if ( parseInt( dHours ) === 15 ) {
-		const already_home = await RU.getKey( redis , R_ARRIVE_HOME );
+		const already_home = await RU.getKey( R_ARRIVE_HOME );
 		if ( already_home !== null ){
 			if ( already_home === "false" ) {
-				await RU.setKey( redis , R_ARRIVE_HOME , "true" );
+				await RU.setKey( R_ARRIVE_HOME , "true" );
 			}
 		}
 	}

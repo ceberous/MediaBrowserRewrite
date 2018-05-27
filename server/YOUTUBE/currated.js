@@ -1,6 +1,5 @@
 const colors = require( "colors" );
 
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE.CURRATED;
 
@@ -9,7 +8,7 @@ function wcl( wSTR ) { console.log( colors.white.bgRed( "[YOUTUBE_CURRATED] --> 
 function GET_QUE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const list = await RU.getFullSet( redis , RC.QUE );
+			const list = await RU.getFullSet( RC.QUE );
 			resolve( list );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -20,7 +19,7 @@ module.exports.getQue = GET_QUE;
 function ADD_TO_QUE( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.setAdd( redis , RC.QUE , wVideoID );
+			await RU.setAdd( RC.QUE , wVideoID );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -31,7 +30,7 @@ module.exports.addToQue = ADD_TO_QUE;
 function REMOVE_FROM_QUE( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.setRemove( redis , RC.QUE , wVideoID );
+			await RU.setRemove( RC.QUE , wVideoID );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -48,7 +47,7 @@ function IMPORT_FROM_PLAYLIST_ID( wPlaylistID ) {
 			const filtered_ids = await require( "./generic.js" ).filterCommon( ids );
 			console.log( "Filtered IDS === " );
 			console.log( filtered_ids );
-			await RU.setSetFromArray( redis , RC.QUE , filtered_ids );
+			await RU.setSetFromArray( RC.QUE , filtered_ids );
 			resolve( filtered_ids );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -60,7 +59,7 @@ module.exports.importFromPlaylistID = IMPORT_FROM_PLAYLIST_ID;
 function GET_NEXT_IN_QUE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var next_video = await RU.getRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
+			var next_video = await RU.getRandomSetMembers( RC.CURRATED.QUE , 1 );
 			if ( !next_video ) { next_video = "empty" }
 			else { next_video = next_video[ 0 ]; }		
 			resolve( next_video );

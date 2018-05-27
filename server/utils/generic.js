@@ -1,5 +1,6 @@
 const request = require( "request" );
 require( "shelljs/global" );
+const StatusKeys = require( "../CONSTANTS/redis.js" ).STATUS;
 
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 module.exports.wSleep = W_SLEEP;
@@ -32,8 +33,7 @@ function SET_STAGED_FF_CLIENT_TASK( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			const STAGED_FF_CLIENT_TASK = JSON.stringify( wOptions );
-			const redis = require( "./redisManager.js" ).redis;
-			await require( "./redis_Utils.js" ).setKey( redis , "STAGED_FF_TASK" , STAGED_FF_CLIENT_TASK );
+			await require( "./redis_Utils.js" ).setKey( "STAGED_FF_TASK" , STAGED_FF_CLIENT_TASK );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -44,8 +44,7 @@ module.exports.setStagedFFClientTask = SET_STAGED_FF_CLIENT_TASK;
 function GET_STAGED_FF_CLIENT_TASK( wDontParse ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const redis = require( "./redisManager.js" ).redis;
-			var STAGED_FF_CLIENT_TASK = await require( "./redis_Utils.js" ).getKey( redis , "STAGED_FF_TASK" );
+			var STAGED_FF_CLIENT_TASK = await require( "./redis_Utils.js" ).getKey( "STAGED_FF_TASK" );
 			if ( !wDontParse ) { STAGED_FF_CLIENT_TASK = JSON.parse( STAGED_FF_CLIENT_TASK ); }
 			resolve( STAGED_FF_CLIENT_TASK );
 		}
@@ -57,10 +56,8 @@ module.exports.getStagedFFClientTask = GET_STAGED_FF_CLIENT_TASK;
 function GET_STATUS_REPORT() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const redis = require( "./redisManager.js" ).redis;
-			const StatusKeys = require( "../CONSTANTS/redis.js" ).STATUS;
-			console.log( StatusKeys.join( "," ) );
-			var wStatusReport = await require( "./redis_Utils.js" ).getMultiKeys( redis , StatusKeys.join( "," ) );
+			//console.log( StatusKeys.join( "," ) );
+			var wStatusReport = await require( "./redis_Utils.js" ).getMultiKeys( StatusKeys.join( "," ) );
 			console.log( "\n\nSTATUS REPORT ====\n" );
 			console.log( wStatusReport )
 			resolve( wStatusReport );
@@ -74,8 +71,7 @@ module.exports.getStatusReport = GET_STATUS_REPORT;
 function CHECK_STATUS( wComponent ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const redis = require( "./redisManager.js" ).redis;
-			var isComponentLive = await require( "./redis_Utils.js" ).getKey( redis , "STATUS." + wComponent );
+			var isComponentLive = await require( "./redis_Utils.js" ).getKey( "STATUS." + wComponent );
 			var answer = false;
 			if ( isComponentLive ) {
 				if ( isComponentLive === "ONLINE" ) { answer = true; }
@@ -90,8 +86,7 @@ module.exports.checkStatus = CHECK_STATUS;
 function SET_STATUS( wComponent , wStatus ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const redis = require( "./redisManager.js" ).redis;
-			await require( "./redis_Utils.js" ).setKey( redis , "STATUS." + wComponent , wStatus );
+			await require( "./redis_Utils.js" ).setKey( "STATUS." + wComponent , wStatus );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

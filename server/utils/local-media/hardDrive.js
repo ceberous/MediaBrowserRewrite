@@ -99,14 +99,14 @@ function REBUILD_REDIS_MOUNT_POINT_REFERENCE( wMountPoint ) {
 				const LSS_SK_U = LSS_SK_B + "UNEQ";
 				const LSS_SK_T = LSS_SK_B + "TOTAL";
 				const LSS_SK_C = LSS_SK_B + "CURRENT_INDEX";
-				await RU.setMulti( redis , [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
-				redis.rpush.apply( redis , [ LSS_SK_U ].concat( x1Shows ) );
+				await RU.setMulti( [ [ "set" , LSS_SK_T , x1Shows.length ] ,  [ "set" , LSS_SK_C , 0 ] ]);
+				redis.rpush.apply( [ LSS_SK_U ].concat( x1Shows ) );
 				for ( var wShow in x1[ wGenre ] ) { // Each Show in Genre
 					const wShow_R_KEY = RC.HD_BASE + wGenre + ".FP." + wShow;
 					for ( var j = 0; j < x1[ wGenre ][ wShow ].length; ++j ) {
 						const wSeason_R_KEY = wShow_R_KEY + "." + j.toString();
 						if ( x1[ wGenre ][ wShow ][ j ].length > 0 ) { // <-- Has Episodes Stored in Season Folders
-							redis.rpush.apply( redis , [ wSeason_R_KEY ].concat( x1[ wGenre ][ wShow ][ j ] ) );
+							redis.rpush.apply( [ wSeason_R_KEY ].concat( x1[ wGenre ][ wShow ][ j ] ) );
 						}
 					}
 				}
@@ -121,10 +121,10 @@ function REINITIALIZE_MOUNT_POINT() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			// 1.) Lookup mount point to see if valid , else build reference
-			var wLiveMountPoint = await RU.getKey( redis , RC.MOUNT_POINT );
+			var wLiveMountPoint = await RU.getKey( RC.MOUNT_POINT );
 			if ( !wLiveMountPoint ) {
 				wcl( "No Media Reference Found , Trying to Rebuild from --> " );
-				const MOUNT_CONFIG = await RU.getKeyDeJSON( redis , "CONFIG.MOINT_POINT" );
+				const MOUNT_CONFIG = await RU.getKeyDeJSON( "CONFIG.MOINT_POINT" );
 				if ( MOUNT_CONFIG[ "UUID" ] ) {
 					wcl( "UUID: " + MOUNT_CONFIG[ "UUID" ] );
 					wLiveMountPoint = await FIND_USB_STORAGE_PATH_FROM_UUID( MOUNT_CONFIG[ "UUID" ] );
@@ -140,10 +140,10 @@ function REINITIALIZE_MOUNT_POINT() {
 				const isEmpty = await exfs.isEmpty( wLiveMountPoint );
 				if ( isEmpty ) { wcl( "Local Media Folder is Empty" ); resolve( "no_local_media" ); return; }
 				// Cleanse and Prepare Mount_Point
-				await RU.deleteMultiplePatterns( redis , [ ( RC.BASE + "*" ) , "HARD_DRIVE.*" , "LAST_SS.LOCAL_MEDIA.*" ] );
+				await RU.deleteMultiplePatterns( [ ( RC.BASE + "*" ) , "HARD_DRIVE.*" , "LAST_SS.LOCAL_MEDIA.*" ] );
 				//await wSleep( 2000 );
 				await REBUILD_REDIS_MOUNT_POINT_REFERENCE( wLiveMountPoint );
-				await RU.setKey( redis , RC.MOUNT_POINT , wLiveMountPoint );
+				await RU.setKey( RC.MOUNT_POINT , wLiveMountPoint );
 			}		
 			resolve( wLiveMountPoint );
 		}

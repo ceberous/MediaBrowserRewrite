@@ -1,4 +1,3 @@
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 
 const R_BASE = "LAST_SS.STATE.";
@@ -11,12 +10,12 @@ function wsleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms 
 async function wStart() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var current_state = await RU.getKey( redis , R_STATE );
+			var current_state = await RU.getKey( R_STATE );
 			var live_vids = await require( "../youtubeManager.js" ).updateLive();
 			//console.log( live_vids );
 			await require( "../../main.js" ).setStagedFFClientTask( { message: "YTLiveBackground" , playlist: live_vids , nextVideoTime: 180000 } );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtubeLiveBackground" );
-			await RU.setMulti( redis , [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
+			await RU.setMulti( [ [ "set" , R_STATE , R_STATE_NAME ] , [ "set" , R_PREVIOUS , current_state ] ] );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

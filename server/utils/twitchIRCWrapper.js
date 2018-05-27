@@ -51,7 +51,7 @@ var EMOTES = {
 function twitchSay( wChannelName , wMessage ) { 
     return new Promise( async function( resolve , reject ) {
         try {
-            await twitchIRCClient.say(  wChannelName , wMessage );
+            await twitchIRCClient.say( wChannelName , wMessage );
             resolve();
         }
         catch( error ) { console.log( error ); reject( error ); }
@@ -133,7 +133,7 @@ module.exports.sayRandomEmote           = twitchSayRandomSinglesInRandomEmotion
 
 // await sleep( 3000 );
 // await twitchSaySingleRepeat( "ram_ram_ram_ram" , 5 , EMOTES.SINGLES.MERICA[0] );
-// //setInterval( async function() { await twitchSayRandomSinglesInRandomEmotion(  "ram_ram_ram_ram" , 140 ); } , 15000 );
+// //setInterval( async function() { await twitchSayRandomSinglesInRandomEmotion( "ram_ram_ram_ram" , 140 ); } , 15000 );
 
 // process.on( "unhandledRejection" , function( reason , p ) {
 //     console.error( reason, "Unhandled Rejection at Promise" , p );

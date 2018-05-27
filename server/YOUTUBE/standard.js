@@ -3,7 +3,6 @@ const request = require( "request" );
 const FeedParser = require( "feedparser" );
 const { map } = require( "p-iteration" );
 
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE.STANDARD;
 
@@ -88,7 +87,7 @@ function STANDARD_FOLLOWERS_FETCH_XML( channelID ) {
 function STANDARD_FOLLOWERS_GET_LATEST() {
 	return new Promise( async function( resolve , reject ) {
 		try { 
-			var current_followers = await RU.getFullSet( redis , RC.FOLLOWERS );
+			var current_followers = await RU.getFullSet( RC.FOLLOWERS );
 			if ( current_followers ) {
 				if ( current_followers.length > 0 ) {
 					var latest = await map( current_followers , userId => STANDARD_FOLLOWERS_FETCH_XML( userId ) );
@@ -101,7 +100,7 @@ function STANDARD_FOLLOWERS_GET_LATEST() {
 					all_new = all_new.sort( function() { return 0.5 - Math.random(); });
 					var new_que_ids = all_new.map( x => x[ "id" ] );
 					const wNewTotal = new_que_ids.length;
-					const current_que_length = await RU.getListLength( redis , RC.QUE );
+					const current_que_length = await RU.getListLength( RC.QUE );
 					//console.log( "Current QUE Length === " + current_que_length.toString() );
 					//console.log( "New Additions Total === " + wNewTotal.toString() );
 					const space_available = ( 100 - ( current_que_length + wNewTotal ) );
@@ -111,22 +110,22 @@ function STANDARD_FOLLOWERS_GET_LATEST() {
 						//console.log( "We need to clear " + space_needed.toString() + " slots in que" );
 						var wToDeleteIDS = [];
 						for ( var i = 0; i < space_needed; ++i ) {
-							var xTMP = await RU.listRPOP( redis , RC.QUE );
+							var xTMP = await RU.listRPOP( RC.QUE );
 							wToDeleteIDS.push( xTMP );
 						}
 						var wToDeleteKeysMulti = wToDeleteIDS.map( x => [ "del" , RC.LATEST + "." + x ] );
 						//console.log( "We need to remove these **old** videos" );
 						//console.log( wToDeleteKeysMulti );
-						await RU.setMulti( redis , wToDeleteKeysMulti );
+						await RU.setMulti( wToDeleteKeysMulti );
 						//console.log( "supposedly done deleting keys" );
 					}
 					//console.log( "about to add new ids to QUE" );
-					await RU.setListFromArrayBeginning( redis , RC.QUE , new_que_ids );
+					await RU.setListFromArrayBeginning( RC.QUE , new_que_ids );
 					//console.log( "done adding to QUE" );
 					for ( var i = 0; i < all_new.length; ++i ) {
 						var xR_Key = RC.LATEST + "." + all_new[ i ][ "id" ];
-						if ( !await RU.exists( redis , xR_Key ) ) {
-							await RU.setHashMulti( redis , xR_Key ,
+						if ( !await RU.exists( xR_Key ) ) {
+							await RU.setHashMulti( xR_Key ,
 								"title" , all_new[ i ][ "title" ] ,
 								"pubdate" , all_new[ i ][ "pubdate" ] ,
 								"completed" , all_new[ i ][ "completed" ] ,
@@ -149,7 +148,7 @@ module.exports.update = STANDARD_FOLLOWERS_GET_LATEST;
 function GET_QUE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const que = await RU.getFullList( redis , RC.QUE );
+			const que = await RU.getFullList( RC.QUE );
 			resolve( que );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -160,7 +159,7 @@ module.exports.getQue = GET_QUE;
 function GET_FOLLOWERS() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const followers = await RU.getFullSet( redis , RC.FOLLOWERS );
+			const followers = await RU.getFullSet( RC.FOLLOWERS );
 			resolve( followers );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -193,7 +192,7 @@ module.exports.removeFollower = REMOVE_FOLLOWER;
 function GET_BLACKLIST() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const blacklist = await RU.getFullSet( redis , RC.BLACKLIST );
+			const blacklist = await RU.getFullSet( RC.BLACKLIST );
 			resolve( blacklist );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -226,7 +225,7 @@ module.exports.removeBlacklistVID = REMOVE_BLACKLIST_VID;
 function DELETE_VIDEO( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.delKey( redis , RC.LATEST + "." + wVideoID );
+			await RU.delKey( RC.LATEST + "." + wVideoID );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -238,7 +237,7 @@ module.exports.deleteVideo = DELETE_VIDEO;
 function GET_VIDEO_INFO( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const x1 = await RU.hashGetAll( redis , RC.LATEST + "." + wVideoID );
+			const x1 = await RU.hashGetAll( RC.LATEST + "." + wVideoID );
 			console.log( x1 );
 			resolve( x1 );
 		}
@@ -268,26 +267,26 @@ function GET_NEXT_VIDEO() {
 			//var finalVideo = finalMode = null;
 			// Precedance Order Unless Otherwise Segregated into Sub-States
 			// 1.) Check inside redis-Personal-Store for custom youtube.com/playlists
-			// var finalVideo = await RU.popRandomSetMembers( redis , RC.CURRATED.QUE , 1 );
+			// var finalVideo = await RU.popRandomSetMembers( RC.CURRATED.QUE , 1 );
 			// if ( finalVideo.length > 0 ) { finalMode = "QUE"; finalVideo = finalVideo[0]; }
 			// // 2.) If none exist , build a mini playlist of Standard Followers Latest Videos this Month
 			// else {
 			// 	console.log( "no videos are left in QUE" );
 			// 	finalMode = "STANDARD";
-			// 	finalVideo = await RU.popRandomSetMembers( redis , RC.STANDARD.QUE , 1 );
+			// 	finalVideo = await RU.popRandomSetMembers( RC.STANDARD.QUE , 1 );
 			// 	if ( finalVideo.length < 1 ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve(); return; }
 			// 	else { finalVideo = finalVideo[0]; }
 			// }
 			// console.log( finalVideo );
 			// console.log( finalMode );
 			// // WutFace https://stackoverflow.com/questions/17060672/ttl-for-a-set-member
-			// await RU.setMulti( redis , [ 
+			// await RU.setMulti( [ 
 			// 	[ "sadd" , RC.ALREADY_WATCHED , finalVideo ] ,
 			// 	[ "set" , RC.NOW_PLAYING_ID , finalVideo ] , 
 			// 	[ "set" , RC.NOW_PLAYING_MODE , finalMode ] 
 			// ]);
 
-			var finalVideo = await RU.popRandomSetMembers( redis , RC.QUE , 1 );
+			var finalVideo = await RU.popRandomSetMembers( RC.QUE , 1 );
 			if ( finalVideo.length < 1 ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve( "empty" ); return; }
 			else { finalVideo = finalVideo[0]; }	
 			resolve( finalVideo );

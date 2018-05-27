@@ -1,6 +1,5 @@
 const colors	= require( "colors" );
 function wcl( wSTR ) { console.log( colors.magenta.bgBlack( "[LOCAL_MEDIA_MAN] --> calculate() --> " + wSTR ) ); }
-const redis = require( "../redisManager.js" ).redis;
 const RU = require( "../redis_Utils.js" );
 const RC = require( "../../CONSTANTS/redis.js" ).LOCAL_MEDIA;
 const GetLiveConfig = require( "./generic.js" ).getLiveConfig;
@@ -13,10 +12,10 @@ function GET_GENRE_FRESH( wOptions ) {
 		try {
 			// 1.) Select The 1st Show from The List of UNEQ
 			const R_FirstShow = RC.BASE + wOptions.genre + ".META.UNEQ";
-			const showName = await RU.getFromListByIndex( redis , R_FirstShow , 0 );
+			const showName = await RU.getFromListByIndex( R_FirstShow , 0 );
 			// 2.) Select the 1st Episode
 			const R_FirstEpisodeFP = RC.HD_BASE + wOptions.genre + ".FP." + showName + ".0";
-			const firstEpisode = await RU.getFromListByIndex( redis , R_FirstEpisodeFP , 0 );
+			const firstEpisode = await RU.getFromListByIndex( R_FirstEpisodeFP , 0 );
 
 			const firstEpFullPath = wOptions.mount_point + wOptions.genre + "/" + showName + "/01/" + firstEpisode;
 			
@@ -51,7 +50,7 @@ function PREVIOUS( wOptions ) {
 			if ( !lastPlayed ) { //console.log( "genre is FRESH !!" );
 				var FinalNowPlaying = await GET_GENRE_FRESH( wOptions );
 				const x1 = JSON.stringify( FinalNowPlaying );
-				await RU.setMulti( redis , [ [ "set" , RC.LAST_SS.NOW_PLAYING[ wOptions.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
+				await RU.setMulti( [ [ "set" , RC.LAST_SS.NOW_PLAYING[ wOptions.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
 				resolve( FinalNowPlaying );
 				return;
 			}
@@ -72,7 +71,7 @@ function PREVIOUS( wOptions ) {
 			FinalEpisodeIDX = ( FinalEpisodeIDX - 1 );
 			const R_Previous_Base = R_P_Base + "FP." + FinalShowName;
 			const R_Previous_EP = R_Previous_Base + "." + FinalSeasonIDX;
-			var previousEpisode = await RU.getFromListByIndex( redis , R_Previous_EP , FinalEpisodeIDX );
+			var previousEpisode = await RU.getFromListByIndex( R_Previous_EP , FinalEpisodeIDX );
 			//console.log( "next episode === " + previousEpisode );
 
 			if ( previousEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
@@ -80,14 +79,14 @@ function PREVIOUS( wOptions ) {
 				//console.log( "inside episode reset" );
 				FinalSeasonIDX = ( FinalSeasonIDX - 1 );
 				if ( FinalSeasonIDX === -1 ) { // We Precceded Past Season '0' , and we need to set to last season , last episode
-					FinalSeasonIDX = await RU.getKeysFromPattern( redis , R_Previous_Base + ".*" );
+					FinalSeasonIDX = await RU.getKeysFromPattern( R_Previous_Base + ".*" );
 					FinalSeasonIDX = ( FinalSeasonIDX.length - 1 );
 				}
 				const R_Previous_Season = R_Previous_Base + "." + FinalSeasonIDX;
-				FinalEpisodeIDX = await RU.getListLength( redis , R_Previous_Season );
+				FinalEpisodeIDX = await RU.getListLength( R_Previous_Season );
 				FinalEpisodeIDX = ( FinalEpisodeIDX - 1 );
 
-				FinalFilePath = await RU.getFromListByIndex( redis , R_Previous_Season , F_Episode_IDX );
+				FinalFilePath = await RU.getFromListByIndex( R_Previous_Season , F_Episode_IDX );
 
 			}
 			else { FinalFilePath = previousEpisode; }
@@ -118,7 +117,7 @@ function PREVIOUS( wOptions ) {
 			wcl( "previous() --> previous episode === " );
 			console.log( FinalOBJ );
 			const x1 = JSON.stringify( FinalOBJ );
-			await RU.setMulti( redis , [ [ "set" , RC.LAST_SS.NOW_PLAYING[ FinalOBJ.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
+			await RU.setMulti( [ [ "set" , RC.LAST_SS.NOW_PLAYING[ FinalOBJ.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
 
 			resolve( FinalOBJ );
 			resolve();
@@ -136,7 +135,7 @@ function SKIP() {
 			if ( !lastPlayed ) { resolve(); return; }
 			lastPlayed.completed = true;
 			lastPlayed = JSON.stringify( lastPlayed );
-			await RU.setKey( redis , RC.LAST_SS.NOW_PLAYING_GLOBAL , lastPlayed );
+			await RU.setKey( RC.LAST_SS.NOW_PLAYING_GLOBAL , lastPlayed );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -160,7 +159,7 @@ function NEXT( wOptions , wSkipping ) {
 			if ( !lastPlayed ) { //console.log( "genre is FRESH !!" );
 				var FinalNowPlaying = await GET_GENRE_FRESH( wOptions );
 				const x1 = JSON.stringify( FinalNowPlaying );
-				await RU.setMulti( redis , [ [ "set" , RC.LAST_SS.NOW_PLAYING[ wOptions.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
+				await RU.setMulti( [ [ "set" , RC.LAST_SS.NOW_PLAYING[ wOptions.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
 				resolve( FinalNowPlaying );
 				return;
 			}
@@ -196,7 +195,7 @@ function NEXT( wOptions , wSkipping ) {
 				// Check if Show Already Has a Previous Position
 				// This is the only point of double saving the **nowPlaying** obj into G_R_NP_ShowName_Backup
 				const R_PreviouslyWatched = "LAST_SS.LOCAL_MEDIA." + lastPlayed.genre + "." + FinalShowName;
-				var previouslyWatched = await RU.getKey( redis , R_PreviouslyWatched );
+				var previouslyWatched = await RU.getKey( R_PreviouslyWatched );
 				if ( previouslyWatched !== null ) {
 					lastPlayed = JSON.parse( previouslyWatched );
 					if ( !lastPlayed.completed ) { resolve( lastPlayed ); return; }
@@ -214,19 +213,19 @@ function NEXT( wOptions , wSkipping ) {
  			// Calculate Next Episode , and adjust to next season ,
 			FinalEpisodeIDX = ( FinalEpisodeIDX + 1 );
 			const R_Next_EP = R_FinalBase + "FP." + FinalShowName + "." + FinalSeasonIDX;
-			var nextEpisode = await RU.getFromListByIndex( redis , R_Next_EP , FinalEpisodeIDX );
+			var nextEpisode = await RU.getFromListByIndex( R_Next_EP , FinalEpisodeIDX );
 
 			if ( nextEpisode === null ) { // IF Advanced Past Total-Episodes in Season Boundry
 				wcl( "next() --> episodeReset()" );
 				FinalEpisodeIDX = 0;
 				FinalSeasonIDX = ( FinalSeasonIDX + 1 );
 				var R_Next_Season = R_FinalBase + "FP." + FinalShowName + "." + FinalSeasonIDX;
-				const intermediaryNext_Episode = await RU.getFromListByIndex( redis , R_Next_Season , 0 );
+				const intermediaryNext_Episode = await RU.getFromListByIndex( R_Next_Season , 0 );
 				if ( intermediaryNext_Episode === null ) { // IF Advanced Past Total-Seasons in Show Boundry
 					wcl( "next() --> seasonReset()" );
 					FinalSeasonIDX = 0;
 					R_Next_Season = R_FinalBase + "FP." + FinalShowName + "." + FinalSeasonIDX;
-					FinalFilePath = await RU.getFromListByIndex( redis , R_Next_Season , 0 );
+					FinalFilePath = await RU.getFromListByIndex( R_Next_Season , 0 );
 				}
 				else { FinalFilePath = intermediaryNext_Episode; }
 			}
@@ -258,7 +257,7 @@ function NEXT( wOptions , wSkipping ) {
 			wcl( "next() --> next episode === " );
 			console.log( FinalOBJ );
 			const x1 = JSON.stringify( FinalOBJ );
-			await RU.setMulti( redis , [ [ "set" , RC.LAST_SS.NOW_PLAYING[ FinalOBJ.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
+			await RU.setMulti( [ [ "set" , RC.LAST_SS.NOW_PLAYING[ FinalOBJ.genre ] , x1 ] ,  [ "set" , RC.LAST_SS.NOW_PLAYING_GLOBAL , x1 ] ]);
 
 			resolve( FinalOBJ );
 			

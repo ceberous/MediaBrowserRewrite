@@ -3,7 +3,6 @@ const request = require("request");
 const cheerio = require("cheerio");
 const { map } = require( "p-iteration" );
 
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE.LIVE;
 
@@ -39,17 +38,17 @@ function GET_LIVE_VIDEOS() {
 	}
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.delKey( redis , RC.LATEST );
+			await RU.delKey( RC.LATEST );
 
-			current_followers = await RU.getFullSet( redis , RC.FOLLOWERS );
-			current_blacklist = await RU.getFullSet( redis , RC.BLACKLIST );
+			current_followers = await RU.getFullSet( RC.FOLLOWERS );
+			current_blacklist = await RU.getFullSet( RC.BLACKLIST );
 			
 			var live_videos = await map( current_followers , userId => searchFollower( userId ) );
 
 			live_videos = [].concat.apply( [] , live_videos );
 			live_videos = live_videos.filter( function( val ) { return current_blacklist.indexOf( val ) === -1; } );
 			
-			await RU.setSetFromArray( redis , RC.LATEST , live_videos );
+			await RU.setSetFromArray( RC.LATEST , live_videos );
 			resolve( live_videos );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -61,7 +60,7 @@ module.exports.getLiveVideos = GET_LIVE_VIDEOS;
 function GET_FOLLOWERS() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const followers = await RU.getFullSet( redis , RC.FOLLOWERS );
+			const followers = await RU.getFullSet( RC.FOLLOWERS );
 			resolve( followers );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -94,7 +93,7 @@ module.exports.removeFollower = REMOVE_FOLLOWER;
 function GET_BLACKLIST() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const blacklist = await RU.getFullSet( redis , RC.BLACKLIST );
+			const blacklist = await RU.getFullSet( RC.BLACKLIST );
 			resolve( blacklist );
 		}
 		catch( error ) { console.log( error ); reject( error ); }

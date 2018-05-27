@@ -1,6 +1,5 @@
 const wEmitter	= require("../main.js").wEmitter;
 
-const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 
@@ -20,12 +19,20 @@ function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms )
 // 		self.android_id = "VALID_DEVICE_ID"
 
 var mopidy = null;
-Mopidy.prototype._handleWebSocketError = function ( error ) { wcl( "Mopdiy WebSocket ERROR" ); this._cleanup(); this.close(); mopidy.off(); mopidy = null;  return; };
+Mopidy.prototype._handleWebSocketError = async function ( error ) { 
+	wcl( "Mopdiy WebSocket ERROR" ); 
+	this._cleanup(); 
+	this.close(); 
+	mopidy.off(); 
+	mopidy = null;
+	await RU.setKey( "STATUS.MOPIDY" , "OFFLINE" );
+	return;
+};
 function tryToConnectMopidy( wPort ) {
 	try {
 		mopidy = new Mopidy({ 
-			webSocketUrl: "ws://localhost:" + wPort.toString() + "/mopidy/ws/",
-			autoConnect: true,
+			webSocketUrl: "ws://localhost:" + wPort.toString() + "/mopidy/ws/" ,
+			autoConnect: true ,
 			callingConvention: "by-position-or-by-name"
 		});
 	} catch( error ) { wcl( "ERROR --> Mopdiy Binary not Running !" ); }
@@ -52,7 +59,7 @@ mopidy.on( "event:trackPlaybackEnded" , async function ( wEvent ) {
 		var wCTIDX = await require( "./utils/mopidy/playbackManager.js" ).getCurrentTrackIndex();
 		console.log( "PLAYBACK --> CURRENT_INDEX --> " + wCTIDX );
 		if ( wCTIDX === null ) {
-			var still_live = await RU.getKey( redis , R_CONTINUOUS_PLAY );
+			var still_live = await RU.getKey( R_CONTINUOUS_PLAY );
 			if ( still_live !== null && still_live !== "STOPPED" ) {
 				await require( "./utils/mopidy/restartContinousPlay.js" ).restart();
 			}
@@ -66,7 +73,7 @@ mopidy.on( "event:trackPlaybackStarted" , async function ( wEvent ) {
 	await sleep( 1000 );
 	var wCT = await require( "./utils/mopidy/playbackManager.js" ).getCurrentTrack();
 	if ( wCT === null ) { return; }
-	await RU.setKey( redis , R_NOW_PLAYING , JSON.stringify( wCT ) );
+	await RU.setKey( R_NOW_PLAYING , JSON.stringify( wCT ) );
 	console.log("");
 	wcl( "PLAYBACK --> STARTED || CURRENT-TRACK --> " );
 	wcl( "Title = " + wCT[ "name" ] );
@@ -75,7 +82,7 @@ mopidy.on( "event:trackPlaybackStarted" , async function ( wEvent ) {
 
 mopidy.on( "event:playbackStateChanged" , async function ( wEvent ) {
 	await sleep( 3000 );
-	await RU.setKey( redis , "MOPIDY.STATE" , wEvent.new_state );
+	await RU.setKey( "MOPIDY.STATE" , wEvent.new_state );
 	wcl( "PLAYBACK --> CHANGED --> " );
 	console.log( wEvent );
 });

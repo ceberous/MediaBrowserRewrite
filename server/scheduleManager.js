@@ -1,20 +1,23 @@
 const path = require("path");
 const schedule = require( "node-schedule" );
-const redis = require( "./utils/redisManager.js" ).redis;
 const RU = require( "./utils/redis_Utils.js" );
 
 const colors	= require( "colors" );
 function wcl( wSTR ) { console.log( colors.yellow.bgGreen( "[SCHEDULE_MAN] --> " + wSTR ) ); }
 
 const wButtonMaster = require( "./clientManager.js" ).pressButtonMaster;
-var SCHEDULE = require( "../config.js" ).SCHEDULES;
-var STATE_TRANSITIONS = SCHEDULE.STATE_TRANSITIONS;
-var UPDATE_JOBS = SCHEDULE.UPDATES;
 
+var SCHEDULE = STATE_TRANSITIONS = UPDATE_JOBS = null;
 var ACTIVE_SCHEDULES = [];
 
 // Initialize State Transition Schedules
 ( async ()=> {
+
+	wcl( "syncing schedules" );
+	SCHEDULE = require( "../config/schedules.json" );
+	STATE_TRANSITIONS = SCHEDULE.STATE_TRANSITIONS;
+	UPDATE_JOBS = SCHEDULE.UPDATES;
+
 	wcl( "setting up state transition schedules" );
 	for ( var job in STATE_TRANSITIONS ) {
 		
@@ -24,7 +27,7 @@ var ACTIVE_SCHEDULES = [];
 				if ( STATE_TRANSITIONS[ job ][ "startConditions" ] ) {
 					if ( Object.keys( STATE_TRANSITIONS[ job ][ "startConditions" ] ).length > 0 ) {
 						var wConditions = Object.keys( STATE_TRANSITIONS[ job ][ "startConditions" ] );
-						var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
+						var answers = await RU.getMultiKeys( wConditions.join(",") );
 						if ( answers ) {
 							for ( var i = 0; i < answers.length; ++i ) {
 								if ( answers[ i ] !== STATE_TRANSITIONS[ job ][ "startConditions" ][ wConditions[ i ] ] ) {
@@ -50,7 +53,7 @@ var ACTIVE_SCHEDULES = [];
 				if ( STATE_TRANSITIONS[ job ][ "stopConditions" ] ) {
 					if ( Object.keys( STATE_TRANSITIONS[ job ][ "stopConditions" ] ).length > 0 ) {
 						var wConditions = Object.keys( STATE_TRANSITIONS[ job ][ "stopConditions" ] );
-						var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
+						var answers = await RU.getMultiKeys( wConditions.join(",") );
 						console.log( answers );
 						if ( answers ) {
 							for ( var i = 0; i < answers.length; ++i ) {
@@ -82,7 +85,7 @@ var ACTIVE_SCHEDULES = [];
 				if ( UPDATE_JOBS[ job ][ "startConditions" ] ) {
 					if ( Object.keys( UPDATE_JOBS[ job ][ "startConditions" ] ).length > 0 ) {
 						var wConditions = Object.keys( UPDATE_JOBS[ job ][ "startConditions" ] );
-						var answers = await RU.getMultiKeys( redis , wConditions.join(",") );
+						var answers = await RU.getMultiKeys( wConditions.join(",") );
 						console.log( answers );
 						if ( answers ) {
 							for ( var i = 0; i < answers.length; ++i ) {

@@ -1,4 +1,3 @@
-const redis = require( "../../utils/redisManager.js" ).redis;
 const RU = require( "../redis_Utils.js" );
 const mopidy = require( "../../mopidyManager.js" ).mopidy;
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -110,7 +109,7 @@ function GET_STATE() {
 		try {
 			mopidy.playback.getState().then( async function ( state ) {
 				console.log( "STATE = " + state );
-				await RU.setKey( redis , R_CUR_STATE , state );
+				await RU.setKey( R_CUR_STATE , state );
 				resolve( state );
 			});
 		}

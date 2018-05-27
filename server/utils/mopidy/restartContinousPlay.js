@@ -1,4 +1,3 @@
-const redis = require( "../../utils/redisManager.js" ).redis;
 const RU = require( "../redis_Utils.js" );
 const mopidy = require( "../../mopidyManager.js" ).mopidy;
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -9,12 +8,12 @@ module.exports.restart =  function() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			var now_playing_button_genre = await RU.getKey( redis , R_CONTINOUS_PLAY );
+			var now_playing_button_genre = await RU.getKey( R_CONTINOUS_PLAY );
 			if ( now_playing_button_genre === null ) { now_playing_button_genre = "UNKNOWN"; }
 			console.log( "RESTARTING LIVE RANDOM GENRE LIST -- " + now_playing_button_genre );
 			
 			const R_K1 = R_KEY_BASE + now_playing_button_genre;
-			var random_list = await RU.popRandomSetMembers( redis , R_K1 , 25 );
+			var random_list = await RU.popRandomSetMembers( R_K1 , 25 );
 			for ( var i = 0; i < random_list.length; ++i ) {
 				random_list[ i ] = JSON.parse( random_list[ i ] );
 			}

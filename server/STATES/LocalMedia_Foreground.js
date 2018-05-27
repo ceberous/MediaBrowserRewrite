@@ -1,4 +1,3 @@
-const redis = require( "../utils/redisManager.js" ).redis;
 const RU = require( "../utils/redis_Utils.js" );
 const RC = require( "../CONSTANTS/redis.js" ).LOCAL_MEDIA;
 
@@ -13,7 +12,7 @@ function wStart( wOptions ) {
 				specific_show: "false" ,
 				specific_episode: "false" ,
 			};
-			await RU.setMulti( redis , [
+			await RU.setMulti( [
 				[ "set" , "LAST_SS.ACTIVE_STATE" , "LOCAL_MEDIA" ] ,
 				[ "set" , RC.CONFIG.GENRE , wOptions.genre ] ,
 				[ "set" , RC.CONFIG.ADVANCE_SHOW , wOptions.advance_show ] ,
@@ -58,7 +57,7 @@ function wStop() {
 function wNext() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.setKey( redis , RC.CONFIG.ADVANCE_SHOW , "false" );
+			await RU.setKey( RC.CONFIG.ADVANCE_SHOW , "false" );
 			await require( "../localMediaManager.js" ).next();
 			resolve();
 		}

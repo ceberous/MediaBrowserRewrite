@@ -2,10 +2,18 @@ const RESETS =  [ "YOU_TUBE.LIVE.LATEST*" , /*"YOU_TUBE.STANDARD.LATEST*" */ ];
 
 var SET_KEYS = {
 	"CONFIG.ARRIVED_HOME": "false" ,
-	
 	"MOPIDY.STATE": "stopped" ,
 	"STAGED_FF_TASK": "null" ,
 	"YOU_TUBE.ODYSSEY_PRELIM_TOTAL": 8 ,
+
+	"STATUS.USB_BUTTONS": "OFFLINE" ,
+	"STATUS.LOCAL_MEDIA": "OFFLINE" ,
+	"STATUS.YT_LIVE": "OFFLINE" ,
+	"STATUS.TY_STANDARD": "OFFLINE" ,
+	"STATUS.TWITCH": "OFFLINE" ,
+	"STATUS.SKYPE": "OFFLINE" ,
+	"STATUS.MOPIDY": "OFFLINE" ,
+	"STATUS.DISCORD": "OFFLINE" ,
 };
 
 const SET_IF_NOT_EXIST_KEYS = {
@@ -14,8 +22,6 @@ const SET_IF_NOT_EXIST_KEYS = {
 function SAVE_CONFIG_TO_REDIS() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const redis = require( "./redisManager.js" ).redis;
-
 			// 0.) Bring in physical config
 			const YT = require( "../../config/youtube.json" );
 			SET_KEYS[ "YOU_TUBE.LIVE.FOLLOWERS" ] = YT.LIVE.FOLLOWERS.map( x => x[ "id" ] );
@@ -37,7 +43,7 @@ function SAVE_CONFIG_TO_REDIS() {
 
 			// 1.) Reset Anything that should be fresh
 			if ( RESETS ) {
-				await require( "./redis_Utils.js").deleteMultiplePatterns( redis , RESETS );
+				await require( "./redis_Utils.js").deleteMultiplePatterns( RESETS );
 			}
 			
 			var wMulti = [];
@@ -70,7 +76,7 @@ function SAVE_CONFIG_TO_REDIS() {
 			}
 			
 			console.log( wMulti );
-			await require( "./redis_Utils.js" ).setMulti( redis , wMulti );
+			await require( "./redis_Utils.js" ).setMulti( wMulti );
 
 			resolve();
 		}

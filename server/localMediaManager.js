@@ -7,8 +7,6 @@ const wEmitter		= require( "../main.js" ).wEmitter;
 const wSleep 		= require( "./utils/generic.js" ).wSleep;
 const UpdateLastPlayedTime = require( "./utils/local-media/generic.js" ).updateLastPlayedTime;
 
-var redis = require( "./utils/redisManager.js" ).redis;
-//var redis = undefined; // testing only
 const RU = require( "./utils/redis_Utils.js" );
 const RC = require( "./CONSTANTS/redis.js" ).LOCAL_MEDIA;
 
@@ -26,11 +24,10 @@ function INITIALIZE() {
 			wcl( "Live Mount Point === " + GLOBAL_INSTANCE_MOUNT_POINT );
 
 			wEmitter.on( "MPlayerOVER" , async function( wResults ) {
-				const redis = require( "./utils/redisManager.js" ).redis;
 				await UpdateLastPlayedTime( wResults );
 				await wSleep( 1000 );
 				// Continue if Config Says were Still Active
-				const wAS = await RU.getKey( redis , "LAST_SS.ACTIVE_STATE" );
+				const wAS = await RU.getKey( "LAST_SS.ACTIVE_STATE" );
 				if ( wAS ) { 
 					if ( wAS === "LOCAL_MEDIA" ) { PLAY(); }
 					else { wcl( "WE WERE TOLD TO QUIT" ); }
