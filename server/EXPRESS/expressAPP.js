@@ -46,20 +46,20 @@ var buttonsRoutes = require( "./ROUTES/buttonsRTR.js" );
 app.use('/buttonpress/' , buttonsRoutes );
 
 // Youtube-Routes
-app.get( "/youtubeStandard" , function( req , res , next ) {
-	res.render( "youtubeStandard.html" );
+app.get( "/youtube" , function( req , res , next ) {
+	res.render( "youtube.html" );
 });
 app.get( "/youtubeLiveBackground" , function( req , res , next ) {
 	res.render( "youtubeLiveBackground.html" );
 });
-var youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
+const youtubeRoutes = require( "./ROUTES/youtubeRTR.js" );
 app.use( "/youtube/" , youtubeRoutes );
 
 // Twitch-Routes
 app.get( "/twitchLive" , function( req , res , next ) {
 	res.render( "twitchLive.html" );
 });
-var twitchRoutes = require( "./ROUTES/twitchRTR.js" );
+const twitchRoutes = require( "./ROUTES/twitchRTR.js" );
 app.use( "/twitch/" , twitchRoutes );
 
 app.use( "/peerCall" , function( req , res , next ) {

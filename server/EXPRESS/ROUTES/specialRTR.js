@@ -1,7 +1,12 @@
-var express = require("express");
-var router = express.Router();
+const express = require( "express" );
+const router = express.Router();
 
-var specialCTRL = require( "../CONTROLLERS/specialCTRL.js" );
-router.get( '/router-reboot/' , specialCTRL.rebootRouter );
+const specialCTRL = require( "../CONTROLLERS/specialCTRL.js" );
+
+router.get( "/router-reboot/" , specialCTRL.rebootRouter );
+router.get( "/restart-pm2/" , specialCTRL.restartPM2 );
+router.get( "/tv-power/" , specialCTRL.tvPower );
+
+router.put( "/os/:task" , specialCTRL.osCommand  );
 
 module.exports = router;

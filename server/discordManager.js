@@ -7,6 +7,17 @@ const Eris = require("eris");
 var discordBot = null;
 var discordCreds = null;
 
+function POST_ID( wMessage , wChannelID ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await discordBot.createMessage( wChannelID , wMessage );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});	
+}
+module.exports.postID = POST_ID;
+
 function POST_NOW_PLAYING( wMessage ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -81,11 +92,11 @@ function INITIALIZE() {
 			discordCreds = require( "../personal.js" ).discord;
 			discordBot = new Eris( discordCreds.token );
 
-			discordBot.on( "messageCreate" , ( msg ) => {
+			discordBot.on( "messageCreate" , async ( msg ) => {
 				
 				if ( msg[ "author" ][ "id" ] === discordCreds.bot_id ) { return; }
 				// Restrict to Only now_playing channel
-				if ( msg.channel.id !== discordCreds.channels.now_playing ) { return; }
+				//if ( msg.channel.id !== discordCreds.channels.now_playing ) { return; }
 
 				if ( msg.content.startsWith( "!help" ) || msg.content.startsWith( "!cmds" ) || msg.content.startsWith( "!commands" ) ) {
 					PostButtons( msg.channel.id );
@@ -149,6 +160,32 @@ function INITIALIZE() {
 
 					else if ( msg.content.includes( "odyssey" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "11" );
+					}
+				}
+				else if ( msg.content.startsWith( "!twitch" ) ) {
+					var second_commands = msg.content.split( " " );
+					if ( !second_commands )  { return; }
+					if ( second_commands.length < 2 ) { return; }
+
+					console.log( second_commands );
+					if ( second_commands[ 1 ] ==  "followers" ) {
+						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );
+					}
+					else if ( second_commands[ 1 ] ==  "follow" ) {
+						if ( second_commands[ 2 ] ) { await require( "./utils/twitchAPI_Utils.js" ).followUserName( second_commands[ 2 ] ); }
+						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );				
+					}
+					else if ( second_commands[ 1 ] ==  "unfollow" ) {
+						if ( second_commands[ 2 ] ) { await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( second_commands[ 2 ] ); }
+						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );						
+					}
+					else if ( second_commands[ 1 ] ==  "live" ) {
+						const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
+						await POST_ID( "Live Twitch Users == \n" + live_twitch.join( " , " ) , msg.channel.id );
+						//await require( "./states/restreaming.js" ).getLiveYTURLS();
 					}
 				}
 			});
