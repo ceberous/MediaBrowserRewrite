@@ -3,7 +3,7 @@
 
 // https://support.discordapp.com/hc/en-us/articles/225977308--Windows-Discord-Hotkeys
 
-const Eris = require("eris");
+const Eris = require( "eris" );
 var discordBot = null;
 var discordCreds = null;
 
@@ -122,6 +122,7 @@ function INITIALIZE() {
 				}
 				else if ( msg.content.startsWith( "!relax" ) ) {
 					// Start Relaxing Youtube Playlists or something
+					require( "./clientManager.js" ).pressButtonMaster( "16" );
 				}
 				else if ( msg.content.startsWith( "!od" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "11" );
@@ -162,27 +163,82 @@ function INITIALIZE() {
 						require( "./clientManager.js" ).pressButtonMaster( "11" );
 					}
 				}
+				else if ( msg.content.startsWith( "!youtube" ) ) {
+					var second_commands = msg.content.split( " " );
+					if ( !second_commands )  { return; }
+					if ( second_commands.length < 2 ) { return; }
+
+					const manager_path = "./YOUTUBE/" + second_commands[ 1 ] + ".js";
+
+					if ( second_commands[ 2 ] ===  "follow" ) {
+
+					}
+					else if ( second_commands[ 2 ] ===  "unfollow" ) {
+
+					}				
+					else if ( second_commands[ 2 ] ===  "import" || second_commands[ 2 ] ===  "add" ) {
+
+						if ( second_commands[ 3 ] ===  "playlist" ) {
+
+						}
+						else {
+
+						}
+
+					}
+					if ( second_commands[ 2 ] ===  "que" || second_commands[ 2 ] ===  "videos" ) {
+						const que = await require( manager_path ).getQue();
+						if ( que ) {
+							if ( que.length > 0 ) {
+								await POST_ID( "YouTube Standard Que: \n" + que.join( " , " ) , msg.channel.id );
+							}
+						}
+					}					
+					if ( second_commands[ 2 ] ===  "video" ) {
+						if ( second_commands[ 1 ] === "standard" ) {
+							if ( second_commands[ 3 ] ) {
+								const wVideo = await require( manager_path ).getVideoInfo( second_commands[ 3 ] )
+								await POST_ID( "YouTube Video Info: [ " + second_commands[ 3 ] + " ]: \n" + 
+									"\ttitle == " + wVideo[ "title" ] + "\n" +
+									"\tpubdate == " + wVideo[ "pubdate" ] + "\n" +
+									"\tcompleted == " + wVideo[ "completed" ] + "\n" +
+									"\tskipped == " + wVideo[ "skipped" ] + "\n" +
+									"\tcurrent_time == " + wVideo[ "current_time" ] + "\n" +
+									"\tremaining_time == " + wVideo[ "remaining_time" ] + "\n" +
+									"\tduration == " + wVideo[ "duration" ] + "\n"
+								, msg.channel.id );
+							}
+						}
+					}
+					if ( second_commands[ 2 ] ===  "follower" ) {
+
+					}
+					if ( second_commands[ 2 ] ===  "blacklist" ) {
+
+					}
+
+				}
 				else if ( msg.content.startsWith( "!twitch" ) ) {
 					var second_commands = msg.content.split( " " );
 					if ( !second_commands )  { return; }
 					if ( second_commands.length < 2 ) { return; }
 
 					console.log( second_commands );
-					if ( second_commands[ 1 ] ==  "followers" ) {
+					if ( second_commands[ 1 ] ===  "followers" ) {
 						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
 						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );
 					}
-					else if ( second_commands[ 1 ] ==  "follow" ) {
+					else if ( second_commands[ 1 ] ===  "follow" ) {
 						if ( second_commands[ 2 ] ) { await require( "./utils/twitchAPI_Utils.js" ).followUserName( second_commands[ 2 ] ); }
 						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );				
+						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );
 					}
-					else if ( second_commands[ 1 ] ==  "unfollow" ) {
+					else if ( second_commands[ 1 ] ===  "unfollow" ) {
 						if ( second_commands[ 2 ] ) { await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( second_commands[ 2 ] ); }
 						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
 						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );						
 					}
-					else if ( second_commands[ 1 ] ==  "live" ) {
+					else if ( second_commands[ 1 ] ===  "live" ) {
 						const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
 						await POST_ID( "Live Twitch Users == \n" + live_twitch.join( " , " ) , msg.channel.id );
 						//await require( "./states/restreaming.js" ).getLiveYTURLS();

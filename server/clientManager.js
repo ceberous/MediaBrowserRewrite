@@ -88,5 +88,6 @@ const SCHEDULE_MAN 		= require( "./scheduleManager.js" );
 ( async ()=> {
 	wcl( "Initializing stuff" );
 	await require( "./localMediaManager.js" ).initialize();
+	await require( "./YOUTUBE/standard.js" ).update();
 	wcl( "we are done with Initialization" );
 })();
