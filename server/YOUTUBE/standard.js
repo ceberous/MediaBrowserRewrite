@@ -99,6 +99,7 @@ function STANDARD_FOLLOWERS_GET_LATEST() {
 					all_new = [].concat.apply( [] , latest );
 					all_new = all_new.sort( function() { return 0.5 - Math.random(); });
 					var new_que_ids = all_new.map( x => x[ "id" ] );
+					new_que_ids = await require( "./generic.js" ).filterCommon( new_que_ids );
 					const wNewTotal = new_que_ids.length;
 					const current_que_length = await RU.getListLength( RC.QUE );
 					//console.log( "Current QUE Length === " + current_que_length.toString() );
@@ -286,9 +287,8 @@ function GET_NEXT_VIDEO() {
 			// 	[ "set" , RC.NOW_PLAYING_MODE , finalMode ] 
 			// ]);
 
-			var finalVideo = await RU.popRandomSetMembers( RC.QUE , 1 );
-			if ( finalVideo.length < 1 ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve( "empty" ); return; }
-			else { finalVideo = finalVideo[0]; }	
+			var finalVideo = await RU.listRPOP( RC.QUE , 1 );
+			if ( !finalVideo ) { console.log( "this seems impossible , but we don't have any standard youtube videos anywhere" ); resolve( "empty" ); return; }
 			resolve( finalVideo );
 		}
 		catch( error ) { console.log( error ); reject( error ); }

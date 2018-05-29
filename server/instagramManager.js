@@ -16,7 +16,7 @@ const request = require("request");
 const resolver = require("resolver");
 //const cheerio = require("cheerio");
 const RU = require( "./utils/redis_Utils.js" );
-const RC = require( "../CONSTANTS/redis.js" ).INSTAGRAM;
+const RC = require( "./CONSTANTS/redis.js" ).INSTAGRAM;
 
 function RESOLVE_SHORT_LINK( wURL ) {
 	return new Promise( function( resolve , reject ) {

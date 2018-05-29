@@ -1,9 +1,10 @@
 var YTIFrameManager = {
 
-	"wPlayer" : null,
-	"playlist" : null,
-	"usingPlaylist": false,
-	"muted": true,
+	"wPlayer" : null ,
+	"playlist" : null ,
+	"usingPlaylist": false ,
+	"muted": true ,
+	"lastPlayedID": null ,
 
 	init: function() {
 		console.log( "inside init()" );
@@ -61,7 +62,8 @@ var YTIFrameManager = {
 	},
 
 	onPlayerStateChange: function(event) {
-		var wID = YTIFrameManager.wPlayer.getVideoUrl().split("https://www.youtube.com/watch?v=")[1];
+		var wURL = YTIFrameManager.wPlayer.getVideoUrl(); 
+		var wID = wURL.split( "https://www.youtube.com/watch?v=" )[ 1 ];
 		switch ( event.data ) {
 			case -1:
 				console.log(" video is unstarted ");
@@ -74,7 +76,14 @@ var YTIFrameManager = {
 				break;
 			case 1:
 				console.log(" video is now playing ");
-				//socket.send( "youtubeLiveStatus" , { status: "playing" , id: wID } );
+				if ( YTIFrameManager[ "lastPlayedID" ] === null ) {
+					YTIFrameManager[ "lastPlayedID" ] = wID;
+					socket.send( JSON.stringify( { message: "youtubeNowPlayingID" , id: wID , url: wURL } ) );
+				}
+				else if ( YTIFrameManager[ "lastPlayedID" ] !== wID ) {
+					YTIFrameManager[ "lastPlayedID" ] = wID;
+					socket.send( JSON.stringify( { message: "youtubeNowPlayingID" , id: wID , url: wURL } ) );
+				}
 				break;
 			case 2:
 				console.log(" video is paused ");

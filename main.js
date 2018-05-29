@@ -23,6 +23,10 @@ const wsleep = require( "./server/utils/generic.js" ).wSleep;
 
 // Need to Switch Client Stuff to this -->
 // https://bulma.io/documentation/overview/start/
+// https://github.com/jaredhanson/connect-ensure-login
+// https://scotch.io/tutorials/easy-node-authentication-google
+// https://github.com/jaredhanson/passport-google-oauth2
+// https://stackoverflow.com/questions/15016551/node-js-express-passport-cookie-expiration#15127998
 
 // sudo leafpad /etc/xdg/lxsession/LXDE/autostart
 // xrandr -q

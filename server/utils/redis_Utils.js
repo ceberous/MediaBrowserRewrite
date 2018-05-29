@@ -190,6 +190,7 @@ function REDIS_DELETE_MULTIPLE_PATTERNS( wKeyPatterns ) {
 		try {
 			var del_keys = await map( wKeyPatterns , wPattern => REDIS_GET_KEYS_FROM_PATTERN( wPattern ) );
 			del_keys = [].concat.apply( [] , del_keys );
+			del_keys = del_keys.filter( Boolean );
 			console.log( "\ndeleteing these keys --> \n" );
 			console.log( del_keys );
 			

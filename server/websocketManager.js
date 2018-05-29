@@ -36,6 +36,8 @@ function ON_CONNECTION( wSocket , wReq ) {
 					case "YTStandardVideoOver":
 						clientManager.pressButtonMaster( 9 ); // next
 						break;
+					case "youtubeNowPlayingID":
+						require( "./discordManager.js" ).nowPlaying( message.url );
 					case "InstagramMediaOver":
 						require( "./instagramManager.js" ).updateWatchedMedia( message.options )
 						break;

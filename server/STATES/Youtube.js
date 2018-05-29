@@ -31,7 +31,7 @@ function wStart( wOptions ) {
 				final_playlist.push( item );
 			}
 			else if ( wMode === "RELAX" ) {
-
+				
 			}
 
 			await RU.setMulti( [ 
@@ -95,7 +95,7 @@ function wNext() {
 			// 4.) Get Next Video
 			var next_video = null;
 			// if we are still at the head of the list and havn't navigated via previous button
-			if ( parseInt( current_index ) < ( parseInt( session_length ) - 1 ) ) {
+			if ( parseInt( current_index ) < ( parseInt( session_length ) ) ) {
 				console.log( "Somebody used the previous button" );
 				next_video = await RU.getFromListByIndex( RC.NP_SESSION_LIST , current_index );
 			}
@@ -114,6 +114,7 @@ function wNext() {
 
 				console.log( next_video );
 				console.log( "Next Video === " + next_video );
+				await RU.setKey( RC.NOW_PLAYING_ID , next_video );
 				await RU.listRPUSH( RC.NP_SESSION_LIST , next_video );
 			}
 
