@@ -15,6 +15,8 @@ function REDIS_SET_LIST_FROM_ARRAY_BEGINNING( wKey , wArray ) {
 	});
 }
 function REDIS_SET_LIST_FROM_ARRAY( wKey , wArray ) {
+	// console.log( wKey );
+	// console.log( wArray );
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.rpush.apply( rInstance , [ wKey ].concat( wArray ).concat( function( err , keys ){ resolve( keys ); })); }
 		catch( error ) { console.log( error ); reject( error ); }
@@ -275,6 +277,8 @@ function REDIS_NEXT_IN_CIRCLULAR_LIST( wKey ) {
 }
 
 function REDIS_LIST_R_PUSH( wKey , wValue ) {
+	// console.log( wKey );
+	// console.log( wValue );
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.rpush( wKey , wValue , function( err , values ) { resolve( values ); }); }
 		catch( error ) { console.log( error ); reject( error ); }

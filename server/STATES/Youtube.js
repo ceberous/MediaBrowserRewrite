@@ -24,17 +24,21 @@ function wStart( wOptions ) {
 			}
 			else if ( wMode === "CURRATED" ) {
 				var item = await RU.getRandomSetMembers( RC.CURRATED.QUE , 1 );
-				if ( !item ) { wMode = "STANDARD"; }
+				if ( !item ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
+				else if ( item.length < 1 ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
 				else { final_options.playlist = [ item ]; }
 			}
+			else if ( wMode === "RELAX" ) {
+				var item = await RU.getRandomSetMembers( RC.RELAX.QUE , 1 );
+				if ( !item ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
+				else if ( item.length < 1 ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
+				else { final_options.playlist = [ item ]; }				
+			}			
 			if ( wMode === "STANDARD" ) {
 				var item = await RU.listRPOP( RC.STANDARD.QUE , 1 );
 				if ( item ) {
 					final_options.playlist = [ item ];
 				}
-			}
-			else if ( wMode === "RELAX" ) {
-				
 			}
 			else if ( wMode === "SINGLE" ) {
 				if ( !wOptions.single_id ) { resolve(); return; }

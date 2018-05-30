@@ -131,22 +131,26 @@ function INITIALIZE() {
 					
 					if ( msg.content.includes( "yt live" ) || msg.content.includes( "youtube live" ) || msg.content.includes( "yt background" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "0" );
+						return;
 					}
 					else if ( msg.content.includes( "yt standard" ) || msg.content.includes( "youtube standard" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "14" );
+						return;
 					}
 
 					else if ( msg.content.includes( "music" ) || msg.content.includes( "mopidy" ) ) {
 						if ( msg.content.includes( "classic" ) ) {
 							require( "./clientManager.js" ).pressButtonMaster( "1" );
+							return;
 						}
 						else if ( msg.content.includes( "edm" ) ) {
 							require( "./clientManager.js" ).pressButtonMaster( "2" );
+							return;
 						}
 						//else if ( msg.content.includes( "relax" ) ) {
 							//require( "./clientManager.js" ).pressButtonMaster( "" );
 						//}
-						else { require( "./clientManager.js" ).pressButtonMaster( "1" ); }
+						else { require( "./clientManager.js" ).pressButtonMaster( "1" ); return; }
 					}
 
 					else if ( msg.content.includes( "twitch" ) ) {
@@ -156,11 +160,12 @@ function INITIALIZE() {
 						// else if ( msg.content.includes( "vod" ) ) {
 						// 	require( "./clientManager.js" ).pressButtonMaster( "" );
 						// }
-						else { await require( "./clientManager.js" ).pressButtonMaster( "3" ); }
+						else { await require( "./clientManager.js" ).pressButtonMaster( "3" ); return; }
 					}
 
 					else if ( msg.content.includes( "odyssey" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "11" );
+						return;
 					}
 				}
 				else if ( msg.content.startsWith( "!youtube" ) || msg.content.startsWith( "!yt" ) ) {
@@ -169,6 +174,24 @@ function INITIALIZE() {
 					if ( second_commands.length < 2 ) { return; }
 
 					if ( second_commands.length === 2 ) {
+
+						if ( second_commands[ 1 ] === "live" ) {
+							require( "./clientManager.js" ).pressButtonMaster( "0" );
+							return;
+						}
+						else if ( second_commands[ 1 ] === "standard" ) {
+							require( "./clientManager.js" ).pressButtonMaster( "14" );
+							return;
+						}
+						else if ( second_commands[ 1 ] === "currated" ) {
+							require( "./clientManager.js" ).pressButtonMaster( "15" );
+							return;
+						}						
+						else if ( second_commands[ 1 ] === "relax" || second_commands[ 1 ] === "relaxing" ) {
+							require( "./clientManager.js" ).pressButtonMaster( "16" );
+							return;
+						}
+																		
 						var final_options = { position: "FOREGROUND" };
 						if ( second_commands[ 1 ].indexOf( "watch?v=" ) !== -1 ) {
 							final_options.mode = "SINGLE";

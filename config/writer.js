@@ -38,7 +38,6 @@ const BUTTONS = {
 		20: { name: "Look at Instagram Followers Photos" , state: "Instagram_Background" , options: {} } ,
 };
 
-
 const REDIS = {
 	CONNECTION: {
 		HOST: "localhost" ,
