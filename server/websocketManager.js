@@ -34,8 +34,12 @@ function ON_CONNECTION( wSocket , wReq ) {
 						require( "./firefoxManager.js" ).twitchFullScreen();
 						break;
 					case "YTStandardVideoOver":
-						clientManager.pressButtonMaster( 9 ); // next
+						//clientManager.pressButtonMaster( 9 ); // next
+						require( "./YOUTUBE/generic.js" ).recordVideoWatched( message.id );
 						break;
+					case "YTCurratedVideoOver":
+						clientManager.pressButtonMaster( 9 ); // next
+						break;						
 					case "youtubeNowPlayingID":
 						require( "./discordManager.js" ).nowPlaying( message.url );
 					case "InstagramMediaOver":

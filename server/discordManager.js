@@ -156,18 +156,46 @@ function INITIALIZE() {
 						// else if ( msg.content.includes( "vod" ) ) {
 						// 	require( "./clientManager.js" ).pressButtonMaster( "" );
 						// }
-						else { require( "./clientManager.js" ).pressButtonMaster( "3" ); }
+						else { await require( "./clientManager.js" ).pressButtonMaster( "3" ); }
 					}
 
 					else if ( msg.content.includes( "odyssey" ) ) {
 						require( "./clientManager.js" ).pressButtonMaster( "11" );
 					}
 				}
-				else if ( msg.content.startsWith( "!youtube" ) ) {
+				else if ( msg.content.startsWith( "!youtube" ) || msg.content.startsWith( "!yt" ) ) {
 					var second_commands = msg.content.split( " " );
 					if ( !second_commands )  { return; }
 					if ( second_commands.length < 2 ) { return; }
 
+					if ( second_commands.length === 2 ) {
+						var final_options = { position: "FOREGROUND" };
+						if ( second_commands[ 1 ].indexOf( "watch?v=" ) !== -1 ) {
+							final_options.mode = "SINGLE";
+							final_options.single_id = second_commands[ 1 ].split( "watch?v=" )[ 1 ];
+						}
+						else if ( second_commands[ 1 ].indexOf( "playlist?list=" ) !== -1 ) {
+							final_options.mode = "PLAYLIST_OFFICIAL";
+							final_options.playlist_id = second_commands[ 1 ].split( "playlist?list=" )[ 1 ];
+						}
+						else if ( second_commands[ 1 ].indexOf( "youtu.be/" ) !== -1 ) {
+							final_options.mode = "SINGLE";
+							final_options.single_id = second_commands[ 1 ].split( "youtu.be/" )[ 1 ];
+						}						
+						else {
+							if ( second_commands[ 1 ].length > 15 ) {
+								final_options.mode = "PLAYLIST_OFFICIAL";
+								final_options.playlist_id = second_commands[ 1 ];
+							}
+							else {
+								final_options.mode = "SINGLE";
+								final_options.single_id = second_commands[ 1 ];
+							}
+						}
+						require( "./clientManager.js" ).pressButtonMaster( "17" , final_options );
+						return;
+					}
+ 
 					const manager_path = "./YOUTUBE/" + second_commands[ 1 ] + ".js";
 
 					if ( second_commands[ 2 ] ===  "follow" ) {
@@ -186,7 +214,7 @@ function INITIALIZE() {
 						}
 
 					}
-					if ( second_commands[ 2 ] ===  "que" || second_commands[ 2 ] ===  "videos" ) {
+					else if ( second_commands[ 2 ] ===  "que" || second_commands[ 2 ] ===  "videos" ) {
 						const que = await require( manager_path ).getQue();
 						if ( que ) {
 							if ( que.length > 0 ) {
@@ -194,7 +222,7 @@ function INITIALIZE() {
 							}
 						}
 					}					
-					if ( second_commands[ 2 ] ===  "video" ) {
+					else if ( second_commands[ 2 ] ===  "info" ) {
 						if ( second_commands[ 1 ] === "standard" ) {
 							if ( second_commands[ 3 ] ) {
 								const wVideo = await require( manager_path ).getVideoInfo( second_commands[ 3 ] )
@@ -209,11 +237,12 @@ function INITIALIZE() {
 								, msg.channel.id );
 							}
 						}
+						//require( "./clientManager.js" ).pressButtonMaster( "17" , { mode: "SINGLE" , position: "FOREGROUND" , single_id: "" } );
 					}
-					if ( second_commands[ 2 ] ===  "follower" ) {
+					else if ( second_commands[ 2 ] ===  "follower" ) {
 
 					}
-					if ( second_commands[ 2 ] ===  "blacklist" ) {
+					else if ( second_commands[ 2 ] ===  "blacklist" ) {
 
 					}
 
@@ -241,7 +270,6 @@ function INITIALIZE() {
 					else if ( second_commands[ 1 ] ===  "live" ) {
 						const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
 						await POST_ID( "Live Twitch Users == \n" + live_twitch.join( " , " ) , msg.channel.id );
-						//await require( "./states/restreaming.js" ).getLiveYTURLS();
 					}
 				}
 			});

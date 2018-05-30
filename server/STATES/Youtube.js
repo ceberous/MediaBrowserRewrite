@@ -16,33 +16,48 @@ function wStart( wOptions ) {
 		try {
 			// 1.) Store Mode
 			var wMode = wOptions.mode || "LIVE";
+			var wPosition = wOptions.position || "FOREGROUND";
 
-			var final_playlist = [];
+			var final_options = { message: "Youtube" , mode: wMode , position: wPosition };
 			if ( wMode === "LIVE" ) {
-				final_playlist = await require( "../YOUTUBE/live.js" ).getLiveVideos();
+				final_options.playlist = await require( "../YOUTUBE/live.js" ).getLiveVideos();
 			}
 			else if ( wMode === "CURRATED" ) {
 				var item = await RU.getRandomSetMembers( RC.CURRATED.QUE , 1 );
 				if ( !item ) { wMode = "STANDARD"; }
-				else { final_playlist.push( item[ 0 ] ); }
+				else { final_options.playlist = [ item ]; }
 			}
 			if ( wMode === "STANDARD" ) {
 				var item = await RU.listRPOP( RC.STANDARD.QUE , 1 );
-				final_playlist.push( item );
+				if ( item ) {
+					final_options.playlist = [ item ];
+				}
 			}
 			else if ( wMode === "RELAX" ) {
 				
 			}
+			else if ( wMode === "SINGLE" ) {
+				if ( !wOptions.single_id ) { resolve(); return; }
+				final_options.playlist = [ wOptions.single_id ];
+			}
+			else if ( wMode === "PLAYLIST_OFFICIAL" ) {
+				final_options.playlist_id = wOptions.playlist_id;
+			}
+			else if ( wMode === "LIST" ) {
+				final_options.playlist = wOptions.playlist;
+			}
 
+			var starting_item = null;
+			if ( final_options.playlist ) { starting_item = final_options.playlist[ 0 ] }
+			else { starting_item = final_options.playlist_id; }
 			await RU.setMulti( [ 
-				[ "set" , RC.NOW_PLAYING_ID , final_playlist[ 0 ] ] ,
-				[ "rpush" , RC.NP_SESSION_LIST , final_playlist[ 0 ] ] ,
+				[ "set" , RC.NOW_PLAYING_ID , starting_item ] ,
+				[ "rpush" , RC.NP_SESSION_LIST , starting_item ] ,
 				[ "set" , RC.NP_SESSION_INDEX , 0 ] ,
 				[ "set" , RC.MODE , wMode ] ,
 			]);
-			
-			const wPosition = wOptions.position || "FOREGROUND";
-			await require( "../utils/generic.js" ).setStagedFFClientTask( { message: "Youtube" , playlist: final_playlist , mode: wMode , position: wPosition } );
+			console.log( final_options );
+			await require( "../utils/generic.js" ).setStagedFFClientTask( final_options );
 			await require( "../firefoxManager.js" ).openURL( "http://localhost:6969/youtube" );
 			resolve();
 		}
@@ -83,7 +98,9 @@ function wNext() {
 			}
 
 			const completed_id = await RU.getKey( RC.NOW_PLAYING_ID );
-			await RU.setAdd( RC.WATCHED , completed_id );
+			if ( completed_id ) {
+				await RU.setAdd( RC.WATCHED , completed_id );
+			}
 			
 			// 2.) Determine Place In Session
 			await RU.incrementInteger( RC.NP_SESSION_INDEX );
@@ -100,7 +117,11 @@ function wNext() {
 				next_video = await RU.getFromListByIndex( RC.NP_SESSION_LIST , current_index );
 			}
 			else {
-				if ( current_mode === "CURRATED" ) {
+				if ( current_mode === "SINGLE" ) {
+					resolve();
+					return;
+				}				
+				else if ( current_mode === "CURRATED" ) {
 					await RU.setRemove( RC.CURRATED.LIST , completed_id );
 					next_video = await require( "../YOUTUBE/currated.js" ).getNextInQue();
 				}

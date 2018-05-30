@@ -1,11 +1,9 @@
-
+const RU = require( "../utils/redis_Utils.js" );
+const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE;
 
 function FILTER_GLOBAL_BLACKLIST_AND_WATCHED_AND_SKIPPED( wNewIDS ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			const RU = require( "../utils/redis_Utils.js" );
-			const RC = require( "../CONSTANTS/redis.js" ).YOU_TUBE;
-
 			const temp_skipped_key = "TMP_KEY.SKIPPED." + Math.random().toString(36).substring(7);
 			const temp_blacklist_key = "TMP_KEY.BLACKLIST." + Math.random().toString(36).substring(7);
 			const temp_watched_key = "TMP_KEY.WATCHED." + Math.random().toString(36).substring(7);
@@ -31,3 +29,14 @@ function FILTER_GLOBAL_BLACKLIST_AND_WATCHED_AND_SKIPPED( wNewIDS ) {
 	});
 }
 module.exports.filterCommon = FILTER_GLOBAL_BLACKLIST_AND_WATCHED_AND_SKIPPED;
+
+function RECORD_VIDEO_WATCHED( wID ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await RU.setAdd( RC.WATCHED , wID );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.recordVideoWatched = RECORD_VIDEO_WATCHED;

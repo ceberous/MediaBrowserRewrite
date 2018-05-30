@@ -1,3 +1,4 @@
+// https://developers.google.com/youtube/iframe_api_reference
 var YTIFrameManager = {
 
 	"wPlayer" : null ,
@@ -71,8 +72,11 @@ var YTIFrameManager = {
 				break;
 			case 0:
 				console.log(" video is over ");
-				socket.send( JSON.stringify( { message: "YTStandardVideoOver" } ) );
-				//socket.send( "youtubeLiveStatus" , { status: "over" , id: wID } );
+				var final_options = { id: wID };
+				if ( YTIFrameManager.mode === "CURRATED" ) { final_options.message = "YTCurratedVideoOver"; }
+				//else if ( YTIFrameManager.mode === "CURRATED" )
+				else { final_options.message = "YTStandardVideoOver"; }
+				socket.send( JSON.stringify( final_options ) );
 				break;
 			case 1:
 				console.log(" video is now playing ");
@@ -103,9 +107,9 @@ var YTIFrameManager = {
 	onPlayerReady: function(event) {
 		console.log("player is supposedly ready");
 		if ( YTIFrameManager.playlist_id ) {
-			console.log( "Loading youtube playlist id === " + YTIFrameManager.playlist_id[ 0 ] );
-			YTIFrameManager.wPlayer.loadPlaylist({
-				list: YTIFrameManager.playlist_id[ 0 ]  ,
+			console.log( "Loading youtube playlist id === " + YTIFrameManager.playlist_id );
+			YTIFrameManager.wPlayer.cuePlaylist({
+				list: YTIFrameManager.playlist_id ,
 				listType: "playlist"
 			});
 		}
@@ -168,6 +172,7 @@ $(document).ready( function() {
 
 	socket.onmessage = function ( message ) {
 		var x1 = JSON.parse( message.data );
+		if ( !x1 ) { return; }
 		console.log( x1 );
 		switch( x1.message ) {
 			case "ping":
