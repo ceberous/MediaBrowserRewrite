@@ -39,8 +39,11 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 		if ( CURRENT_STATE ) {
 			if ( CURRENT_STATE !== null ) {
 				wcl( "stopping CURRENT_STATE" ); 
-				await CURRENT_STATE.stop(); 
-				await wSleep( 1000 );
+				await CURRENT_STATE.stop();
+				try { delete require.cache[ CURRENT_STATE ]; }
+				catch ( e ) {}			
+				CURRENT_STATE = null;
+				await wSleep( 500 );
 			}
 		}
 		await require( "./utils/generic.js" ).closeEverything();

@@ -67,23 +67,16 @@ function SHUTDOWN() {
 }
 module.exports.shutdown = SHUTDOWN;
 
-function PostButtons( wChannelID ) {
-	return new Promise( async function( resolve , reject ) {
-		try {
-			wChannelID = wChannelID || discordCreds.channels.log;
-			try { delete require.cache[ "../config/buttons.json" ]; }
-			catch ( e ) {}
-			var state_names = require( "../config/buttons.json" );
-			var replay_string = "";
-			for ( var state in state_names ) {
-				replay_string = replay_string + "!btn " + state + " === " + state_names[ state ][ "name" ] + "\n";
-			}
-			//console.log( replay_string );
-			await discordBot.createMessage( wChannelID , replay_string );
-			resolve();
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
+function GetButtonInfo() {
+	wChannelID = wChannelID || discordCreds.channels.log;
+	try { delete require.cache[ "../config/buttons.json" ]; }
+	catch ( e ) {}
+	var state_names = require( "../config/buttons.json" );
+	var reply_string = "";
+	for ( var state in state_names ) {
+		reply_string = reply_string + "!btn " + state + " === " + state_names[ state ][ "name" ] + "\n";
+	}
+	return reply_string;
 }
 
 function INITIALIZE() {
@@ -92,10 +85,12 @@ function INITIALIZE() {
 			discordCreds = require( "../personal.js" ).discord;
 			//discordBot = new Eris( discordCreds.token );
 			discordBot = new Eris.CommandClient( discordCreds.token , {} , {
-				description: "A test bot made with Eris",
-				owner: "436330698501259266" ,
+				description: "MediaBrowser Controller",
+				owner: discordCreds.bot_id ,
 				prefix: "!"
 			});
+
+			// https://github.com/abalabahaha/eris/blob/master/lib/command/CommandClient.js#L301
 
 			discordBot.on( "messageCreate" , async ( msg ) => {
 				
@@ -103,41 +98,7 @@ function INITIALIZE() {
 				// Restrict to Only now_playing channel
 				//if ( msg.channel.id !== discordCreds.channels.now_playing ) { return; }
 
-				if ( msg.content.startsWith( "!help" ) || msg.content.startsWith( "!cmds" ) || msg.content.startsWith( "!commands" ) ) {
-					PostButtons( msg.channel.id );
-					return;
-				}
-				else if ( msg.content.startsWith( "!btn" ) || msg.content.startsWith( "!btns" ) || msg.content.startsWith( "!button" ) ) {
-					var num = msg.content.split( " " )[ 1 ];
-					require( "./clientManager.js" ).pressButtonMaster( num );
-					return;
-				}
-				else if ( msg.content.startsWith( "!next" ) ) {
-					require( "./clientManager.js" ).pressButtonMaster( "9" );
-					return;
-				}
-				else if ( msg.content.startsWith( "!previous" ) ) {
-					require( "./clientManager.js" ).pressButtonMaster( "8" );
-					return;
-				}
-				else if ( msg.content.startsWith( "!pause" ) ) {
-					require( "./clientManager.js" ).pressButtonMaster( "7" );
-					return;
-				}
-				else if ( msg.content.startsWith( "!stop" ) ) {
-					require( "./clientManager.js" ).pressButtonMaster( "6" );
-					return;
-				}
-				else if ( msg.content.startsWith( "!tvpower" ) ) {
-					require( "./utils/cecClientManager.js" ).activate();
-					return;
-				}
-				else if ( msg.content.startsWith( "!relax" ) ) {
-					// Start Relaxing Youtube Playlists or something
-					require( "./clientManager.js" ).pressButtonMaster( "16" );
-					return;
-				}
-				else if ( msg.content.startsWith( "!od" ) ) {
+				if ( msg.content.startsWith( "!od" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "11" );
 					return;
 				}				
@@ -165,17 +126,6 @@ function INITIALIZE() {
 							//require( "./clientManager.js" ).pressButtonMaster( "" );
 						//}
 						else { require( "./clientManager.js" ).pressButtonMaster( "1" ); return; }
-					}
-
-					else if ( msg.content.includes( "twitch" ) ) {
-						if ( msg.content.includes( "live" ) ) {
-							require( "./clientManager.js" ).pressButtonMaster( "3" );
-							return;
-						}
-						// else if ( msg.content.includes( "vod" ) ) {
-						// 	require( "./clientManager.js" ).pressButtonMaster( "" );
-						// }
-						else { await require( "./clientManager.js" ).pressButtonMaster( "3" ); return; }
 					}
 
 					else if ( msg.content.includes( "odyssey" ) ) {
@@ -295,97 +245,223 @@ function INITIALIZE() {
 					}
 
 				}
-				else if ( msg.content.startsWith( "!exec" ) ) {
-					const cmd = msg.content.split( "!exec " )[ 1 ];
+			});
+
+			// Buttons
+			// ========================================================================================
+			// ========================================================================================
+				var buttonsCommand = discordBot.registerCommand( "button" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "3" );
+					}
+					return;
+				}, {
+					description: "Start Twitch State",
+					fullDescription: "Start Twitch State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				buttonCommand.registerCommandAlias( "btn" , "button" );
+
+				var stopCommand = discordBot.registerCommand( "stop" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "6" );
+					}
+					return;
+				}, {
+					description: "Stop",
+					fullDescription: "Stop",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				stopCommand.registerCommandAlias( "quit" , "stop" );
+
+				var pauseCommand = discordBot.registerCommand( "pause" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "7" );
+					}
+					return;
+				}, {
+					description: "Pause",
+					fullDescription: "Pause",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				var previousCommand = discordBot.registerCommand( "previous" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "8" );
+					}
+					return;
+				}, {
+					description: "Previous",
+					fullDescription: "Previous",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});	
+
+				var nextCommand = discordBot.registerCommand( "next" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "9" );
+					}
+					return;
+				}, {
+					description: "Next",
+					fullDescription: "Next",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});			
+
+			// ========================================================================================
+			// Buttons=================================================================================
+
+			// Common State Names
+			// ========================================================================================
+			// ========================================================================================
+				var relaxCommand = discordBot.registerCommand( "relax" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "16" );
+					}
+					return;
+				}, {
+					description: "Start Relaxing Youtube Videos",
+					fullDescription: "Start Relaxing Youtube Videos",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				relaxCommand.registerCommandAlias( "relaxing" , "relax" );
+			// ========================================================================================
+			// Common State Names======================================================================
+
+			
+			// Youtube
+			// ========================================================================================
+			// ========================================================================================
+			
+			// ========================================================================================
+			// Youtube=================================================================================
+
+			// Twitch
+			// ========================================================================================
+			// ========================================================================================
+				var twitchCommand = discordBot.registerCommand( "twitch" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "3" );
+					}
+					return;
+				}, {
+					description: "Start Twitch State",
+					fullDescription: "Start Twitch State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				twitchCommand.registerSubcommand( "follow" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "Invalid input";
+					}
+					await require( "./utils/twitchAPI_Utils.js" ).followUserName( args[ 0 ] );
+					const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+					return followers.join( " , " );
+				}, {
+					description: "Follow Twitch User",
+					fullDescription: "Follow Twitch User",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				twitchCommand.registerSubcommand( "unfollow" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "Invalid input";
+					}
+					await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( args[ 0 ] );
+					const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+					return followers.join( " , " );
+				}, {
+					description: "Follow Twitch User",
+					fullDescription: "Follow Twitch User",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				twitchCommand.registerSubcommand( "live" , async ( msg , args ) => {
+					const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
+					return live_twitch.join( " , " );
+				}, {
+					description: "Get Live Twitch Followers",
+					fullDescription: "Get Live Twitch Followers",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				twitchCommand.registerSubcommand( "followers" , async ( msg , args ) => {
+					const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+					return followers.join( " , " );
+				}, {
+					description: "Get Twitch Followers",
+					fullDescription: "Get Twitch Followers",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});			
+				twitchCommand.registerSubcommandAlias( "following" , "followers" );
+			// ========================================================================================
+			// Twitch==================================================================================	
+
+
+			// Misc
+			// ========================================================================================
+			// ========================================================================================
+				var helpCommand = discordBot.registerCommand( "help" , ( msg , args ) => {
+					if( args.length === 0 ) {				
+						return GetButtonInfo();
+					}
+				}, {
+					description: "Run Command on OS" ,
+					fullDescription: "Run Command on OS" ,
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				helpCommand.registerCommandAlias( "cmds" , "help" );
+				helpCommand.registerCommandAlias( "commands" , "help" );
+
+				var execCommand = discordBot.registerCommand( "exec" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return;
+					}
+					const cmd = args.join(" ");
 					const output = await require( "./utils/generic.js" ).osCommand( cmd );
-					if ( output ) { await POST_LOG( output ); }
-				}
-			});
+					return output;
+				}, {
+					description: "Run Command on OS",
+					fullDescription: "Run Command on OS",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				execCommand.registerCommandAlias( "run" , "exec" );
+				execCommand.registerCommandAlias( "os" , "exec" );
 
-			var twitchCommand = discordBot.registerCommand( "twitch" , ( msg , args ) => {
-				if( args.length === 0 ) {
-					require( "./clientManager.js" ).pressButtonMaster( "3" );
-				}
-				return;
-			}, {
-				description: "Start Twitch State",
-				fullDescription: "Start Twitch State",
-				usage: "<text>" ,
-				reactionButtonTimeout: 0
-			});
+				var timeCommand = discordBot.registerCommand( "time" , ( msg , args ) => {
+					return require( "./utils/generic.js" ).time();
+				}, {
+				description: "Get Current Server Time",
+					fullDescription: "Get Current Server Time",
+					usage: "<text>"
+				});
 
-			twitchCommand.registerSubcommand( "follow" , async ( msg , args ) => {
-				if( args.length === 0 ) {
-					return "Invalid input";
-				}
-				await require( "./utils/twitchAPI_Utils.js" ).followUserName( args[ 0 ] );
-				const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-				return followers.join( " , " );
-			}, {
-				description: "Follow Twitch User",
-				fullDescription: "Follow Twitch User",
-				usage: "<text>" ,
-				reactionButtonTimeout: 0
-			});
-
-			twitchCommand.registerSubcommand( "unfollow" , async ( msg , args ) => {
-				if( args.length === 0 ) {
-					return "Invalid input";
-				}
-				await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( args[ 0 ] );
-				const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-				return followers.join( " , " );
-			}, {
-				description: "Follow Twitch User",
-				fullDescription: "Follow Twitch User",
-				usage: "<text>" ,
-				reactionButtonTimeout: 0
-			});
-
-			twitchCommand.registerSubcommand( "live" , async ( msg , args ) => {
-				const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
-				return live_twitch.join( " , " );
-			}, {
-				description: "Get Live Twitch Followers",
-				fullDescription: "Get Live Twitch Followers",
-				usage: "<text>" ,
-				reactionButtonTimeout: 0
-			});
-
-			twitchCommand.registerSubcommand( "followers" , async ( msg , args ) => {
-				const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-				return followers.join( " , " );
-			}, {
-				description: "Get Twitch Followers",
-				fullDescription: "Get Twitch Followers",
-				usage: "<text>" ,
-				reactionButtonTimeout: 0
-			});			
-			twitchCommand.registerSubcommandAlias( "following" , "followers" );
-
-
-			var timeCommand = discordBot.registerCommand( "time" , (msg , args ) => {
-				return require( "./utils/generic.js" ).time();
-			}, {
-			description: "Make the bot say something",
-				fullDescription: "The bot will echo whatever is after the command label.",
-				usage: "<text>"
-			});
-
-			// timeCommand.registerSubcommand("reverse", (msg, args) => { // Make a reverse subcommand under echo
-			// 	if(args.length === 0) { // If the user just typed "!echo reverse", say "Invalid input"
-			// 		return "Invalid input";
-			// 	}
-			// 	var text = args.join(" "); // Make a string of the text after the command label
-			// 	text = text.split("").reverse().join(""); // Reverse the string
-			// 	return text; // Return the generated string
-			// }, {
-			// description: "Make the bot say something in reverse",
-			// 	fullDescription: "The bot will echo, in reverse, whatever is after the command label.",
-			// 	usage: "<text>"
-			// });
-
-			//timeCommand.registerSubcommandAlias("backwards", "reverse"); // Alias "!echo backwards" to "!echo reverse"
+				var tvPowerCommand = discordBot.registerCommand( "tvpower" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./utils/cecClientManager.js" ).activate();
+					}
+					return;
+				}, {
+					description: "Push TV Power Button",
+					fullDescription: "Push TV Power Button",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				tvPowerCommand.registerCommandAlias( "tv" , "tvpower" );
+			// ========================================================================================
+			// Misc====================================================================================
 
 			await discordBot.connect();
 			resolve();
