@@ -31,10 +31,21 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {
 	wcl( "wPressButtonMaster( " + wButtonNum.toString() + " )" );
-	var wBTN_I = parseInt( wButtonNum );
 	if ( wBTN_I > 20 || wBTN_I < 0 ) { return "out of range"; }
 	wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
 	wSendButtonPressNotificationEmail( wButtonNum );
+	var wBTN_I = parseInt( wButtonNum );
+	if ( wBTN_I === 6 ) {
+		if ( CURRENT_STATE ) {
+			if ( CURRENT_STATE !== null ) {
+				wcl( "stopping CURRENT_STATE" ); 
+				await CURRENT_STATE.stop(); 
+				await wSleep( 1000 );
+			}
+		}
+		await require( "./utils/generic.js" ).closeEverything();
+		return;
+	}	
 	var launching_fp = null;
 	if ( BTN_MAP[ wButtonNum ][ "state" ] || BTN_MAP[ wButtonNum ][ "session" ] ) {
 		if ( BTN_MAP[ wButtonNum ][ "session" ] ) {

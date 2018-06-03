@@ -95,17 +95,12 @@ function SEND_STAGED_WS_MESSAGE() {
 	process.on( "SIGINT" , async function () {
 		//wEmitter.emit( "closeEverything" );
 		await clientManager.pressButtonMaster( 6 );
-		await require( "./server/mopidyManager.js" ).shutdown();
-		//await require( "./server/localMediaManager.js" ).shutdown();
-		await require( "./server/discordManager.js" ).shutdown();
-		setTimeout( ()=> {
-			//exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
-			exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );
-			process.exit(1);
-		} , 2000 );
+		process.exit(1);
 	});
 
 	await require( "./server/utils/generic.js" ).getStatusReport();
 	wcl( "SERVER READY" );
+	const now_time = require( "./server/utils/generic.js" ).time();
+	await require( "./server/discordManager.js" ).log( now_time + " === Server Online" );
 
 })();

@@ -125,7 +125,7 @@ const ffWrapper = {
 				xdoWrapper.moveMouseToCenterOfWindow( ffWrapper.windowID );
 				await wsleep( 500 );
 				xdoWrapper.mouseLeftClick();
-				await wsleep( 1000 );
+				await wsleep( 3000 );
 				xdoWrapper.pressKeyboardKey( "f" );
 				resolve();
 			}
@@ -198,12 +198,12 @@ module.exports.openURL = function( wURL ) {
 			}
 			
 			ffWrapper.launchFF_Rewrite();
-			await wsleep( 1000 );
+			await wsleep( 2000 );
 
 			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );			
 			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );
 
-			await wsleep( 2000 );
+			await wsleep( 3000 );
 			ffWrapper.openNewTab( wURL );
 			
 			resolve();

@@ -1,6 +1,8 @@
-require('shelljs/global');
+require( "shelljs/global" );
 //const wExecSync = require( "child_process" ).execSync;
 var colors = require("colors");
+
+// https://askubuntu.com/questions/703628/how-to-close-minimize-and-maximize-a-specified-window-from-terminal
 
 function wcl( wSTR ) { console.log( colors.blue.bgRed( "[XDO_TOOL_MAN] --> " + wSTR ) ); }
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }

@@ -5,6 +5,24 @@ const StatusKeys = require( "../CONSTANTS/redis.js" ).STATUS;
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 module.exports.wSleep = W_SLEEP;
 
+const MonthNames = [ "JAN" , "FEB" , "MAR" , "APR" , "MAY" , "JUN" , "JUL" , "AUG" , "SEP" , "OCT" , "NOV" , "DEC" ];
+function GET_NOW_TIME() {
+	const today = new Date();
+	
+	var day = today.getDate();
+	if ( parseInt( day ) < 10 ) { day = "0" + day; }
+	const month = MonthNames[ today.getMonth() ];
+	const year = today.getFullYear();
+
+	var hours = today.getHours();
+	if ( parseInt( hours ) < 10 ) { hours = "0" + hours; }
+	var minutes = today.getMinutes();
+	if ( parseInt( minutes ) < 10 ) { minutes = "0" + minutes; }	
+	
+	return day + month + year + " @@ " + hours + ":" + minutes;
+}
+module.exports.time = GET_NOW_TIME;
+
 function FIX_PATH_SPACE( wFP ) {
 	var fixSpace = new RegExp( " " , "g" );
 	wFP = wFP.replace( fixSpace , String.fromCharCode(92) + " " );
@@ -153,3 +171,20 @@ function OS_COMMAND( wTask ) {
 	});
 }
 module.exports.osCommand = OS_COMMAND;
+
+function CLOSE_EVERYTHING() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await require( "../mopidyManager.js" ).shutdown();
+			await require( "../localMediaManager.js" ).shutdown();
+			await require( "../discordManager.js" ).shutdown();
+			setTimeout( ()=> {
+				exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
+				exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );
+				resolve();
+			} , 2000 );	
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.closeEverything = CLOSE_EVERYTHING;

@@ -90,7 +90,12 @@ function INITIALIZE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			discordCreds = require( "../personal.js" ).discord;
-			discordBot = new Eris( discordCreds.token );
+			//discordBot = new Eris( discordCreds.token );
+			discordBot = new Eris.CommandClient( discordCreds.token , {} , {
+				description: "A test bot made with Eris",
+				owner: "436330698501259266" ,
+				prefix: "!"
+			});
 
 			discordBot.on( "messageCreate" , async ( msg ) => {
 				
@@ -100,32 +105,41 @@ function INITIALIZE() {
 
 				if ( msg.content.startsWith( "!help" ) || msg.content.startsWith( "!cmds" ) || msg.content.startsWith( "!commands" ) ) {
 					PostButtons( msg.channel.id );
+					return;
 				}
 				else if ( msg.content.startsWith( "!btn" ) || msg.content.startsWith( "!btns" ) || msg.content.startsWith( "!button" ) ) {
 					var num = msg.content.split( " " )[ 1 ];
 					require( "./clientManager.js" ).pressButtonMaster( num );
+					return;
 				}
 				else if ( msg.content.startsWith( "!next" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "9" );
+					return;
 				}
 				else if ( msg.content.startsWith( "!previous" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "8" );
+					return;
 				}
 				else if ( msg.content.startsWith( "!pause" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "7" );
+					return;
 				}
 				else if ( msg.content.startsWith( "!stop" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "6" );
+					return;
 				}
 				else if ( msg.content.startsWith( "!tvpower" ) ) {
 					require( "./utils/cecClientManager.js" ).activate();
+					return;
 				}
 				else if ( msg.content.startsWith( "!relax" ) ) {
 					// Start Relaxing Youtube Playlists or something
 					require( "./clientManager.js" ).pressButtonMaster( "16" );
+					return;
 				}
 				else if ( msg.content.startsWith( "!od" ) ) {
 					require( "./clientManager.js" ).pressButtonMaster( "11" );
+					return;
 				}				
 				else if ( msg.content.startsWith( "!start" ) || msg.content.startsWith( "!play" ) ) {
 					
@@ -156,6 +170,7 @@ function INITIALIZE() {
 					else if ( msg.content.includes( "twitch" ) ) {
 						if ( msg.content.includes( "live" ) ) {
 							require( "./clientManager.js" ).pressButtonMaster( "3" );
+							return;
 						}
 						// else if ( msg.content.includes( "vod" ) ) {
 						// 	require( "./clientManager.js" ).pressButtonMaster( "" );
@@ -191,7 +206,7 @@ function INITIALIZE() {
 							require( "./clientManager.js" ).pressButtonMaster( "16" );
 							return;
 						}
-																		
+
 						var final_options = { position: "FOREGROUND" };
 						if ( second_commands[ 1 ].indexOf( "watch?v=" ) !== -1 ) {
 							final_options.mode = "SINGLE";
@@ -229,11 +244,21 @@ function INITIALIZE() {
 					}				
 					else if ( second_commands[ 2 ] ===  "import" || second_commands[ 2 ] ===  "add" ) {
 
-						if ( second_commands[ 3 ] ===  "playlist" ) {
-
+						if ( second_commands[ 1 ] === "currated" ) {
+							if ( second_commands[ 3 ] ===  "playlist" ) {
+								await require( manager_path ).importFromPlaylistID( second_commands[ 4 ] );
+							}
+							else {
+								await require( manager_path ).addToQue( second_commands[ 4 ] );
+							}
 						}
-						else {
-
+						else if ( second_commands[ 1 ] === "relax" || second_commands[ 1 ] === "relaxing" ) {
+							if ( second_commands[ 3 ] ===  "playlist" ) {
+								await require( manager_path ).importFromPlaylistID( second_commands[ 4 ] );
+							}
+							else {
+								await require( manager_path ).addToQue( second_commands[ 4 ] );
+							}							
 						}
 
 					}
@@ -270,35 +295,99 @@ function INITIALIZE() {
 					}
 
 				}
-				else if ( msg.content.startsWith( "!twitch" ) ) {
-					var second_commands = msg.content.split( " " );
-					if ( !second_commands )  { return; }
-					if ( second_commands.length < 2 ) { return; }
-
-					console.log( second_commands );
-					if ( second_commands[ 1 ] ===  "followers" ) {
-						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );
-					}
-					else if ( second_commands[ 1 ] ===  "follow" ) {
-						if ( second_commands[ 2 ] ) { await require( "./utils/twitchAPI_Utils.js" ).followUserName( second_commands[ 2 ] ); }
-						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );
-					}
-					else if ( second_commands[ 1 ] ===  "unfollow" ) {
-						if ( second_commands[ 2 ] ) { await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( second_commands[ 2 ] ); }
-						const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-						await POST_ID( "Following: \n" + followers.join( " , " ) , msg.channel.id );						
-					}
-					else if ( second_commands[ 1 ] ===  "live" ) {
-						const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
-						await POST_ID( "Live Twitch Users == \n" + live_twitch.join( " , " ) , msg.channel.id );
-					}
+				else if ( msg.content.startsWith( "!exec" ) ) {
+					const cmd = msg.content.split( "!exec " )[ 1 ];
+					const output = await require( "./utils/generic.js" ).osCommand( cmd );
+					if ( output ) { await POST_LOG( output ); }
 				}
 			});
 
-			await discordBot.connect();
+			var twitchCommand = discordBot.registerCommand( "twitch" , ( msg , args ) => {
+				if( args.length === 0 ) {
+					require( "./clientManager.js" ).pressButtonMaster( "3" );
+				}
+				return;
+			}, {
+				description: "Start Twitch State",
+				fullDescription: "Start Twitch State",
+				usage: "<text>" ,
+				reactionButtonTimeout: 0
+			});
 
+			twitchCommand.registerSubcommand( "follow" , async ( msg , args ) => {
+				if( args.length === 0 ) {
+					return "Invalid input";
+				}
+				await require( "./utils/twitchAPI_Utils.js" ).followUserName( args[ 0 ] );
+				const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+				return followers.join( " , " );
+			}, {
+				description: "Follow Twitch User",
+				fullDescription: "Follow Twitch User",
+				usage: "<text>" ,
+				reactionButtonTimeout: 0
+			});
+
+			twitchCommand.registerSubcommand( "unfollow" , async ( msg , args ) => {
+				if( args.length === 0 ) {
+					return "Invalid input";
+				}
+				await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( args[ 0 ] );
+				const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+				return followers.join( " , " );
+			}, {
+				description: "Follow Twitch User",
+				fullDescription: "Follow Twitch User",
+				usage: "<text>" ,
+				reactionButtonTimeout: 0
+			});
+
+			twitchCommand.registerSubcommand( "live" , async ( msg , args ) => {
+				const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
+				return live_twitch.join( " , " );
+			}, {
+				description: "Get Live Twitch Followers",
+				fullDescription: "Get Live Twitch Followers",
+				usage: "<text>" ,
+				reactionButtonTimeout: 0
+			});
+
+			twitchCommand.registerSubcommand( "followers" , async ( msg , args ) => {
+				const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
+				return followers.join( " , " );
+			}, {
+				description: "Get Twitch Followers",
+				fullDescription: "Get Twitch Followers",
+				usage: "<text>" ,
+				reactionButtonTimeout: 0
+			});			
+			twitchCommand.registerSubcommandAlias( "following" , "followers" );
+
+
+			var timeCommand = discordBot.registerCommand( "time" , (msg , args ) => {
+				return require( "./utils/generic.js" ).time();
+			}, {
+			description: "Make the bot say something",
+				fullDescription: "The bot will echo whatever is after the command label.",
+				usage: "<text>"
+			});
+
+			// timeCommand.registerSubcommand("reverse", (msg, args) => { // Make a reverse subcommand under echo
+			// 	if(args.length === 0) { // If the user just typed "!echo reverse", say "Invalid input"
+			// 		return "Invalid input";
+			// 	}
+			// 	var text = args.join(" "); // Make a string of the text after the command label
+			// 	text = text.split("").reverse().join(""); // Reverse the string
+			// 	return text; // Return the generated string
+			// }, {
+			// description: "Make the bot say something in reverse",
+			// 	fullDescription: "The bot will echo, in reverse, whatever is after the command label.",
+			// 	usage: "<text>"
+			// });
+
+			//timeCommand.registerSubcommandAlias("backwards", "reverse"); // Alias "!echo backwards" to "!echo reverse"
+
+			await discordBot.connect();
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
