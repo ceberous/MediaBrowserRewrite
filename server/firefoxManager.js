@@ -4,6 +4,7 @@ const wEmitter = require("../main.js").wEmitter;
 require( "shelljs/global" );
 const path = require("path");
 const colors = require("colors");
+const shellescape = require( "shell-escape" );
 
 const launchFFPath = path.join( __dirname , "./utils/ffLauncher.js" );
 const xdoWrapper = require( "./utils/xdotoolWrapper.js" );
@@ -111,7 +112,8 @@ const ffWrapper = {
 	},	
 
 	openNewTab: function( w_URL ) {
-		var openNewTab = 'firefox -new-tab ' + w_URL;
+		const escaped = shellescape( [ w_URL ] );
+		const openNewTab = 'firefox -new-tab ' + escaped;
 		var wResult = exec( openNewTab , { silent: true , async: false } );
 		ffWrapper.stagedLink = null;
 		if ( wResult.stderr != null && wResult.stderr.length > 1 ) { wcl( wResult.stderr ); return null; }

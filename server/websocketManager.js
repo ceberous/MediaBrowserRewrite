@@ -42,6 +42,10 @@ function ON_CONNECTION( wSocket , wReq ) {
 						break;						
 					case "youtubeNowPlayingID":
 						require( "./discordManager.js" ).nowPlaying( message.url );
+						break;
+					case "youtubeAuthHash":
+						console.log( message );
+						break;
 					case "InstagramMediaOver":
 						require( "./instagramManager.js" ).updateWatchedMedia( message.options )
 						break;

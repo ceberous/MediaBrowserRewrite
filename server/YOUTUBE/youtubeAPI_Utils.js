@@ -1,4 +1,5 @@
 const request = require( "request" );
+const puppeteer = require( "puppeteer" );
 // const RU = require( "./redis_Utils.js" );
 
 const YT_Personal = require( "../../personal.js" ).youtube;
@@ -89,17 +90,68 @@ module.exports.getPlaylist = function( wPlaylistID ) {
 	});
 };
 
-const GET_FOLLOWERS_URL = `https://www.googleapis.com/youtube/v3/subscriptions?channelId=${YT_Personal.channel_id}&part=snippet%2CcontentDetails&key=${YT_Personal.data_api_key}`;
-function GET_FOLLOWERS() {
-	return new Promise( function( resolve , reject ) {
+var browser = null;
+function PUPPETEER_GET_AUTH_TOKEN( wURL ) {
+	return new Promise( async function( resolve , reject ) {
 		try {
-			console.log( GET_FOLLOWERS_URL );
-			request( GET_FOLLOWERS_URL , async function ( err , response , body ) {
-				if ( err ) { console.log( err ); reject( err ); return; }
-				body = JSON.parse( body );
-				resolve( body );
-			});			
-			resolve();
+			console.log( wURL );
+			const page = await browser.newPage();
+			await page.setViewport( { width: 1200 , height: 700 } );
+			//await page.setJavaScriptEnabled( false );
+			await page.goto( wURL , { /* timeout: ( 15 * 1000 ) ,*/ waitUntil: "networkidle0" } );
+			// await page.waitFor( 6000 );
+			// var token = await page.evaluate( () => {
+			// 	var p_tags = document.querySelectorAll( "p" );
+			// 	var f_token = null;
+			// 	for ( var i = 0; i < p_tags.length; ++i ) {
+			// 		if ( p_tags[ i ] ) {
+			// 			var data_item = p_tags[ i ].getAttribute( "data-email" );
+			// 			if ( data_item ) {
+			// 				if ( data_item === YT_Personal.email ) {
+
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// 	return Promise.resolve( window.SDM.pm.doi );
+			// });
+			// if ( token !== undefined ) { console.log( "\t--> " + token ); resolve( token ); return; }
+			await page.waitFor( 2000 );
+			//await page.waitForSelector( '[data-email="' + YT_Personal.email + '"]' );
+			var wBody = await page.content();
+			page.click( 'p[data-email="' + YT_Personal.email + '"]' );
+			await page.waitFor( 2000 );
+			resolve( "failed" );
+		}
+		catch( error ) { console.log( error ); resolve( "fail" ); }
+	});
+}
+
+const GET_FOLLOWERS_URL = `https://www.googleapis.com/youtube/v3/subscriptions?channelId=${YT_Personal.channel_id}&part=snippet%2CcontentDetails&key=${YT_Personal.data_api_key}`;
+//const followers_options = { message: "YTGetAuthToken" , client_id: YT_Personal.client_id };
+var AUTH_B1 = "https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&include_granted_scopes=true&state=state_parameter_passthrough_value&redirect_uri=http%3A%2F%2Flocalhost%3A6969%2FyoutubeAuth&response_type=token&client_id=";
+AUTH_B1 = AUTH_B1 + YT_Personal.client_id;
+function GET_FOLLOWERS() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+
+			// console.log( AUTH_B1 );
+			//await require( "../firefoxManager.js" ).openURL( AUTH_B1 );
+
+			// Puppetter Get Link --> http://localhost:6969/youtubeAuth
+			browser = await puppeteer.launch({ headless: true , /* slowMo: 2000 */  });
+			const token = await PUPPETEER_GET_AUTH_TOKEN( AUTH_B1 );
+			await browser.close();
+			console.log( token );
+
+			// Then , 
+			// console.log( GET_FOLLOWERS_URL );
+			// request( GET_FOLLOWERS_URL , async function ( err , response , body ) {
+			// 	if ( err ) { console.log( err ); reject( err ); return; }
+			// 	body = JSON.parse( body );
+			// 	resolve( body );
+			// });			
+			resolve([]);
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});

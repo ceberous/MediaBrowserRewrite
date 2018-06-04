@@ -1,5 +1,20 @@
 function sendJSONResponse( res , status , content ) { if ( status ) { res.status( status ); } res.json( content ); }
 
+module.exports.oauth2callback = function( req , res ) {
+	console.log( req.url );
+	console.log( req.originalUrl );
+	console.log( req.query );
+	console.log( req.params );
+	console.log( req.body );
+	sendJSONResponse.json( res , 200 , {
+		url: req.url ,
+		originalUrl: req.originalUrl ,
+		query: req.query ,
+		params: req.params ,
+		body: req.body ,
+	});	
+};
+
 // LIVE
 module.exports.liveGetVideos = async function( req , res ) {
 	const x1 = await require( "../../YOUTUBE/live.js" ).getLiveVideos();

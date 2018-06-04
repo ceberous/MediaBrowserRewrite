@@ -3,6 +3,8 @@ const router = express.Router();
 
 const youtubeCTRL = require( "../CONTROLLERS/youtubeCTRL.js" );
 
+router.get( "/oauth2callback" , youtubeCTRL.oauth2callback );
+
 router.get( "/live/videos/" , youtubeCTRL.liveGetVideos );
 router.get( "/live/followers/" , youtubeCTRL.liveGetFollowers );
 router.get( "/live/follower/add/:wID/" , youtubeCTRL.liveAddFollower );

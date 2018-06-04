@@ -283,7 +283,8 @@ function INITIALIZE() {
 				youtubeCommand.registerSubcommand( "followers" , async ( msg , args ) => {
 					if( args.length === 0 ) {
 						const followers = await require( "./YOUTUBE/youtubeAPI_Utils.js" ).getFollowers();
-						return followers.join( " , " );
+						if ( followers ) { if ( followers.length > 0 ) { return followers.join( " , " ); } }
+						return "failed";
 					}
 					return;
 				}, {
