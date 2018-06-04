@@ -1,7 +1,7 @@
 const request = require( "request" );
 // const RU = require( "./redis_Utils.js" );
 
-const DATA_API_KEY = require( "../../personal.js" ).YT_DATA_API_KEY;
+const YT_Personal = require( "../../personal.js" ).youtube;
 var ENUMERATING_ID = null;
 var FINAL_RESULTS = [];
 var FINAL_PARSED = [];
@@ -48,7 +48,7 @@ function filterJSONResults( wResults ) {
 }
 
 const URL_P1 = "https://www.googleapis.com/youtube/v3/playlistItems?playlistId=";
-const URL_P2 = "&maxResults=50&part=snippet%2CcontentDetails&key=" + DATA_API_KEY;
+const URL_P2 = "&maxResults=50&part=snippet%2CcontentDetails&key=" + YT_Personal.data_api_key;
 const URL_P3 = "&pageToken=";
 function getPlaylistJSON( wPageToken ) {
 	return new Promise( function( resolve , reject ) {
@@ -88,3 +88,20 @@ module.exports.getPlaylist = function( wPlaylistID ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 };
+
+const GET_FOLLOWERS_URL = `https://www.googleapis.com/youtube/v3/subscriptions?channelId=${YT_Personal.channel_id}&part=snippet%2CcontentDetails&key=${YT_Personal.data_api_key}`;
+function GET_FOLLOWERS() {
+	return new Promise( function( resolve , reject ) {
+		try {
+			console.log( GET_FOLLOWERS_URL );
+			request( GET_FOLLOWERS_URL , async function ( err , response , body ) {
+				if ( err ) { console.log( err ); reject( err ); return; }
+				body = JSON.parse( body );
+				resolve( body );
+			});			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.getFollowers = GET_FOLLOWERS;

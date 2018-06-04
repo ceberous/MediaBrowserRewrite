@@ -92,160 +92,13 @@ function INITIALIZE() {
 
 			// https://github.com/abalabahaha/eris/blob/master/lib/command/CommandClient.js#L301
 
-			discordBot.on( "messageCreate" , async ( msg ) => {
+			// discordBot.on( "messageCreate" , async ( msg ) => {
 				
-				if ( msg[ "author" ][ "id" ] === discordCreds.bot_id ) { return; }
-				// Restrict to Only now_playing channel
-				//if ( msg.channel.id !== discordCreds.channels.now_playing ) { return; }
+			// 	if ( msg[ "author" ][ "id" ] === discordCreds.bot_id ) { return; }
+			// 	// Restrict to Only now_playing channel
+			// 	//if ( msg.channel.id !== discordCreds.channels.now_playing ) { return; }
 
-				if ( msg.content.startsWith( "!od" ) ) {
-					require( "./clientManager.js" ).pressButtonMaster( "11" );
-					return;
-				}				
-				else if ( msg.content.startsWith( "!start" ) || msg.content.startsWith( "!play" ) ) {
-					
-					if ( msg.content.includes( "yt live" ) || msg.content.includes( "youtube live" ) || msg.content.includes( "yt background" ) ) {
-						require( "./clientManager.js" ).pressButtonMaster( "0" );
-						return;
-					}
-					else if ( msg.content.includes( "yt standard" ) || msg.content.includes( "youtube standard" ) ) {
-						require( "./clientManager.js" ).pressButtonMaster( "14" );
-						return;
-					}
-
-					else if ( msg.content.includes( "music" ) || msg.content.includes( "mopidy" ) ) {
-						if ( msg.content.includes( "classic" ) ) {
-							require( "./clientManager.js" ).pressButtonMaster( "1" );
-							return;
-						}
-						else if ( msg.content.includes( "edm" ) ) {
-							require( "./clientManager.js" ).pressButtonMaster( "2" );
-							return;
-						}
-						//else if ( msg.content.includes( "relax" ) ) {
-							//require( "./clientManager.js" ).pressButtonMaster( "" );
-						//}
-						else { require( "./clientManager.js" ).pressButtonMaster( "1" ); return; }
-					}
-
-					else if ( msg.content.includes( "odyssey" ) ) {
-						require( "./clientManager.js" ).pressButtonMaster( "11" );
-						return;
-					}
-				}
-				else if ( msg.content.startsWith( "!youtube" ) || msg.content.startsWith( "!yt" ) ) {
-					var second_commands = msg.content.split( " " );
-					if ( !second_commands )  { return; }
-					if ( second_commands.length < 2 ) { return; }
-
-					if ( second_commands.length === 2 ) {
-
-						if ( second_commands[ 1 ] === "live" ) {
-							require( "./clientManager.js" ).pressButtonMaster( "0" );
-							return;
-						}
-						else if ( second_commands[ 1 ] === "standard" ) {
-							require( "./clientManager.js" ).pressButtonMaster( "14" );
-							return;
-						}
-						else if ( second_commands[ 1 ] === "currated" ) {
-							require( "./clientManager.js" ).pressButtonMaster( "15" );
-							return;
-						}						
-						else if ( second_commands[ 1 ] === "relax" || second_commands[ 1 ] === "relaxing" ) {
-							require( "./clientManager.js" ).pressButtonMaster( "16" );
-							return;
-						}
-
-						var final_options = { position: "FOREGROUND" };
-						if ( second_commands[ 1 ].indexOf( "watch?v=" ) !== -1 ) {
-							final_options.mode = "SINGLE";
-							final_options.single_id = second_commands[ 1 ].split( "watch?v=" )[ 1 ];
-						}
-						else if ( second_commands[ 1 ].indexOf( "playlist?list=" ) !== -1 ) {
-							final_options.mode = "PLAYLIST_OFFICIAL";
-							final_options.playlist_id = second_commands[ 1 ].split( "playlist?list=" )[ 1 ];
-						}
-						else if ( second_commands[ 1 ].indexOf( "youtu.be/" ) !== -1 ) {
-							final_options.mode = "SINGLE";
-							final_options.single_id = second_commands[ 1 ].split( "youtu.be/" )[ 1 ];
-						}						
-						else {
-							if ( second_commands[ 1 ].length > 15 ) {
-								final_options.mode = "PLAYLIST_OFFICIAL";
-								final_options.playlist_id = second_commands[ 1 ];
-							}
-							else {
-								final_options.mode = "SINGLE";
-								final_options.single_id = second_commands[ 1 ];
-							}
-						}
-						require( "./clientManager.js" ).pressButtonMaster( "17" , final_options );
-						return;
-					}
- 
-					const manager_path = "./YOUTUBE/" + second_commands[ 1 ] + ".js";
-
-					if ( second_commands[ 2 ] ===  "follow" ) {
-
-					}
-					else if ( second_commands[ 2 ] ===  "unfollow" ) {
-
-					}				
-					else if ( second_commands[ 2 ] ===  "import" || second_commands[ 2 ] ===  "add" ) {
-
-						if ( second_commands[ 1 ] === "currated" ) {
-							if ( second_commands[ 3 ] ===  "playlist" ) {
-								await require( manager_path ).importFromPlaylistID( second_commands[ 4 ] );
-							}
-							else {
-								await require( manager_path ).addToQue( second_commands[ 4 ] );
-							}
-						}
-						else if ( second_commands[ 1 ] === "relax" || second_commands[ 1 ] === "relaxing" ) {
-							if ( second_commands[ 3 ] ===  "playlist" ) {
-								await require( manager_path ).importFromPlaylistID( second_commands[ 4 ] );
-							}
-							else {
-								await require( manager_path ).addToQue( second_commands[ 4 ] );
-							}							
-						}
-
-					}
-					else if ( second_commands[ 2 ] ===  "que" || second_commands[ 2 ] ===  "videos" ) {
-						const que = await require( manager_path ).getQue();
-						if ( que ) {
-							if ( que.length > 0 ) {
-								await POST_ID( "YouTube Standard Que: \n" + que.join( " , " ) , msg.channel.id );
-							}
-						}
-					}					
-					else if ( second_commands[ 2 ] ===  "info" ) {
-						if ( second_commands[ 1 ] === "standard" ) {
-							if ( second_commands[ 3 ] ) {
-								const wVideo = await require( manager_path ).getVideoInfo( second_commands[ 3 ] )
-								await POST_ID( "YouTube Video Info: [ " + second_commands[ 3 ] + " ]: \n" + 
-									"\ttitle == " + wVideo[ "title" ] + "\n" +
-									"\tpubdate == " + wVideo[ "pubdate" ] + "\n" +
-									"\tcompleted == " + wVideo[ "completed" ] + "\n" +
-									"\tskipped == " + wVideo[ "skipped" ] + "\n" +
-									"\tcurrent_time == " + wVideo[ "current_time" ] + "\n" +
-									"\tremaining_time == " + wVideo[ "remaining_time" ] + "\n" +
-									"\tduration == " + wVideo[ "duration" ] + "\n"
-								, msg.channel.id );
-							}
-						}
-						//require( "./clientManager.js" ).pressButtonMaster( "17" , { mode: "SINGLE" , position: "FOREGROUND" , single_id: "" } );
-					}
-					else if ( second_commands[ 2 ] ===  "follower" ) {
-
-					}
-					else if ( second_commands[ 2 ] ===  "blacklist" ) {
-
-					}
-
-				}
-			});
+			// });
 
 			// Buttons
 			// ========================================================================================
@@ -256,12 +109,12 @@ function INITIALIZE() {
 					}
 					return;
 				}, {
-					description: "Start Twitch State",
-					fullDescription: "Start Twitch State",
+					description: "Run Numeric Button State",
+					fullDescription: "Run Numeric Button State",
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
-				buttonCommand.registerCommandAlias( "btn" , "button" );
+				discordBot.registerCommandAlias( "btn" , "button" );
 
 				var stopCommand = discordBot.registerCommand( "stop" , ( msg , args ) => {
 					if( args.length === 0 ) {
@@ -274,7 +127,7 @@ function INITIALIZE() {
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
-				stopCommand.registerCommandAlias( "quit" , "stop" );
+				discordBot.registerCommandAlias( "quit" , "stop" );
 
 				var pauseCommand = discordBot.registerCommand( "pause" , ( msg , args ) => {
 					if( args.length === 0 ) {
@@ -310,8 +163,7 @@ function INITIALIZE() {
 					fullDescription: "Next",
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
-				});			
-
+				});
 			// ========================================================================================
 			// Buttons=================================================================================
 
@@ -324,12 +176,65 @@ function INITIALIZE() {
 					}
 					return;
 				}, {
-					description: "Start Relaxing Youtube Videos",
-					fullDescription: "Start Relaxing Youtube Videos",
+					description: "Start Relaxing Youtube Videos" ,
+					fullDescription: "Start Relaxing Youtube Videos" ,
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
-				relaxCommand.registerCommandAlias( "relaxing" , "relax" );
+				discordBot.registerCommandAlias( "relaxing" , "relax" );
+
+				var odyseeyCommand = discordBot.registerCommand( "odyseey" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "11" );
+					}
+					return;
+				}, {
+					description: "Start Adventures in Odyseey with YT Live Background" ,
+					fullDescription: "Start Adventures in Odyseey with YT Live Background" ,
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				discordBot.registerCommandAlias( "od" , "odyseey" );
+				discordBot.registerCommandAlias( "aio" , "odyseey" );
+
+				var musicCommand = discordBot.registerCommand( "music" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "1" );
+					}
+					return;
+				}, {
+					description: "Play Mopidy Music" ,
+					fullDescription: "Play Mopidy Music" ,
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				discordBot.registerCommandAlias( "mopidy" , "music" );
+
+				musicCommand.registerSubcommand( "edm" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "2" );
+					}
+					return;
+				}, {
+					description: "Play Mopdiy EDM Music",
+					fullDescription: "Play Mopdiy EDM Music",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				musicCommand.registerSubcommand( "relax" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						//require( "./clientManager.js" ).pressButtonMaster( "2" );
+						return "Not Setup Yet";
+					}
+					return;
+				}, {
+					description: "Play Mopdiy Relaxing Music",
+					fullDescription: "Play Mopdiy Relaxing Music",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});				
+				
 			// ========================================================================================
 			// Common State Names======================================================================
 
@@ -337,7 +242,226 @@ function INITIALIZE() {
 			// Youtube
 			// ========================================================================================
 			// ========================================================================================
-			
+				var youtubeCommand = discordBot.registerCommand( "youtube" , ( msg , args ) => {
+					if( args.length === 0 ) {
+						// Start Currated As Default
+						require( "./clientManager.js" ).pressButtonMaster( "15" );
+					}
+					var final_options = { position: "FOREGROUND" };
+					if ( args[ 1 ].indexOf( "watch?v=" ) !== -1 ) {
+						final_options.mode = "SINGLE";
+						final_options.single_id = args[ 1 ].split( "watch?v=" )[ 1 ];
+					}
+					else if ( args[ 1 ].indexOf( "playlist?list=" ) !== -1 ) {
+						final_options.mode = "PLAYLIST_OFFICIAL";
+						final_options.playlist_id = args[ 1 ].split( "playlist?list=" )[ 1 ];
+					}
+					else if ( args[ 1 ].indexOf( "youtu.be/" ) !== -1 ) {
+						final_options.mode = "SINGLE";
+						final_options.single_id = args[ 1 ].split( "youtu.be/" )[ 1 ];
+					}						
+					else {
+						if ( args[ 1 ].length > 15 ) {
+							final_options.mode = "PLAYLIST_OFFICIAL";
+							final_options.playlist_id = args[ 1 ];
+						}
+						else {
+							final_options.mode = "SINGLE";
+							final_options.single_id = args[ 1 ];
+						}
+					}
+					require( "./clientManager.js" ).pressButtonMaster( "17" , final_options );				
+					return;
+				}, {
+					description: "Start Youtube State",
+					fullDescription: "Start Youtube State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				discordBot.registerCommandAlias( "yt" , "youtube" );
+
+				youtubeCommand.registerSubcommand( "followers" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						const followers = await require( "./YOUTUBE/youtubeAPI_Utils.js" ).getFollowers();
+						return followers.join( " , " );
+					}
+					return;
+				}, {
+					description: "Get Youtube Followers",
+					fullDescription: "Get Youtube Followers",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "follow" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "No Username Sent";
+					}
+					return;
+				}, {
+					description: "Follow YouTube Channel",
+					fullDescription: "Follow YouTube Channel",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "unfollow" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "No Username Sent";
+					}
+					return;
+				}, {
+					description: "Unfollow YouTube Channel",
+					fullDescription: "Unfollow YouTube Channel",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "unblacklist" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "No Video Sent";
+					}
+					return "Not Setup";
+				}, {
+					description: "UnBlacklist YouTube Video",
+					fullDescription: "UnBlacklist YouTube Video",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "blacklist" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "No Video Sent";
+					}
+					return "Not Setup";
+				}, {
+					description: "Blacklist YouTube Video",
+					fullDescription: "Blacklist YouTube Video",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});				
+
+				youtubeCommand.registerSubcommand( "import" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "try: !yt import <currated,relax> <video_id,playlist_id>";
+					}
+					if ( args[ 0 ] === "currated" ) {
+						if ( args[ 1 ] ===  "playlist" ) {
+							await require( "./YOUTUBE/currated.js" ).importFromPlaylistID( args[ 2 ] );;
+						}
+						else {
+							await require( "./YOUTUBE/currated.js" ).addToQue( args[ 2 ] );
+						}
+					}
+					else if ( args[ 0 ] === "relax" || args[ 0 ] === "relaxing" ) {
+						if ( args[ 1 ] ===  "playlist" ) {
+							await require( "./YOUTUBE/relax.js" ).importFromPlaylistID( args[ 2 ] );
+						}
+						else {
+							await require( "./YOUTUBE/relax.js" ).addToQue( args[ 2 ] );
+						}
+					}
+					return;
+				}, {
+					description: "Import Stuff to Local DB",
+					fullDescription: "Import Stuff to Local DB",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "info" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "try: !yt import <currated,relax> <video_id,playlist_id>";
+					}
+					if ( args[ 1 ] === "standard" ) {
+						if ( args[ 2 ] ) {
+							const wVideo = await require( "./YOUTUBE/standard.js" ).getVideoInfo( args[ 2 ] )
+							return "YouTube Video Info: [ " + args[ 2 ] + " ]: \n" + 
+								"\ttitle == " + wVideo[ "title" ] + "\n" +
+								"\tpubdate == " + wVideo[ "pubdate" ] + "\n" +
+								"\tcompleted == " + wVideo[ "completed" ] + "\n" +
+								"\tskipped == " + wVideo[ "skipped" ] + "\n" +
+								"\tcurrent_time == " + wVideo[ "current_time" ] + "\n" +
+								"\tremaining_time == " + wVideo[ "remaining_time" ] + "\n" +
+								"\tduration == " + wVideo[ "duration" ] + "\n";
+						}
+					}
+					return;
+				}, {
+					description: "Get Video Info",
+					fullDescription: "Get Video Info",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "que" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						return "try: !yt que <standard,currated,relax>";
+					}
+					const manager_path = `./YOUTUBE/${ args[ 1 ] }.js`;
+					const que = await require( manager_path ).getQue();
+					if ( que ) {
+						if ( que.length > 0 ) {
+							return( "YouTube Standard Que: \n" + que.join( " , " ) );
+						}
+					}
+					return;
+				}, {
+					description: "Get Youtube Section Que",
+					fullDescription: "Get Youtube Section Que",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "live" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "0" );
+					}
+					return;
+				}, {
+					description: "Start Youtube Live State",
+					fullDescription: "Start Youtube Live State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				youtubeCommand.registerSubcommandAlias( "background" , "live" );
+
+				youtubeCommand.registerSubcommand( "standard" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "14" );
+					}
+					return;
+				}, {
+					description: "Start Youtube Standard State",
+					fullDescription: "Start Youtube Standard State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "currated" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "15" );
+					}
+					return;
+				}, {
+					description: "Start Youtube Currated State",
+					fullDescription: "Start Youtube Currated State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+
+				youtubeCommand.registerSubcommand( "relax" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						require( "./clientManager.js" ).pressButtonMaster( "16" );
+					}
+					return;
+				}, {
+					description: "Start Youtube Relaxing State",
+					fullDescription: "Start Youtube Relaxing State",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
+				youtubeCommand.registerSubcommandAlias( "relaxing" , "relax" );
 			// ========================================================================================
 			// Youtube=================================================================================
 
@@ -411,18 +535,18 @@ function INITIALIZE() {
 			// Misc
 			// ========================================================================================
 			// ========================================================================================
-				var helpCommand = discordBot.registerCommand( "help" , ( msg , args ) => {
+				var optionsCommand = discordBot.registerCommand( "options" , ( msg , args ) => {
 					if( args.length === 0 ) {				
 						return GetButtonInfo();
 					}
 				}, {
-					description: "Run Command on OS" ,
-					fullDescription: "Run Command on OS" ,
+					description: "Get Available States" ,
+					fullDescription: "Get Available States" ,
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
-				helpCommand.registerCommandAlias( "cmds" , "help" );
-				helpCommand.registerCommandAlias( "commands" , "help" );
+				discordBot.registerCommandAlias( "cmds" , "options" );
+				discordBot.registerCommandAlias( "commands" , "options" );
 
 				var execCommand = discordBot.registerCommand( "exec" , async ( msg , args ) => {
 					if( args.length === 0 ) {
@@ -437,8 +561,8 @@ function INITIALIZE() {
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
-				execCommand.registerCommandAlias( "run" , "exec" );
-				execCommand.registerCommandAlias( "os" , "exec" );
+				discordBot.registerCommandAlias( "run" , "exec" );
+				discordBot.registerCommandAlias( "os" , "exec" );
 
 				var timeCommand = discordBot.registerCommand( "time" , ( msg , args ) => {
 					return require( "./utils/generic.js" ).time();
@@ -459,7 +583,7 @@ function INITIALIZE() {
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
-				tvPowerCommand.registerCommandAlias( "tv" , "tvpower" );
+				discordBot.registerCommandAlias( "tv" , "tvpower" );
 			// ========================================================================================
 			// Misc====================================================================================
 
