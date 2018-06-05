@@ -19,7 +19,11 @@ module.exports.getQue = GET_QUE;
 function ADD_TO_QUE( wVideoID ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await RU.setAdd( RC.QUE , wVideoID );
+			if ( wVideoID ) {
+				if ( wVideoID.length > 10 ) {
+					await RU.setAdd( RC.QUE , wVideoID );
+				}
+			}			
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -59,7 +63,7 @@ module.exports.importFromPlaylistID = IMPORT_FROM_PLAYLIST_ID;
 function GET_NEXT_IN_QUE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var next_video = await RU.getRandomSetMembers( RC.CURRATED.QUE , 1 );
+			var next_video = await RU.getRandomSetMembers( RC.QUE , 1 );
 			if ( !next_video ) { next_video = "empty" }
 			else { next_video = next_video[ 0 ]; }		
 			resolve( next_video );

@@ -22,17 +22,16 @@ function wStart( wOptions ) {
 			if ( wMode === "LIVE" ) {
 				final_options.playlist = await require( "../YOUTUBE/live.js" ).getLiveVideos();
 			}
-			else if ( wMode === "CURRATED" ) {
+			else if ( wMode === "RELAX" ) {
+				var item = await require( "../YOUTUBE/relax.js" ).getNextInQue();
+				if ( !item ) { final_options.mode = "CURRATED"; wMode = "CURRATED"; }
+				else { final_options.playlist = [ item ]; }
+			}
+			if ( wMode === "CURRATED" ) {
 				var item = await RU.getRandomSetMembers( RC.CURRATED.QUE , 1 );
 				if ( !item ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
 				else if ( item.length < 1 ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
-				else { final_options.playlist = [ item ]; }
-			}
-			else if ( wMode === "RELAX" ) {
-				var item = await RU.getRandomSetMembers( RC.RELAX.QUE , 1 );
-				if ( !item ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
-				else if ( item.length < 1 ) { final_options.mode = "STANDARD"; wMode = "STANDARD"; }
-				else { final_options.playlist = [ item ]; }				
+				else { final_options.playlist = [ item[ 0 ] ]; }
 			}			
 			if ( wMode === "STANDARD" ) {
 				var item = await RU.listRPOP( RC.STANDARD.QUE , 1 );
@@ -130,7 +129,7 @@ function wNext() {
 					next_video = await require( "../YOUTUBE/currated.js" ).getNextInQue();
 				}
 				else if ( current_mode === "RELAX" ) {
-					await RU.setRemove( RC.RELAX.QUE , completed_id );
+					next_video = await require( "../YOUTUBE/relax.js" ).getNextInQue();
 
 				}
 				else if ( current_mode === "STANDARD" ) {

@@ -39,7 +39,10 @@ function ON_CONNECTION( wSocket , wReq ) {
 						break;
 					case "YTCurratedVideoOver":
 						clientManager.pressButtonMaster( 9 ); // next
-						break;						
+						break;
+					case "YTRelaxingVideoOver":
+						clientManager.pressButtonMaster( 9 ); // next
+						break;										
 					case "youtubeNowPlayingID":
 						require( "./discordManager.js" ).nowPlaying( message.url );
 						break;

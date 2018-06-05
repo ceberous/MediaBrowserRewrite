@@ -351,7 +351,9 @@ function INITIALIZE() {
 							await require( "./YOUTUBE/currated.js" ).importFromPlaylistID( args[ 2 ] );;
 						}
 						else {
-							await require( "./YOUTUBE/currated.js" ).addToQue( args[ 2 ] );
+							for ( var i = 1; i < args.length; ++i ) {
+								await require( "./YOUTUBE/currated.js" ).addToQue( args[ i ] );
+							}
 						}
 					}
 					else if ( args[ 0 ] === "relax" || args[ 0 ] === "relaxing" ) {
@@ -359,7 +361,9 @@ function INITIALIZE() {
 							await require( "./YOUTUBE/relax.js" ).importFromPlaylistID( args[ 2 ] );
 						}
 						else {
-							await require( "./YOUTUBE/relax.js" ).addToQue( args[ 2 ] );
+							for ( var i = 1; i < args.length; ++i ) {
+								await require( "./YOUTUBE/relax.js" ).addToQue( args[ i ] );
+							}
 						}
 					}
 					return;
@@ -369,6 +373,7 @@ function INITIALIZE() {
 					usage: "<text>" ,
 					reactionButtonTimeout: 0
 				});
+				youtubeCommand.registerSubcommandAlias( "add" , "import" );
 
 				youtubeCommand.registerSubcommand( "info" , async ( msg , args ) => {
 					if( args.length === 0 ) {
@@ -399,14 +404,14 @@ function INITIALIZE() {
 					if( args.length === 0 ) {
 						return "try: !yt que <standard,currated,relax>";
 					}
-					const manager_path = `./YOUTUBE/${ args[ 1 ] }.js`;
+					const manager_path = "./YOUTUBE/" + args[ 0 ] + ".js";
 					const que = await require( manager_path ).getQue();
 					if ( que ) {
 						if ( que.length > 0 ) {
-							return( "YouTube Standard Que: \n" + que.join( " , " ) );
+							return( "YouTube '" + args[ 0 ] + "' Que: \n" + que.join( " , " ) );
 						}
 					}
-					return;
+					return "Empty";
 				}, {
 					description: "Get Youtube Section Que",
 					fullDescription: "Get Youtube Section Que",
@@ -568,6 +573,21 @@ function INITIALIZE() {
 				});
 				discordBot.registerCommandAlias( "run" , "exec" );
 				discordBot.registerCommandAlias( "os" , "exec" );
+
+				var restartCommand = discordBot.registerCommand( "restart" , async ( msg , args ) => {
+					if( args.length === 0 ) {
+						const output = await require( "./utils/generic.js" ).osCommand( "pm2 restart all" );
+						if ( output ) {
+							return output;
+						}
+					}
+					return;
+				}, {
+					description: "Restart PM2 App",
+					fullDescription: "Restart PM2 App",
+					usage: "<text>" ,
+					reactionButtonTimeout: 0
+				});
 
 				var timeCommand = discordBot.registerCommand( "time" , ( msg , args ) => {
 					return require( "./utils/generic.js" ).time();

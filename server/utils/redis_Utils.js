@@ -231,8 +231,19 @@ function REDIS_HASH_GET_ALL( wKey ) {
 	});
 }
 
+
+
+function REDIS_SET_LENGTH( wKey  ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.scard( wKey , function( err , values ) { resolve( values ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function REDIS_SET_ADD( wKey , wValue ) {
 	return new Promise( function( resolve , reject ) {
+		if ( !wValue ) { resolve(); return; }
+		if ( wValue === "" || wValue === "undefined" ) { resolve(); return; }
 		try { rInstance.sadd( wKey , wValue , function( err , values ) { resolve( values ); }); }
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -344,6 +355,7 @@ module.exports.setKey= REDIS_SET_KEY;
 module.exports.setKeyIfNotExists = REDIS_SET_IF_NOT_EXISTS_KEY;
 module.exports.setMulti = REDIS_SET_MULTI;
 module.exports.setAdd = REDIS_SET_ADD;
+module.exports.setLength = REDIS_SET_LENGTH;
 module.exports.setRemove = REDIS_SET_REMOVE;
 module.exports.setListFromArray = REDIS_SET_LIST_FROM_ARRAY;
 module.exports.setListFromArrayBeginning = REDIS_SET_LIST_FROM_ARRAY_BEGINNING;

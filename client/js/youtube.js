@@ -76,6 +76,7 @@ var YTIFrameManager = {
 				console.log(" video is over ");
 				var final_options = { id: wID };
 				if ( YTIFrameManager.mode === "CURRATED" ) { final_options.message = "YTCurratedVideoOver"; }
+				else if ( YTIFrameManager.mode === "RELAX" ) { final_options.message = "YTRelaxingVideoOver"; }
 				else { final_options.message = "YTStandardVideoOver"; }
 				socket.send( JSON.stringify( final_options ) );
 				break;

@@ -27,7 +27,7 @@ async function wSendButtonPressNotification( wButtonNum ) {
 	require( "./discordManager.js" ).log( ( now_time + " === " + BTN_MAP[ wButtonNum ][ "name" ] ) );
 }
 
-async function wPressButtonMaster( wButtonNum , wOptions ) {
+async function wPressButtonMaster( wButtonNum , wOptions , wMasterClose ) {
 	wcl( "wPressButtonMaster( " + wButtonNum.toString() + " )" );
 	if ( wBTN_I > 20 || wBTN_I < 0 ) { return "out of range"; }
 	wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
@@ -44,7 +44,8 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 				await wSleep( 500 );
 			}
 		}
-		await require( "./utils/generic.js" ).closeCommon();
+		if ( wMasterClose ) { await require( "./utils/generic.js" ).closeEverything(); }
+		else { await require( "./utils/generic.js" ).closeCommon(); }
 		return;
 	}	
 	var launching_fp = null;

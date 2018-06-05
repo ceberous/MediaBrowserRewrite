@@ -201,14 +201,11 @@ module.exports.openURL = function( wURL ) {
 			
 			ffWrapper.launchFF_Rewrite();
 			await wsleep( 2000 );
-
 			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );
-			await wsleep( 500 );
+			await wsleep( 2000 );
 			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );
-
-			await wsleep( 3000 );
+			await wsleep( 2000 );
 			ffWrapper.openNewTab( wURL );
-			
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -235,6 +232,7 @@ module.exports.openTwitchURL = function( wURL ) {
 			ffWrapper.openNewTab( wURL );
 			await wsleep( 3000 );
 			xdoWrapper.pressKeyboardKey( "F11" );
+			
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
