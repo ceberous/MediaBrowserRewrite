@@ -202,12 +202,39 @@ module.exports.openURL = function( wURL ) {
 			ffWrapper.launchFF_Rewrite();
 			await wsleep( 2000 );
 
-			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );			
+			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );
+			await wsleep( 500 );
 			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );
 
 			await wsleep( 3000 );
 			ffWrapper.openNewTab( wURL );
 			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+};
+
+module.exports.openTwitchURL = function( wURL ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			
+			if ( ffWrapper.isFFOpen() ) {
+				wEmitter.emit( "sendFFClientMessage" , "shutdown" );
+				await wsleep( 3000 );
+				ffWrapper.terminateFF();
+				await wsleep( 3000 );
+			}
+			
+			ffWrapper.launchFF_Rewrite();
+			await wsleep( 2000 );
+			ffWrapper.windowID = await xdoWrapper.ensureWindowNameIsReady( "Mozilla Firefox" );
+			await wsleep( 1000 );
+			xdoWrapper.setFullScreen( ffWrapper.windowID , "1" );
+			await wsleep( 2000 );
+			ffWrapper.openNewTab( wURL );
+			await wsleep( 3000 );
+			xdoWrapper.pressKeyboardKey( "F11" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

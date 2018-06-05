@@ -94,7 +94,7 @@ function SEND_STAGED_WS_MESSAGE() {
 
 	process.on( "SIGINT" , async function () {
 		//wEmitter.emit( "closeEverything" );
-		await clientManager.pressButtonMaster( 6 );
+		await clientManager.pressButtonMaster( 6 , {} , true );
 		process.exit(1);
 	});
 

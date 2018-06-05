@@ -29,8 +29,8 @@ function RESTART_AS_YOUTUBE() {
 			try { delete require.cache[ CURRENT_MAN_NAME ]; }
 			catch ( e ) {}
 			CUR_MAN = null;
-			CUR_MAN = require( "../STATES/YT_Standard_Foreground.js" );
-			await CUR_MAN.start();
+			CUR_MAN = require( "../STATES/Youtube.js" );
+			await CUR_MAN.start( { mode: "CURRATED" , position: "FOREGROUND" } );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -87,6 +87,7 @@ function wStart() {
 			if ( current_live.length > 0 ) {
 				
 				ACTIVE_TWITCH_USER_NAME = await RU.getFromListByIndex( R_TWITCH_LIVE_USERS , c_index );
+				console.log( "Starting Twitch User --> " + ACTIVE_TWITCH_USER_NAME );
 				if ( ACTIVE_TWITCH_USER_NAME === null ) { await RESTART_AS_YOUTUBE(); }
 				else {
 					wMulti.push( [ "set" , R_STATE , R_STATE_NAME_TWITCH ] );

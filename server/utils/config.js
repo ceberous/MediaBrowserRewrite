@@ -75,7 +75,7 @@ function SAVE_CONFIG_TO_REDIS() {
 				}
 			}
 			
-			console.log( wMulti );
+			//console.log( wMulti );
 			await require( "./redis_Utils.js" ).setMulti( wMulti );
 
 			resolve();

@@ -117,10 +117,10 @@ function PUPPETEER_GET_AUTH_TOKEN( wURL ) {
 			// });
 			// if ( token !== undefined ) { console.log( "\t--> " + token ); resolve( token ); return; }
 			await page.waitFor( 2000 );
-			//await page.waitForSelector( '[data-email="' + YT_Personal.email + '"]' );
-			var wBody = await page.content();
+			await page.mainFrame().waitForSelector( 'p[data-email="' + YT_Personal.email + '"]' );
+			//var wBody = await page.content();
 			page.click( 'p[data-email="' + YT_Personal.email + '"]' );
-			await page.waitFor( 2000 );
+			//await page.waitFor( 2000 );
 			resolve( "failed" );
 		}
 		catch( error ) { console.log( error ); resolve( "fail" ); }
@@ -139,6 +139,18 @@ function GET_FOLLOWERS() {
 			//await require( "../firefoxManager.js" ).openURL( AUTH_B1 );
 
 			// Puppetter Get Link --> http://localhost:6969/youtubeAuth
+
+			// puppeteer.launch().then(async browser => {
+			//   const page = await browser.newPage();
+			//   let currentURL;
+			//   page.mainFrame()
+			//     .waitForSelector( 'p[data-email="' + YT_Personal.email + '"]' )
+			//     .then(() => page.click( 'p[data-email="' + YT_Personal.email + '"]' ) );
+			//   for (currentURL of [ AUTH_B1 ])
+			//     await page.goto(currentURL);
+			//   await browser.close();
+			// });
+
 			browser = await puppeteer.launch({ headless: true , /* slowMo: 2000 */  });
 			const token = await PUPPETEER_GET_AUTH_TOKEN( AUTH_B1 );
 			await browser.close();

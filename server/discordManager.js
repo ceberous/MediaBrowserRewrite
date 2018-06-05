@@ -487,7 +487,8 @@ function INITIALIZE() {
 					}
 					await require( "./utils/twitchAPI_Utils.js" ).followUserName( args[ 0 ] );
 					const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-					return followers.join( " , " );
+					if ( followers ) { if ( followers.length > 0 ) { return followers.join( " , " ); } }
+					return;
 				}, {
 					description: "Follow Twitch User",
 					fullDescription: "Follow Twitch User",
@@ -501,7 +502,8 @@ function INITIALIZE() {
 					}
 					await require( "./utils/twitchAPI_Utils.js" ).unfollowUserName( args[ 0 ] );
 					const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-					return followers.join( " , " );
+					if ( followers ) { if ( followers.length > 0 ) { return followers.join( " , " ); } }
+					return;
 				}, {
 					description: "Follow Twitch User",
 					fullDescription: "Follow Twitch User",
@@ -511,7 +513,8 @@ function INITIALIZE() {
 
 				twitchCommand.registerSubcommand( "live" , async ( msg , args ) => {
 					const live_twitch = await require( "./utils/twitchAPI_Utils.js" ).getLiveUsers();
-					return live_twitch.join( " , " );
+					if ( live_twitch ) { if ( live_twitch.length > 0 ) { return live_twitch.join( " , " ); } }
+					return "None";
 				}, {
 					description: "Get Live Twitch Followers",
 					fullDescription: "Get Live Twitch Followers",
@@ -521,7 +524,8 @@ function INITIALIZE() {
 
 				twitchCommand.registerSubcommand( "followers" , async ( msg , args ) => {
 					const followers = await require( "./utils/twitchAPI_Utils.js" ).getFollowers();
-					return followers.join( " , " );
+					if ( followers ) { if ( followers.length > 0 ) { return followers.join( " , " ); } }
+					return "None";		
 				}, {
 					description: "Get Twitch Followers",
 					fullDescription: "Get Twitch Followers",

@@ -188,3 +188,16 @@ function CLOSE_EVERYTHING() {
 	});
 }
 module.exports.closeEverything = CLOSE_EVERYTHING;
+
+
+function CLOSE_COMMON() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			exec( "sudo pkill -9 firefox" , { silent: true ,  async: false } );
+			exec( "sudo pkill -9 mplayer" , { silent: true ,  async: false } );
+			resolve()
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.closeCommon = CLOSE_COMMON;

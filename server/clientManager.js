@@ -12,12 +12,10 @@ var CURRENT_STATE = null;
 var BTN_MAP = require( "../config/buttons.json" );
 
 const R_ARRIVE_HOME = "CONFIG.ARRIVED_HOME";
-async function wSendButtonPressNotificationEmail( wButtonNum ) {
-	const x1 = wButtonNum.toString();
+async function wSendButtonPressNotification( wButtonNum ) {
+	const now_time = require( "./utils/generic.js" ).time();
 	const dNow = new Date();
-	var dHours = dNow.getHours(); 
-	const x2 = ( dNow.getMonth() + 1 ) + "/" + dNow.getDate() + "/" + dNow.getFullYear() + "--" + dHours + ":" + dNow.getMinutes();
-	wcl( x2 + " " + x1 );
+	var dHours = dNow.getHours();	
 	if ( parseInt( dHours ) === 15 ) {
 		const already_home = await RU.getKey( R_ARRIVE_HOME );
 		if ( already_home !== null ){
@@ -26,14 +24,14 @@ async function wSendButtonPressNotificationEmail( wButtonNum ) {
 			}
 		}
 	}
-	require( "./discordManager.js" ).log( ( x2 + " @@ " + BTN_MAP[ wButtonNum ][ "name" ] ) );
+	require( "./discordManager.js" ).log( ( now_time + " === " + BTN_MAP[ wButtonNum ][ "name" ] ) );
 }
 
 async function wPressButtonMaster( wButtonNum , wOptions ) {
 	wcl( "wPressButtonMaster( " + wButtonNum.toString() + " )" );
 	if ( wBTN_I > 20 || wBTN_I < 0 ) { return "out of range"; }
 	wOptions = wOptions || BTN_MAP[ wButtonNum ][ "options" ];
-	wSendButtonPressNotificationEmail( wButtonNum );
+	wSendButtonPressNotification( wButtonNum );
 	var wBTN_I = parseInt( wButtonNum );
 	if ( wBTN_I === 6 ) {
 		if ( CURRENT_STATE ) {
@@ -46,7 +44,7 @@ async function wPressButtonMaster( wButtonNum , wOptions ) {
 				await wSleep( 500 );
 			}
 		}
-		await require( "./utils/generic.js" ).closeEverything();
+		await require( "./utils/generic.js" ).closeCommon();
 		return;
 	}	
 	var launching_fp = null;

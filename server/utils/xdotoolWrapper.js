@@ -7,6 +7,8 @@ var colors = require("colors");
 function wcl( wSTR ) { console.log( colors.blue.bgRed( "[XDO_TOOL_MAN] --> " + wSTR ) ); }
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
+// https://askubuntu.com/questions/186288/how-to-detect-and-configure-an-output-with-xrandr
+
 // [XDO_TOOL_MAN] --> WindowID = 
 // [XDO_TOOL_MAN] --> X-Window READY !!! 
 // [XDO_TOOL_MAN] --> ERROR --> Could not Activate Window ID
