@@ -1,4 +1,5 @@
 const RU = require( "../redis_Utils.js" );
+const RC = require( "./CONSTANTS/redis.js" ).MOPIDY;
 const mopidy = require( "../../mopidyManager.js" ).mopidy;
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
@@ -9,7 +10,8 @@ function STOP() {
 	return new Promise( function( resolve , reject ) {
 		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
 		try {
-			mopidy.playback.stop().then( function ( something ) {
+			mopidy.playback.stop().then( async function ( something ) {
+				await RU.setKey( RC.STATE , "STOPPED" );
 				resolve("success");
 			});
 		}
@@ -21,7 +23,8 @@ function PLAY() {
 	return new Promise( function( resolve , reject ) {
 		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
 		try {
-			mopidy.playback.play().then( function ( something ) {
+			mopidy.playback.play().then( async function ( something ) {
+				await RU.setKey( RC.STATE , "PLAYING" );				
 				resolve("success");
 			});
 		}
@@ -38,7 +41,8 @@ function PAUSE() {
 					await RESUME();
 				}
 				else {
-					mopidy.playback.pause().then( function ( something ) {
+					mopidy.playback.pause().then( async function ( something ) {
+						await RU.setKey( RC.STATE , "PAUSED" );
 						resolve("success");
 					});
 				}
@@ -52,7 +56,8 @@ function RESUME() {
 	return new Promise( function( resolve , reject ) {
 		if ( !mopidy || mopidy === null ) { reject( "mopidy not available" ); }
 		try {
-			mopidy.playback.resume().then( function ( something ) {
+			mopidy.playback.resume().then( async function ( something ) {
+				await RU.setKey( RC.STATE , "PLAYING" );
 				resolve("success");
 			});
 		}
@@ -103,13 +108,13 @@ function GET_CURRENT_TRACK() {
 	});
 }
 
-const R_CUR_STATE = R_BASE + "STATE";
 function GET_STATE() {
 	return new Promise( function( resolve , reject ) {
 		try {
 			mopidy.playback.getState().then( async function ( state ) {
+				state = state.toUpperCase();
 				console.log( "STATE = " + state );
-				await RU.setKey( R_CUR_STATE , state );
+				await RU.setKey( RC.STATE , state );
 				resolve( state );
 			});
 		}

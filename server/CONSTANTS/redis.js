@@ -122,6 +122,11 @@ module.exports.LOCAL_MEDIA = {
 	}
 };
 
+module.exports.MOPIDY = {
+	BASE: "MOPIDY." ,
+	STATUS: "MOPIDY.STATUS" ,
+};
+
 module.exports.STATUS = [
 	"STATUS.USB_BUTTONS" ,
 	"STATUS.LOCAL_MEDIA" ,

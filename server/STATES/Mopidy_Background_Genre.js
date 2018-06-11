@@ -1,6 +1,5 @@
 const RU = require( "../utils/redis_Utils.js" );
 
-
 const R_KEY_BASE = "MOPIDY.CACHE."
 const R_LAST_SS_BASE = "LAST_SS.MOPIDY.";
 const R_CONTINUOUS_PLAY = R_LAST_SS_BASE + "CONTINUOUS_PLAY";

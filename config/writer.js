@@ -69,7 +69,7 @@ const SCHEDULES = {
 	UPDATES: {
 		gmusicPlaylistCache: {
 			startPattern: "01 */3 * * *" , // every 3 hours
-			startConditions: { "STATUS.MOPIDY": "ONLINE" , "MOPIDY.STATE": "stopped" } ,
+			startConditions: { "STATUS.MOPIDY": "ONLINE" , "MOPIDY.STATE": "STOPPED" } ,
 			functionPath: [ "utils" , "mopidy" ,"libraryManager.js" ] ,
 			functionName: "updateCache" ,
 		} ,

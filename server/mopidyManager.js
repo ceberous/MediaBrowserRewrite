@@ -1,6 +1,7 @@
 const wEmitter	= require("../main.js").wEmitter;
 
 const RU = require( "./utils/redis_Utils.js" );
+const RC = require( "./CONSTANTS/redis.js" ).MOPIDY;
 
 
 const colors = require("colors");
@@ -97,7 +98,9 @@ function GLOBAL_SHUTDOWN() {
 				tryIgnoreError( mopidy.off );
 			}
 			mopidy = null;
-			wcl( "CLOSED" );			
+			await RU.setKey( RC.STATUS , "OFFLINE" );
+			await RU.setKey( RC.STATE , "STOPPED" );
+			wcl( "CLOSED" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -111,6 +114,7 @@ function GLOBAL_INITIALIZE() {
 			await require( "./utils/mopidy/playbackManager.js" ).initialize();
 			await require( "./utils/mopidy/tracklistManager.js" ).initialize();
 			wcl( "CONNECTED !!!" );
+			await RU.setKey( RC.STATUS , "ONLINE" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

@@ -14,9 +14,10 @@ module.exports.restart =  function() {
 			
 			const R_K1 = R_KEY_BASE + now_playing_button_genre;
 			var random_list = await RU.popRandomSetMembers( R_K1 , 25 );
-			for ( var i = 0; i < random_list.length; ++i ) {
-				random_list[ i ] = JSON.parse( random_list[ i ] );
-			}
+			random_list = random_list.map( x => JSON.parse( x ) );
+			// for ( var i = 0; i < random_list.length; ++i ) {
+			// 	random_list[ i ] = JSON.parse( random_list[ i ] );
+			// }
 			await require( "./tracklistManager.js" ).clearList();
 			await require( "./tracklistManager.js" ).loadList( random_list );
 			await require( "./playbackManager.js" ).play();
